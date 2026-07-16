@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Barcelona Global · Agenda Institucional</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='42' fill='none' stroke='%231e2dbe' stroke-width='11'/%3E%3Ctext x='50' y='66' text-anchor='middle' font-family='Arial' font-size='46' font-weight='800' fill='%231e2dbe'%3E15%3C/text%3E%3C/svg%3E">
 <style>
 :root{
   --blue:#1e2dbe;
@@ -405,6 +406,7 @@ td select.mini:hover{border-color:var(--line);background:#fff}
     </div>
   </div>
   <div class="topbar-actions">
+    <span id="conn-badge" class="chip chip-sync-none" title="">●</span>
     <button class="btn btn-sm" id="btn-export-ics" title="Exportar los eventos visibles a un archivo .ics">
       <span class="ico">⤓</span> Exportar ICS
     </button>
@@ -797,9 +799,15 @@ function seedEvents(){
   ];
 }
 
-/* ---------- Persistencia ---------- */
+/* ---------- Persistencia (local + backend compartido) ----------
+   Si la página se sirve desde el servidor (server.js), los datos
+   viven en una base común: todos los navegadores ven lo mismo y
+   se actualizan solos. Abierta como archivo suelto, funciona en
+   modo local con localStorage, como antes. */
 let events = [];
 let storageOK = true;
+const remote = { enabled: false, online: false, version: 0, pushTimer: null, pushing: false, dirty: false };
+
 function checkStorage(){
   try {
     localStorage.setItem(LS_KEY + '-test', '1');
@@ -807,16 +815,100 @@ function checkStorage(){
     storageOK = true;
   } catch (e) { storageOK = false; }
 }
-function loadData(){
+function loadLocal(){
   try {
     const raw = localStorage.getItem(LS_KEY);
-    if (raw){ events = JSON.parse(raw); return; }
+    if (raw) return JSON.parse(raw);
   } catch (e) { /* localStorage no disponible o datos corruptos */ }
-  events = seedEvents();
-  saveData();
+  return null;
+}
+function saveLocal(){
+  try { localStorage.setItem(LS_KEY, JSON.stringify(events)); } catch (e) { /* sin persistencia local */ }
+}
+async function initData(){
+  const isHTTP = location.protocol === 'http:' || location.protocol === 'https:';
+  if (isHTTP){
+    try {
+      const r = await fetch('/api/events', { cache: 'no-store' });
+      if (r.ok){
+        const data = await r.json();
+        remote.enabled = true; remote.online = true;
+        if (data && Array.isArray(data.events)){
+          events = data.events;
+          remote.version = data.version || 0;
+          saveLocal();
+        } else {
+          // Servidor recién estrenado: se siembra con los datos locales o de demo.
+          events = loadLocal() || seedEvents();
+          saveLocal();
+          await pushRemote();
+        }
+        setInterval(pollRemote, 4000);
+        updateConnBadge();
+        return;
+      }
+    } catch (e) { /* sin API: modo local */ }
+  }
+  events = loadLocal();
+  if (!events){ events = seedEvents(); saveLocal(); }
+  updateConnBadge();
 }
 function saveData(){
-  try { localStorage.setItem(LS_KEY, JSON.stringify(events)); } catch (e) { /* sin persistencia */ }
+  saveLocal();
+  if (remote.enabled){
+    remote.dirty = true;
+    clearTimeout(remote.pushTimer);
+    remote.pushTimer = setTimeout(pushRemote, 350);
+  }
+}
+async function pushRemote(){
+  if (!remote.enabled || remote.pushing) return;
+  remote.pushing = true; remote.dirty = false;
+  try {
+    const r = await fetch('/api/events', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ events }),
+    });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const data = await r.json();
+    remote.version = data.version || remote.version + 1;
+    if (!remote.online){ remote.online = true; toast('Conexión recuperada: cambios guardados en la base común.', 'ok'); }
+    remote.online = true;
+  } catch (e) {
+    remote.online = false; remote.dirty = true;
+    clearTimeout(remote.pushTimer);
+    remote.pushTimer = setTimeout(pushRemote, 5000); // reintento
+  }
+  remote.pushing = false;
+  updateConnBadge();
+}
+async function pollRemote(){
+  if (!remote.enabled || remote.dirty || remote.pushing) return;
+  try {
+    const r = await fetch('/api/version', { cache: 'no-store' });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const v = (await r.json()).version || 0;
+    remote.online = true;
+    if (v > remote.version && modalStack.length === 0){
+      const rr = await fetch('/api/events', { cache: 'no-store' });
+      const data = await rr.json();
+      if (data && Array.isArray(data.events)){
+        events = data.events;
+        remote.version = data.version || v;
+        saveLocal();
+        renderAll();
+      }
+    }
+  } catch (e) { remote.online = false; }
+  updateConnBadge();
+}
+function updateConnBadge(){
+  const b = $('#conn-badge');
+  if (!b) return;
+  if (!remote.enabled){ b.className = 'chip chip-sync-none'; b.textContent = '● Solo este navegador'; b.title = 'Abre la página a través del servidor (node server.js) para compartir los datos.'; return; }
+  if (remote.online){ b.className = 'chip chip-sync-synced'; b.textContent = '● Base compartida'; b.title = 'Conectado al servidor: todos los usuarios ven los mismos datos.'; }
+  else { b.className = 'chip chip-sync-pending'; b.textContent = '● Sin conexión'; b.title = 'No se puede contactar con el servidor. Los cambios se guardan localmente y se reintentará.'; }
 }
 function resetData(){
   events = seedEvents();
@@ -1445,6 +1537,7 @@ function saveEditor(id){
   const fd = new FormData(form);
   const g = (k) => (fd.get(k) || '').toString().trim();
   const prev = id ? byId(id) : null;
+  if (id && !prev){ closeModal(); toast('Este evento ya no existe en la base compartida.', 'err'); return; }
   const e = prev || Object.assign(seedBlank(), { id: uid() });
 
   const before = prev ? { date: prev.date, start: prev.start, end: prev.end, location: prev.location, speaks: prev.speaks, companion: prev.companion, status: prev.status, briefing: hasDoc(prev, 'briefing') } : null;
@@ -1657,10 +1750,10 @@ function renderAll(){
   }
 }
 
-function init(){
+async function init(){
   checkStorage();
-  loadData();
-  if (!storageOK) $('#storage-banner').classList.remove('hidden');
+  await initData();
+  if (!storageOK && !remote.enabled) $('#storage-banner').classList.remove('hidden');
 
   // Copia de seguridad / restauración (JSON) para mover los datos entre navegadores
   $('#btn-backup').addEventListener('click', () => {
