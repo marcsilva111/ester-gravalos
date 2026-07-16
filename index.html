@@ -136,6 +136,10 @@ a{color:var(--blue)}
 .alert.info{background:var(--blue-soft);color:var(--blue-dark);border-color:#ccd3f4}
 .alert.danger{background:var(--red-bg);color:var(--red);border-color:#efc6c3}
 .alert .when{font-weight:500;opacity:.75;font-size:12px;margin-left:auto;white-space:nowrap}
+.storage-banner{
+  background:var(--amber-bg);color:var(--amber);border-bottom:1px solid #f2dfae;
+  padding:9px 20px;font-size:13px;font-weight:600;display:flex;gap:9px;align-items:center;
+}
 
 /* ---------- President hero ---------- */
 .hero{
@@ -404,6 +408,9 @@ td select.mini:hover{border-color:var(--line);background:#fff}
     <button class="btn btn-sm" id="btn-export-ics" title="Exportar los eventos visibles a un archivo .ics">
       <span class="ico">⤓</span> Exportar ICS
     </button>
+    <button class="btn btn-sm" id="btn-backup" title="Descargar una copia de seguridad de los datos (JSON)">⇩ Copia</button>
+    <button class="btn btn-sm" id="btn-restore" title="Cargar una copia de seguridad (JSON)">⇪ Restaurar</button>
+    <input type="file" id="file-restore" accept="application/json,.json" class="hidden">
     <button class="btn btn-sm btn-ghost" id="btn-reset" title="Restaurar los datos de demostración">↺ Datos demo</button>
   </div>
   <div class="role-switch" role="tablist" aria-label="Cambiar de vista">
@@ -411,6 +418,9 @@ td select.mini:hover{border-color:var(--line);background:#fff}
     <button id="rs-comms">Comunicación</button>
   </div>
 </header>
+<div id="storage-banner" class="storage-banner hidden">
+  ⚠️ <span>Este visor no permite guardar datos: los cambios se perderán al cerrar. Descarga el archivo y ábrelo directamente en tu navegador (doble clic) para que todo se guarde entre sesiones.</span>
+</div>
 
 <!-- ============ PRESIDENT VIEW ============ -->
 <div id="view-president">
@@ -789,6 +799,14 @@ function seedEvents(){
 
 /* ---------- Persistencia ---------- */
 let events = [];
+let storageOK = true;
+function checkStorage(){
+  try {
+    localStorage.setItem(LS_KEY + '-test', '1');
+    localStorage.removeItem(LS_KEY + '-test');
+    storageOK = true;
+  } catch (e) { storageOK = false; }
+}
 function loadData(){
   try {
     const raw = localStorage.getItem(LS_KEY);
@@ -1206,6 +1224,7 @@ function renderTable(){
         '<button class="iconbtn" title="Editar" data-edit="' + e.id + '">✏️</button>' +
         '<button class="iconbtn" title="Ficha" data-open="' + e.id + '">👁</button>' +
         '<button class="iconbtn danger" title="Archivar" data-archive="' + e.id + '">🗄</button>' +
+        '<button class="iconbtn danger" title="Eliminar definitivamente" data-del="' + e.id + '">🗑</button>' +
       '</div></td>' +
     '</tr>';
   });
@@ -1316,6 +1335,7 @@ function openDetail(id){
       '<button class="btn" data-edit="' + e.id + '">✏️ Editar</button>' +
       (e.status !== 'cancelat' ? '<button class="btn btn-danger" data-act="cancel|' + e.id + '">Cancelar evento</button>' : '') +
       '<button class="btn" data-act="archive|' + e.id + '">🗄 Archivar</button>' +
+      '<button class="btn btn-danger" data-act="delete|' + e.id + '">🗑 Eliminar</button>' +
       '<button class="btn" data-ics="' + e.id + '">⤓ ICS</button>';
   } else {
     foot =
@@ -1498,6 +1518,11 @@ function doAction(act, id){
       confirmDialog('¿Archivar «' + e.title + '»? Dejará de mostrarse en las vistas habituales.', () => {
         e.archived = true; finish('Evento archivado.');
       }); break;
+    case 'delete':
+      confirmDialog('¿Eliminar definitivamente «' + e.title + '»? Esta acción no se puede deshacer: el evento desaparecerá de la base y de la agenda del presidente.', () => {
+        events = events.filter(x => x.id !== e.id);
+        finish('Evento eliminado definitivamente.');
+      }); break;
   }
 }
 function doSync(op, id){
@@ -1633,7 +1658,38 @@ function renderAll(){
 }
 
 function init(){
+  checkStorage();
   loadData();
+  if (!storageOK) $('#storage-banner').classList.remove('hidden');
+
+  // Copia de seguridad / restauración (JSON) para mover los datos entre navegadores
+  $('#btn-backup').addEventListener('click', () => {
+    const blob = new Blob([JSON.stringify(events, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'agenda-barcelona-global-datos.json';
+    document.body.appendChild(a); a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 400);
+    toast('Copia de seguridad descargada.', 'ok');
+  });
+  $('#btn-restore').addEventListener('click', () => $('#file-restore').click());
+  $('#file-restore').addEventListener('change', (ev) => {
+    const file = ev.target.files[0];
+    ev.target.value = '';
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const data = JSON.parse(reader.result);
+        if (!Array.isArray(data) || (data.length && (!data[0].id || !data[0].title))) throw new Error('formato');
+        confirmDialog('¿Sustituir los datos actuales por la copia «' + file.name + '» (' + data.length + ' eventos)?', () => {
+          events = data; saveData(); renderAll();
+          toast('Copia restaurada (' + data.length + ' eventos).', 'ok');
+        });
+      } catch (e) { toast('El archivo no es una copia válida de la agenda.', 'err'); }
+    };
+    reader.readAsText(file);
+  });
 
   $('#rs-president').addEventListener('click', () => { state.role = 'president'; renderAll(); });
   $('#rs-comms').addEventListener('click', () => { state.role = 'comms'; renderAll(); });
@@ -1681,7 +1737,9 @@ function init(){
     const ics = t.closest('[data-ics]');
     const close = t.closest('[data-close]');
     const arch = t.closest('[data-archive]');
+    const del = t.closest('[data-del]');
     if (close){ popModal(); return; }
+    if (del){ doAction('delete', del.dataset.del); return; }
     if (save){ saveEditor(save.dataset.save || null); return; }
     if (docBtn){ const [id, kind] = docBtn.dataset.doc.split('|'); openDoc(id, kind); return; }
     if (sync){ const [op, id] = sync.dataset.sync.split('|'); doSync(op, id); return; }
