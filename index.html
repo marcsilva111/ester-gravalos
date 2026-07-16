@@ -1,0 +1,1722 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Barcelona Global · Agenda Institucional</title>
+<style>
+:root{
+  --blue:#1e2dbe;
+  --blue-dark:#141f85;
+  --blue-soft:#eef0fc;
+  --ink:#101a3c;
+  --muted:#5c6580;
+  --faint:#8d94ab;
+  --bg:#f6f7fb;
+  --card:#ffffff;
+  --line:#e4e7f1;
+  --green:#0e7c4f;
+  --green-bg:#e7f5ee;
+  --amber:#9a6700;
+  --amber-bg:#fdf3dc;
+  --red:#b3261e;
+  --red-bg:#fdecea;
+  --violet:#6941c6;
+  --violet-bg:#f2edfc;
+  --gray-bg:#eef0f4;
+  --shadow:0 1px 2px rgba(16,26,60,.06),0 8px 24px -12px rgba(16,26,60,.14);
+  --radius:14px;
+  --t-propi-bg:#d9efec; --t-propi:#0c5f56;
+  --t-inst-bg:#e6dff2;  --t-inst:#5b3fa3;
+  --t-extern-bg:#f4dde6; --t-extern:#9c3a63;
+  --t-reunio-bg:#fbe3cf; --t-reunio:#a05314;
+  --t-collab-bg:#e2f2cf; --t-collab:#4f7710;
+  --t-chapter-bg:#fbeebc; --t-chapter:#8a6d0b;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Inter",Roboto,"Helvetica Neue",Arial,sans-serif;
+  background:var(--bg);color:var(--ink);font-size:15px;line-height:1.45;
+}
+button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,select,textarea{font:inherit;color:var(--ink)}
+a{color:var(--blue)}
+.hidden{display:none!important}
+
+/* ---------- Top bar ---------- */
+.topbar{
+  position:sticky;top:0;z-index:40;background:#fff;border-bottom:1px solid var(--line);
+  display:flex;align-items:center;gap:16px;padding:10px 20px;flex-wrap:wrap;
+}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}
+.brand svg{flex:none}
+.brand-name{font-weight:800;font-size:16px;letter-spacing:-.2px;color:var(--blue);line-height:1.1}
+.brand-sub{font-size:11.5px;color:var(--muted);letter-spacing:.4px;text-transform:uppercase;font-weight:600}
+.role-switch{
+  margin-left:auto;display:flex;background:var(--blue-soft);border-radius:10px;padding:3px;gap:2px;
+}
+.role-switch button{
+  padding:7px 16px;border-radius:8px;font-weight:600;font-size:13.5px;color:var(--blue-dark);white-space:nowrap;
+}
+.role-switch button.active{background:var(--blue);color:#fff;box-shadow:0 1px 3px rgba(20,31,133,.35)}
+.topbar-actions{display:flex;gap:8px;align-items:center}
+
+/* ---------- Buttons ---------- */
+.btn{
+  display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border-radius:9px;
+  font-weight:600;font-size:13.5px;border:1px solid var(--line);background:#fff;color:var(--ink);
+  transition:background .12s,border-color .12s;white-space:nowrap;
+}
+.btn:hover{background:var(--blue-soft);border-color:#c9d0ee}
+.btn-primary{background:var(--blue);border-color:var(--blue);color:#fff}
+.btn-primary:hover{background:var(--blue-dark);border-color:var(--blue-dark)}
+.btn-danger{color:var(--red);border-color:#eec4c1}
+.btn-danger:hover{background:var(--red-bg);border-color:#e0a19c}
+.btn-ghost{border-color:transparent;background:transparent;color:var(--blue)}
+.btn-ghost:hover{background:var(--blue-soft)}
+.btn-sm{padding:5px 10px;font-size:12.5px;border-radius:7px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn .ico{font-size:14px;line-height:1}
+
+/* ---------- Tabs ---------- */
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);padding:0 20px;background:#fff;overflow-x:auto}
+.tabs button{
+  padding:11px 14px;font-weight:600;font-size:13.5px;color:var(--muted);border-bottom:2.5px solid transparent;
+  margin-bottom:-1px;white-space:nowrap;
+}
+.tabs button.active{color:var(--blue);border-bottom-color:var(--blue)}
+.tabs .count{
+  display:inline-block;min-width:18px;padding:0 5px;margin-left:5px;border-radius:9px;background:var(--red-bg);
+  color:var(--red);font-size:11px;font-weight:700;text-align:center;
+}
+
+.container{max-width:1240px;margin:0 auto;padding:22px 20px 80px}
+
+/* ---------- Badges / chips ---------- */
+.chip{
+  display:inline-flex;align-items:center;gap:5px;padding:2.5px 9px;border-radius:20px;
+  font-size:11.5px;font-weight:700;letter-spacing:.2px;white-space:nowrap;
+}
+.chip-status-valorar{background:var(--gray-bg);color:#4c566d}
+.chip-status-pendent{background:var(--amber-bg);color:var(--amber)}
+.chip-status-confirmat{background:var(--green-bg);color:var(--green)}
+.chip-status-rebutjat{background:var(--red-bg);color:var(--red)}
+.chip-status-delegat{background:var(--violet-bg);color:var(--violet)}
+.chip-status-cancelat{background:var(--red-bg);color:var(--red);text-decoration:line-through}
+.chip-status-finalitzat{background:#e3e9f5;color:#3d548c}
+.chip-type{border:1px solid transparent}
+.chip-propi{background:var(--t-propi-bg);color:var(--t-propi)}
+.chip-inst{background:var(--t-inst-bg);color:var(--t-inst)}
+.chip-extern{background:var(--t-extern-bg);color:var(--t-extern)}
+.chip-reunio{background:var(--t-reunio-bg);color:var(--t-reunio)}
+.chip-collab{background:var(--t-collab-bg);color:var(--t-collab)}
+.chip-chapter{background:var(--t-chapter-bg);color:var(--t-chapter)}
+.chip-asiste{background:var(--blue);color:#fff}
+.chip-interviene{background:#fff;color:var(--blue-dark);border:1.5px solid var(--blue)}
+.chip-pendiente-p{background:var(--amber-bg);color:var(--amber)}
+.chip-sync-none{background:var(--gray-bg);color:#5a6480}
+.chip-sync-syncing{background:var(--blue-soft);color:var(--blue)}
+.chip-sync-synced{background:var(--green-bg);color:var(--green)}
+.chip-sync-pending{background:var(--amber-bg);color:var(--amber)}
+.chip-sync-error{background:var(--red-bg);color:var(--red)}
+.chip-sync-removed{background:var(--gray-bg);color:#5a6480;text-decoration:line-through}
+.chip-prio-alta{background:var(--red-bg);color:var(--red)}
+.chip-prio-mitjana{background:var(--amber-bg);color:var(--amber)}
+.chip-prio-baixa{background:var(--gray-bg);color:#4c566d}
+.dot-warn{color:var(--amber);font-size:14px}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+.chip-sync-syncing{animation:pulse 1s infinite}
+
+/* ---------- Alerts ---------- */
+.alert{
+  display:flex;gap:9px;align-items:flex-start;padding:9px 12px;border-radius:10px;font-size:13px;
+  background:var(--amber-bg);color:var(--amber);border:1px solid #f2dfae;font-weight:600;
+}
+.alert.info{background:var(--blue-soft);color:var(--blue-dark);border-color:#ccd3f4}
+.alert.danger{background:var(--red-bg);color:var(--red);border-color:#efc6c3}
+.alert .when{font-weight:500;opacity:.75;font-size:12px;margin-left:auto;white-space:nowrap}
+
+/* ---------- President hero ---------- */
+.hero{
+  background:linear-gradient(135deg,var(--blue-dark),var(--blue) 70%);color:#fff;border-radius:18px;
+  padding:26px 28px;box-shadow:var(--shadow);margin-bottom:26px;position:relative;overflow:hidden;
+}
+.hero::after{
+  content:"";position:absolute;right:-70px;top:-90px;width:260px;height:260px;border-radius:50%;
+  border:34px solid rgba(255,255,255,.07);
+}
+.hero-label{font-size:12px;letter-spacing:1.4px;text-transform:uppercase;font-weight:700;opacity:.75;margin-bottom:8px}
+.hero h2{font-size:26px;letter-spacing:-.4px;line-height:1.2;margin-bottom:6px}
+.hero-meta{display:flex;flex-wrap:wrap;gap:6px 22px;font-size:14.5px;opacity:.95;margin-bottom:14px}
+.hero-meta span{display:inline-flex;gap:7px;align-items:center}
+.hero-badges{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.hero-badges .chip{font-size:12px;padding:4px 12px}
+.hero-badges .chip-asiste{background:#fff;color:var(--blue-dark)}
+.hero-badges .chip-interviene{background:rgba(255,255,255,.14);color:#fff;border-color:rgba(255,255,255,.6)}
+.hero-countdown{
+  position:absolute;right:28px;top:24px;text-align:right;
+}
+.hero-countdown .cd-num{font-size:30px;font-weight:800;letter-spacing:-.5px;line-height:1}
+.hero-countdown .cd-lbl{font-size:11.5px;text-transform:uppercase;letter-spacing:1px;opacity:.7;font-weight:600}
+.hero-actions{display:flex;gap:10px;flex-wrap:wrap;position:relative;z-index:1}
+.hero-actions .btn{background:#fff;border-color:#fff;color:var(--blue-dark)}
+.hero-actions .btn:hover{background:var(--blue-soft)}
+.hero-actions .btn.outline{background:transparent;color:#fff;border-color:rgba(255,255,255,.55)}
+.hero-actions .btn.outline:hover{background:rgba(255,255,255,.12)}
+.hero-alerts{margin-top:16px;display:grid;gap:8px;position:relative;z-index:1}
+.hero-alerts .alert{background:rgba(255,255,255,.14);color:#fff;border-color:rgba(255,255,255,.28)}
+.hero-empty{font-size:16px;opacity:.9}
+
+/* ---------- Section blocks ---------- */
+.blocks{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px;align-items:start}
+.block{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.block-h{
+  display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line);
+}
+.block-h h3{font-size:14px;letter-spacing:.6px;text-transform:uppercase;color:var(--blue-dark)}
+.block-h .n{margin-left:auto;font-size:12px;font-weight:700;color:var(--faint)}
+.block-body{padding:10px 12px;display:grid;gap:8px}
+.block-empty{padding:18px 16px;color:var(--faint);font-size:13.5px;text-align:center}
+
+/* ---------- Event cards ---------- */
+.ecard{
+  border:1px solid var(--line);border-radius:11px;padding:11px 13px;background:#fff;cursor:pointer;
+  display:grid;grid-template-columns:52px 1fr;gap:12px;transition:border-color .12s, box-shadow .12s;
+}
+.ecard:hover{border-color:var(--blue);box-shadow:0 2px 10px -4px rgba(30,45,190,.25)}
+.ecard.dim{opacity:.62}
+.ecard-date{
+  text-align:center;border-right:1px solid var(--line);padding-right:10px;align-self:start;
+}
+.ecard-date .d{font-size:20px;font-weight:800;line-height:1.05;color:var(--blue)}
+.ecard-date .m{font-size:10.5px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);font-weight:700}
+.ecard-date .t{font-size:11px;color:var(--muted);margin-top:3px;font-weight:600}
+.ecard-main{min-width:0}
+.ecard-title{font-weight:700;font-size:14.5px;letter-spacing:-.1px;margin-bottom:2px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.ecard-place{font-size:12.5px;color:var(--muted);margin-bottom:7px;display:flex;gap:5px;align-items:center}
+.ecard-tags{display:flex;gap:5px;flex-wrap:wrap}
+.ecard-alert{margin-top:7px;font-size:12px;color:var(--amber);font-weight:600;display:flex;gap:5px;align-items:center}
+
+/* ---------- Calendar ---------- */
+.cal-toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.cal-toolbar h3{font-size:19px;letter-spacing:-.3px;min-width:190px;text-transform:capitalize}
+.cal-nav{display:flex;gap:4px}
+.cal-nav .btn{padding:6px 11px}
+.seg{display:flex;background:#fff;border:1px solid var(--line);border-radius:9px;padding:2.5px;gap:2px}
+.seg button{padding:5.5px 13px;border-radius:7px;font-weight:600;font-size:12.5px;color:var(--muted)}
+.seg button.active{background:var(--blue);color:#fff}
+.cal-filters{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto}
+.fchip{
+  padding:4.5px 11px;border-radius:20px;border:1px solid var(--line);background:#fff;font-size:12px;font-weight:600;color:var(--muted);
+}
+.fchip.active{border-color:var(--blue);color:var(--blue);background:var(--blue-soft)}
+.cal-grid{
+  display:grid;grid-template-columns:repeat(7,1fr);background:var(--line);gap:1px;border:1px solid var(--line);
+  border-radius:12px;overflow:hidden;box-shadow:var(--shadow);
+}
+.cal-dow{background:#f0f2f8;padding:8px 6px;text-align:center;font-size:11.5px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--muted)}
+.cal-cell{background:#fff;min-height:104px;padding:6px;position:relative}
+.cal-cell.out{background:#fafbfd}
+.cal-cell .dn{font-size:12px;font-weight:700;color:var(--muted);margin-bottom:4px}
+.cal-cell.out .dn{color:#c2c7d6}
+.cal-cell.today .dn{
+  background:var(--blue);color:#fff;width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;
+}
+.cal-ev{
+  display:block;width:100%;text-align:left;font-size:11.5px;font-weight:600;padding:3px 6px;border-radius:6px;margin-bottom:3px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border-left:3px solid transparent;color:var(--ink);
+}
+.cal-ev:hover{filter:brightness(.95)}
+.cal-ev.pres{border-left-color:var(--blue);box-shadow:inset 0 0 0 1px rgba(30,45,190,.25)}
+.cal-ev .w{color:var(--amber)}
+.cal-week{display:grid;grid-template-columns:repeat(7,1fr);gap:10px}
+.cal-wday{background:#fff;border:1px solid var(--line);border-radius:11px;min-height:150px;padding:9px}
+.cal-wday.today{border-color:var(--blue);box-shadow:0 0 0 1px var(--blue)}
+.cal-wday-h{font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:8px}
+.cal-wday.today .cal-wday-h{color:var(--blue)}
+.cal-wev{
+  display:block;width:100%;text-align:left;border-radius:8px;padding:6px 8px;margin-bottom:6px;font-size:12px;border-left:3px solid transparent;color:var(--ink);
+}
+.cal-wev.pres{border-left-color:var(--blue)}
+.cal-wev b{display:block;font-size:12.5px}
+.cal-wev .tm{font-weight:700;font-size:11px;opacity:.75}
+.cal-agenda{display:grid;gap:8px}
+.cal-agenda-day{font-size:12.5px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:var(--blue-dark);margin:12px 2px 2px}
+.legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:14px;font-size:12px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px;font-weight:600}
+.legend i{width:11px;height:11px;border-radius:3px;display:inline-block}
+
+/* ---------- Comms toolbar ---------- */
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+.search{
+  flex:1;min-width:200px;display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);
+  border-radius:10px;padding:8px 12px;
+}
+.search input{border:none;outline:none;flex:1;background:transparent;font-size:14px;min-width:0}
+.toolbar select,.toolbar input[type=date]{
+  border:1px solid var(--line);border-radius:9px;padding:7.5px 10px;background:#fff;font-size:13px;color:var(--ink)
+}
+.filters-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+.filters-row label{font-size:12px;color:var(--muted);font-weight:600}
+
+/* ---------- Table ---------- */
+.table-wrap{background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:1020px}
+th{
+  text-align:left;padding:10px 12px;font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);
+  border-bottom:1px solid var(--line);background:#fafbfe;white-space:nowrap;position:sticky;top:0;
+}
+td{padding:9px 12px;border-bottom:1px solid #eef0f6;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr.row:hover td{background:#fafbff}
+td .evt-t{font-weight:700;cursor:pointer}
+td .evt-t:hover{color:var(--blue)}
+td select.mini{border:1px solid transparent;background:transparent;border-radius:7px;padding:3px 4px;font-size:12.5px;max-width:150px}
+td select.mini:hover{border-color:var(--line);background:#fff}
+.row-actions{display:flex;gap:4px;justify-content:flex-end}
+.iconbtn{
+  width:29px;height:29px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;font-size:14px;color:var(--muted);
+}
+.iconbtn:hover{background:var(--blue-soft);color:var(--blue)}
+.iconbtn.danger:hover{background:var(--red-bg);color:var(--red)}
+
+/* ---------- Comms cards grid ---------- */
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px}
+
+/* ---------- Incidents ---------- */
+.inc-list{display:grid;gap:10px}
+.inc{
+  background:#fff;border:1px solid var(--line);border-left:4px solid var(--amber);border-radius:11px;
+  padding:13px 16px;display:flex;gap:12px;align-items:flex-start;box-shadow:var(--shadow);
+}
+.inc.sev-high{border-left-color:var(--red)}
+.inc .inc-ico{font-size:19px;line-height:1.2}
+.inc b{display:block;margin-bottom:2px}
+.inc p{font-size:13px;color:var(--muted)}
+.inc .btn{margin-left:auto;flex:none;align-self:center}
+.inc-ok{
+  background:var(--green-bg);border:1px solid #cbe7d8;color:var(--green);border-radius:11px;padding:16px;text-align:center;font-weight:600;
+}
+
+/* ---------- Modals ---------- */
+.overlay{
+  position:fixed;inset:0;background:rgba(16,26,60,.45);z-index:60;display:flex;align-items:flex-start;justify-content:center;
+  padding:4vh 14px;overflow-y:auto;backdrop-filter:blur(2px);
+}
+.modal{
+  background:#fff;border-radius:16px;max-width:760px;width:100%;box-shadow:0 24px 60px -12px rgba(16,26,60,.4);
+  animation:mIn .16s ease-out;margin-bottom:6vh;
+}
+@keyframes mIn{from{transform:translateY(10px);opacity:0}to{transform:none;opacity:1}}
+.modal.narrow{max-width:460px}
+.modal-h{display:flex;align-items:flex-start;gap:12px;padding:18px 22px 0}
+.modal-h h3{font-size:19px;letter-spacing:-.3px;line-height:1.25}
+.modal-close{margin-left:auto;font-size:20px;color:var(--faint);width:32px;height:32px;border-radius:8px;flex:none}
+.modal-close:hover{background:var(--gray-bg);color:var(--ink)}
+.modal-b{padding:14px 22px 22px}
+.modal-f{display:flex;gap:9px;padding:14px 22px;border-top:1px solid var(--line);flex-wrap:wrap;justify-content:flex-end;background:#fafbfe;border-radius:0 0 16px 16px}
+
+/* detail sheet */
+.dsec{margin-bottom:16px}
+.dsec h4{
+  font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--faint);margin-bottom:8px;font-weight:800;
+  border-bottom:1px solid var(--line);padding-bottom:5px;
+}
+.dgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:9px 18px}
+.dit{font-size:13.5px}
+.dit .k{display:block;font-size:11px;color:var(--faint);font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.dit .v{font-weight:600}
+.doc-row{
+  display:flex;align-items:center;gap:9px;padding:8px 11px;border:1px solid var(--line);border-radius:9px;margin-bottom:6px;font-size:13.5px;background:#fafbfe;
+}
+.doc-row .btn{margin-left:auto}
+.changes-list{display:grid;gap:6px}
+
+/* ---------- Forms ---------- */
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:11px 14px}
+.fgrid .full{grid-column:1/-1}
+.fld label{display:block;font-size:11.5px;font-weight:700;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px}
+.fld input,.fld select,.fld textarea{
+  width:100%;border:1px solid var(--line);border-radius:9px;padding:8px 10px;font-size:13.5px;background:#fff;
+}
+.fld input:focus,.fld select:focus,.fld textarea:focus{outline:2px solid rgba(30,45,190,.25);border-color:var(--blue)}
+.fld textarea{resize:vertical;min-height:56px}
+.fset{border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:14px}
+.fset legend{font-size:12px;font-weight:800;color:var(--blue-dark);text-transform:uppercase;letter-spacing:.8px;padding:0 6px}
+.switch-row{display:flex;align-items:center;gap:10px;padding:9px 12px;border:1.5px solid var(--line);border-radius:10px;background:#fafbfe}
+.switch-row.on{border-color:var(--blue);background:var(--blue-soft)}
+.switch-row b{font-size:13.5px}
+.switch-row small{color:var(--muted);display:block;font-size:11.5px}
+
+/* ---------- Toast ---------- */
+#toasts{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:90;display:grid;gap:8px;width:min(420px,92vw)}
+.toast{
+  background:var(--ink);color:#fff;border-radius:11px;padding:11px 16px;font-size:13.5px;font-weight:600;
+  box-shadow:0 10px 30px -8px rgba(16,26,60,.5);display:flex;gap:9px;align-items:center;animation:mIn .18s ease-out;
+}
+.toast.ok{background:var(--green)}
+.toast.err{background:var(--red)}
+
+/* ---------- Sync banner in detail ---------- */
+.sync-box{
+  border:1px solid var(--line);border-radius:11px;padding:12px 14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:#fafbfe;
+}
+.sync-box .grow{flex:1;min-width:170px}
+.sync-box small{color:var(--muted);display:block}
+
+/* ---------- Responsive ---------- */
+@media (max-width:900px){
+  .cal-week{grid-template-columns:1fr;gap:8px}
+  .cal-wday{min-height:0}
+  .hero-countdown{position:static;text-align:left;margin-bottom:12px}
+  .fgrid{grid-template-columns:1fr}
+}
+@media (max-width:640px){
+  .topbar{padding:9px 12px;gap:10px}
+  .brand-sub{display:none}
+  .container{padding:14px 12px 70px}
+  .hero{padding:20px 18px}
+  .hero h2{font-size:21px}
+  .hero-actions .btn{flex:1;justify-content:center}
+  .tabs{padding:0 8px}
+  .cal-grid{display:none}
+  .cal-grid-mobilenote{display:block!important}
+  .role-switch button{padding:7px 11px;font-size:12.5px}
+}
+.cal-grid-mobilenote{display:none;color:var(--muted);font-size:13px;background:#fff;border:1px dashed var(--line);border-radius:10px;padding:12px;text-align:center}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <svg width="42" height="42" viewBox="0 0 100 100" aria-label="15 anys Barcelona Global">
+      <circle cx="50" cy="50" r="42" fill="none" stroke="#1e2dbe" stroke-width="11"/>
+      <text x="50" y="66" text-anchor="middle" font-family="Arial, sans-serif" font-size="46" font-weight="800" fill="#1e2dbe">15</text>
+    </svg>
+    <div>
+      <div class="brand-name">Barcelona Global</div>
+      <div class="brand-sub">Agenda institucional · Presidencia</div>
+    </div>
+  </div>
+  <div class="topbar-actions">
+    <button class="btn btn-sm" id="btn-export-ics" title="Exportar los eventos visibles a un archivo .ics">
+      <span class="ico">⤓</span> Exportar ICS
+    </button>
+    <button class="btn btn-sm btn-ghost" id="btn-reset" title="Restaurar los datos de demostración">↺ Datos demo</button>
+  </div>
+  <div class="role-switch" role="tablist" aria-label="Cambiar de vista">
+    <button id="rs-president" class="active">Presidente</button>
+    <button id="rs-comms">Comunicación</button>
+  </div>
+</header>
+
+<!-- ============ PRESIDENT VIEW ============ -->
+<div id="view-president">
+  <nav class="tabs">
+    <button data-ptab="home" class="active">Mi agenda</button>
+    <button data-ptab="calendar">Calendario</button>
+  </nav>
+  <main class="container">
+    <section id="p-home">
+      <div id="p-hero"></div>
+      <div class="blocks">
+        <div class="block">
+          <div class="block-h"><h3>Próximos 7 días</h3><span class="n" id="n-week"></span></div>
+          <div class="block-body" id="list-week"></div>
+        </div>
+        <div class="block">
+          <div class="block-h"><h3>Próximos eventos</h3><span class="n" id="n-upcoming"></span></div>
+          <div class="block-body" id="list-upcoming"></div>
+        </div>
+        <div class="block">
+          <div class="block-h"><h3>Pendientes de decisión</h3><span class="n" id="n-pending"></span></div>
+          <div class="block-body" id="list-pending"></div>
+        </div>
+      </div>
+    </section>
+    <section id="p-calendar" class="hidden">
+      <div id="p-cal-root"></div>
+    </section>
+  </main>
+</div>
+
+<!-- ============ COMMS VIEW ============ -->
+<div id="view-comms" class="hidden">
+  <nav class="tabs">
+    <button data-ctab="table" class="active">Tabla</button>
+    <button data-ctab="cards">Tarjetas</button>
+    <button data-ctab="calendar">Calendario</button>
+    <button data-ctab="incidents">Incidencias <span class="count" id="inc-count">0</span></button>
+  </nav>
+  <main class="container">
+    <div class="toolbar">
+      <div class="search">
+        <span>🔍</span>
+        <input id="f-q" type="search" placeholder="Buscar evento, organizador, lugar o responsable…">
+      </div>
+      <button class="btn btn-primary" id="btn-new"><span class="ico">＋</span> Nuevo evento</button>
+    </div>
+    <div class="filters-row">
+      <label>Desde <input type="date" id="f-from"></label>
+      <label>Hasta <input type="date" id="f-to"></label>
+      <select id="f-status">
+        <option value="">Estado: todos</option>
+        <option value="valorar">Por valorar</option>
+        <option value="pendent">Pendiente de confirmación</option>
+        <option value="confirmat">Confirmado</option>
+        <option value="rebutjat">Rechazado</option>
+        <option value="delegat">Delegado</option>
+        <option value="cancelat">Cancelado</option>
+        <option value="finalitzat">Finalizado</option>
+      </select>
+      <select id="f-prio">
+        <option value="">Prioridad: todas</option>
+        <option value="alta">Alta</option>
+        <option value="mitjana">Media</option>
+        <option value="baixa">Baja</option>
+      </select>
+      <select id="f-pres">
+        <option value="">Presidente: todos</option>
+        <option value="si">Asiste</option>
+        <option value="pendent">Pendiente</option>
+        <option value="no">No asiste</option>
+        <option value="interviene">Interviene</option>
+      </select>
+      <select id="f-type">
+        <option value="">Tipo: todos</option>
+        <option value="propi">Evento propio</option>
+        <option value="inst">Instituciones</option>
+        <option value="extern">Eventos externos</option>
+        <option value="reunio">Reuniones</option>
+        <option value="collab">Colaboraciones</option>
+        <option value="chapter">Chapter Young</option>
+      </select>
+      <label style="display:inline-flex;align-items:center;gap:5px">
+        <input type="checkbox" id="f-archived"> Ver archivados
+      </label>
+      <button class="btn btn-sm btn-ghost" id="f-clear">Limpiar filtros</button>
+    </div>
+
+    <section id="c-table"><div class="table-wrap"><table id="tbl"></table></div></section>
+    <section id="c-cards" class="hidden"><div class="cards-grid" id="cards-root"></div></section>
+    <section id="c-calendar" class="hidden"><div id="c-cal-root"></div></section>
+    <section id="c-incidents" class="hidden"><div class="inc-list" id="inc-root"></div></section>
+  </main>
+</div>
+
+<div id="modal-root"></div>
+<div id="toasts"></div>
+
+<script>
+'use strict';
+/* =====================================================
+   Barcelona Global · Agenda Institucional (prototipo)
+   Un único origen de datos, dos experiencias:
+   - Dashboard de Comunicación (gestión completa)
+   - Agenda del Presidente (consulta rápida)
+   ===================================================== */
+
+const LS_KEY = 'bg-agenda-v1';
+
+const TYPES = {
+  propi:   { label: 'Evento propio' },
+  inst:    { label: 'Instituciones' },
+  extern:  { label: 'Eventos externos' },
+  reunio:  { label: 'Reuniones' },
+  collab:  { label: 'Colaboraciones' },
+  chapter: { label: 'Chapter Young' },
+};
+const STATUSES = {
+  valorar:    'Por valorar',
+  pendent:    'Pendiente de confirmación',
+  confirmat:  'Confirmado',
+  rebutjat:   'Rechazado',
+  delegat:    'Delegado',
+  cancelat:   'Cancelado',
+  finalitzat: 'Finalizado',
+};
+const PRIORITIES = { alta: 'Alta', mitjana: 'Media', baixa: 'Baja' };
+const SYNC = {
+  none:    'No sincronizado',
+  syncing: 'Sincronizando…',
+  synced:  'Sincronizado',
+  pending: 'Actualización pendiente',
+  error:   'Error de sincronización',
+  removed: 'Retirado del calendario',
+};
+const MONTHS = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+const MONTHS_S = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+const DOWS = ['lunes','martes','miércoles','jueves','viernes','sábado','domingo'];
+const DOWS_S = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+
+function daysAgoISO(n){ const d = new Date(); d.setDate(d.getDate() - n); return d.toISOString(); }
+
+/* ---------- Datos de demostración (calendarios sep–dic 2026 + ejemplos cercanos) ---------- */
+function seedEvents(){
+  let n = 0;
+  const id = () => 'ev-' + String(++n).padStart(3, '0');
+  const E = (o) => Object.assign({
+    id: id(), title: '', organizer: 'Barcelona Global', date: '', start: '', end: '',
+    arrival: '', location: '', address: '', mapLink: '', modality: 'presencial',
+    description: '', link: '', type: 'propi', priority: 'mitjana', status: 'confirmat',
+    attends: 'si',            // si | no | pendent
+    speaks: false, speechType: '', speechDuration: '', speechLang: 'Catalán',
+    keyMessage: '', contentOwner: '',
+    owner: 'Ester Gravalos', companion: '', orgContact: '', access: '', transport: '', notes: '',
+    coverage: [],             // fotos, video, ndp, post, story
+    docs: [],                 // {kind, name, url, updatedAt}
+    sync: { state: 'none', outlookId: null, lastSync: null },
+    changes: [],              // {ts, message}
+    archived: false,
+  }, o);
+  const doc = (kind, name, updatedAt) => ({ kind, name, url: '#', updatedAt: updatedAt || null });
+  const outlook = (when) => ({ state: 'synced', outlookId: 'OUTLOOK-' + Math.random().toString(36).slice(2, 10).toUpperCase(), lastSync: when || daysAgoISO(3) });
+
+  return [
+    /* ---- Julio 2026 (ejemplos próximos para la demo) ---- */
+    E({ title: 'Junta Directiva Barcelona Global', date: '2026-07-08', start: '09:00', end: '11:00',
+        type: 'reunio', status: 'finalitzat', speaks: true, speechType: 'Presidencia de la reunión',
+        location: 'Sede Barcelona Global', address: 'C/ Aribau 185, Barcelona',
+        owner: 'Ester Gravalos', companion: 'Directora general', sync: outlook(daysAgoISO(20)),
+        docs: [doc('agenda', 'Orden del día · Junta julio')] }),
+    E({ title: 'Reunió Alcaldia · Estratègia Barcelona 2047', date: '2026-07-21', start: '12:30', end: '13:30',
+        arrival: '12:15', type: 'inst', organizer: 'Ajuntament de Barcelona', priority: 'alta',
+        location: 'Ajuntament de Barcelona', address: 'Pl. de Sant Jaume 1, Barcelona',
+        mapLink: 'https://maps.google.com/?q=Pla%C3%A7a+de+Sant+Jaume+1+Barcelona',
+        speaks: true, speechType: 'Presentación de propuesta', speechDuration: '15 min',
+        keyMessage: 'Posicionar Barcelona 2047 como proyecto de ciudad compartido público-privado.',
+        contentOwner: 'Dirección de Comunicación', companion: 'Directora general',
+        orgContact: 'Gabinet d’Alcaldia · 93 402 70 00', access: 'Acceso por Pl. Sant Jaume. Acreditación en recepción.',
+        transport: 'Coche oficial. Parking Pl. Catalunya.', sync: { state: 'pending', outlookId: 'OUTLOOK-ALC2047', lastSync: daysAgoISO(6) },
+        docs: [doc('briefing', 'Briefing reunión Alcaldía', daysAgoISO(1)), doc('speech', 'Talking points Barcelona 2047')],
+        changes: [{ ts: daysAgoISO(1), message: 'El horario se ha modificado: pasa de 12:00 a 12:30.' },
+                  { ts: daysAgoISO(1), message: 'Briefing actualizado.' }] }),
+    E({ title: 'Esmorzar amb mitjans de comunicació', date: '2026-07-29', start: '09:00', end: '10:30',
+        arrival: '08:45', type: 'propi', priority: 'mitjana',
+        location: 'Hotel Majestic', address: 'Pg. de Gràcia 68, Barcelona',
+        mapLink: 'https://maps.google.com/?q=Passeig+de+Gr%C3%A0cia+68+Barcelona',
+        speaks: true, speechType: 'Intervención de apertura', speechDuration: '10 min',
+        keyMessage: 'Balance de los 15 años de Barcelona Global y prioridades del curso.',
+        contentOwner: 'Dirección de Comunicación', companion: 'Directora de Comunicación',
+        coverage: ['fotos', 'post', 'ndp'], sync: outlook(),
+        docs: [doc('briefing', 'Briefing esmorzar mitjans'), doc('agenda', 'Escaleta del acto')] }),
+
+    /* ---- Septiembre 2026 ---- */
+    E({ title: 'Dinar G8', date: '2026-09-07', start: '14:00', end: '16:00', arrival: '13:45',
+        type: 'inst', organizer: 'G8 Entitats Econòmiques', priority: 'alta',
+        location: 'Cercle d’Economia', address: 'C/ Provença 298, Barcelona',
+        mapLink: 'https://maps.google.com/?q=Proven%C3%A7a+298+Barcelona',
+        speaks: true, speechType: 'Participación en el debate', speechDuration: '—',
+        keyMessage: 'Coordinación de las entidades económicas de la ciudad.',
+        companion: 'Directora general', sync: outlook(),
+        docs: [doc('briefing', 'Briefing Dinar G8 septiembre')],
+        changes: [{ ts: daysAgoISO(2), message: 'El horario se ha modificado: comienza a las 14:00.' }] }),
+    E({ title: 'Hola Barcelona! Cocktail', date: '2026-09-09', start: '19:00', end: '21:30', arrival: '18:30',
+        type: 'propi', priority: 'alta',
+        location: 'Terraza del Museu Marítim', address: 'Av. de les Drassanes s/n, Barcelona',
+        mapLink: 'https://maps.google.com/?q=Museu+Mar%C3%ADtim+Barcelona',
+        description: 'Acto de bienvenida al nuevo talento internacional de la ciudad.',
+        speaks: true, speechType: 'Discurso de bienvenida', speechDuration: '10 min', speechLang: 'Inglés',
+        keyMessage: 'Barcelona, ciudad abierta al talento internacional.',
+        contentOwner: 'Dirección de Comunicación', companion: 'Directora de Comunicación',
+        coverage: ['fotos', 'video', 'ndp', 'post', 'story'], sync: outlook(),
+        docs: [doc('briefing', 'Briefing Hola Barcelona!', daysAgoISO(2)), doc('speech', 'Welcome speech (EN)'), doc('agenda', 'Escaleta del cocktail')],
+        changes: [{ ts: daysAgoISO(2), message: 'Briefing actualizado.' }] }),
+    E({ title: 'AIJEC · Premi Jove Empresari', date: '2026-09-14', start: '18:30', end: '20:30',
+        type: 'extern', organizer: 'AIJEC', status: 'pendent', attends: 'pendent',
+        location: 'Llotja de Mar', address: 'Pg. d’Isabel II 1, Barcelona',
+        mapLink: 'https://maps.google.com/?q=Llotja+de+Mar+Barcelona',
+        coverage: ['fotos'], orgContact: 'Secretaria AIJEC · info@aijec.cat',
+        changes: [{ ts: daysAgoISO(4), message: 'Asistencia pendiente de confirmación.' }] }),
+    E({ title: 'COMEX BG', date: '2026-09-16', start: '09:00', end: '11:00', arrival: '08:50',
+        type: 'reunio', priority: 'alta',
+        location: 'Sede Barcelona Global', address: 'C/ Aribau 185, Barcelona',
+        speaks: true, speechType: 'Presidencia de la reunión',
+        companion: 'Directora general', sync: outlook(),
+        docs: [doc('agenda', 'Orden del día COMEX septiembre')] }),
+    E({ title: 'Català de l’Any', date: '2026-09-16', start: '19:00', end: '22:00',
+        type: 'extern', organizer: 'El Periódico', status: 'confirmat',
+        location: 'TNC · Teatre Nacional de Catalunya', address: 'Pl. de les Arts 1, Barcelona',
+        mapLink: 'https://maps.google.com/?q=Teatre+Nacional+de+Catalunya',
+        companion: 'Directora de Comunicación', coverage: ['fotos'],
+        sync: { state: 'none', outlookId: null, lastSync: null } }),
+    E({ title: 'COMEX · Museu Grifols', date: '2026-09-17', start: '17:00', end: '19:00', arrival: '16:45',
+        type: 'propi', organizer: 'Barcelona Global · Grifols',
+        location: 'Museu Grifols', address: 'C/ Jesús i Maria 6, Barcelona',
+        mapLink: 'https://maps.google.com/?q=Grifols+Barcelona',
+        speaks: false, coverage: ['fotos', 'video', 'post', 'story'],
+        companion: 'Directora general', sync: outlook(),
+        docs: [doc('agenda', 'Programa de la visita')] }),
+    E({ title: 'Gala Betevé', date: '2026-09-17', start: '20:00', end: '22:30',
+        type: 'extern', organizer: 'Betevé', status: 'pendent', attends: 'pendent',
+        location: 'Plató central de Betevé', address: 'C/ Perú 52, Barcelona',
+        changes: [{ ts: daysAgoISO(5), message: 'Asistencia pendiente de confirmación.' }] }),
+    E({ title: 'COMEX B&P', date: '2026-09-21', start: '09:00', end: '10:30', arrival: '08:50',
+        type: 'reunio', location: 'Sede Barcelona Global', address: 'C/ Aribau 185, Barcelona',
+        speaks: true, speechType: 'Presidencia de la reunión', sync: outlook(),
+        docs: [doc('agenda', 'Orden del día B&P')] }),
+    E({ title: 'Recepció Consolat General de França', date: '2026-09-23', start: '19:00', end: '21:00',
+        type: 'inst', organizer: 'Consulat de França', status: 'cancelat', attends: 'no',
+        location: 'Residència consular', address: 'Rda. Universitat 22, Barcelona',
+        sync: { state: 'removed', outlookId: null, lastSync: daysAgoISO(3) },
+        changes: [{ ts: daysAgoISO(3), message: 'El evento ha sido cancelado por el organizador.' }] }),
+    E({ title: 'Premis La Vanguardia', date: '2026-09-28', start: '19:30', end: '22:00', arrival: '19:00',
+        type: 'extern', organizer: 'La Vanguardia', priority: 'alta',
+        location: 'MNAC (nueva ubicación)', address: 'Palau Nacional, Parc de Montjuïc, Barcelona',
+        mapLink: 'https://maps.google.com/?q=MNAC+Barcelona',
+        companion: 'Directora de Comunicación', coverage: ['fotos', 'post'],
+        sync: { state: 'pending', outlookId: 'OUTLOOK-LVG26', lastSync: daysAgoISO(9) },
+        changes: [{ ts: daysAgoISO(2), message: 'La ubicación ha cambiado: el acto se traslada al MNAC.' }] }),
+    E({ title: 'Patronat FBCN', date: '2026-09-30', start: '18:00', end: '19:30', arrival: '17:50',
+        type: 'reunio', organizer: 'Fundació Barcelona Cultura',
+        location: 'Palau de la Virreina', address: 'La Rambla 99, Barcelona',
+        speaks: true, speechType: 'Intervención como patrono', speechDuration: '5 min',
+        sync: outlook(), docs: [] /* interviene sin briefing → incidencia */ }),
+    E({ title: 'Premis PIMEC', date: '2026-09-30', start: '19:00', end: '21:30',
+        type: 'extern', organizer: 'PIMEC',
+        location: 'L’Auditori', address: 'C/ Lepant 150, Barcelona',
+        coverage: ['fotos'], sync: outlook() /* solapa con Patronat FBCN → incidencia */ }),
+
+    /* ---- Octubre 2026 ---- */
+    E({ title: 'Acte Ryder Cup', date: '2026-10-01', start: '12:00', end: '14:00', arrival: '11:40',
+        type: 'propi', priority: 'alta',
+        location: 'Auditorio Torre Glòries', address: 'Av. Diagonal 211, Barcelona',
+        mapLink: 'https://maps.google.com/?q=Torre+Gl%C3%B2ries+Barcelona',
+        speaks: true, speechType: 'Intervención institucional', speechDuration: '8 min',
+        keyMessage: 'El deporte como palanca de proyección internacional de Barcelona.',
+        contentOwner: 'Dirección de Comunicación', companion: 'Directora general',
+        coverage: ['fotos', 'video', 'post', 'story'], sync: outlook(),
+        docs: [doc('briefing', 'Briefing Acte Ryder Cup'), doc('speech', 'Talking points Ryder Cup')] }),
+    E({ title: 'MBA Day (por confirmar fecha)', date: '2026-10-05', start: '10:00', end: '17:00',
+        type: 'propi', status: 'valorar', attends: 'pendent',
+        description: 'Jornada con estudiantes de los principales MBA internacionales. Fecha alternativa: 19 de octubre.',
+        location: 'IESE Business School', address: 'Av. Pearson 21, Barcelona',
+        coverage: ['fotos', 'video', 'post', 'story', 'ndp'] }),
+    E({ title: 'Esmorzar de nous socis', date: '2026-10-07', start: '08:30', end: '10:00', arrival: '08:15',
+        type: 'propi', location: 'Sede Barcelona Global', address: 'C/ Aribau 185, Barcelona',
+        speaks: true, speechType: 'Bienvenida a nuevos socios', speechDuration: '10 min',
+        coverage: ['fotos', 'story'], sync: outlook(),
+        docs: [doc('briefing', 'Perfiles de nuevos socios · octubre')] }),
+    E({ title: 'Visita Casa Moratiel', date: '2026-10-08', start: '11:00', end: '12:30',
+        type: 'collab', organizer: 'Fundació Mies van der Rohe',
+        location: '', address: '' /* sin ubicación → incidencia */,
+        coverage: ['fotos', 'video', 'post', 'story'],
+        sync: { state: 'none', outlookId: null, lastSync: null } }),
+    E({ title: 'MBA Day (fecha alternativa)', date: '2026-10-19', start: '10:00', end: '17:00',
+        type: 'propi', status: 'valorar', attends: 'pendent',
+        description: 'Fecha alternativa de la jornada MBA Day.',
+        location: 'IESE Business School', address: 'Av. Pearson 21, Barcelona',
+        coverage: ['fotos', 'video', 'post', 'story', 'ndp'] }),
+    E({ title: 'COMEX BG', date: '2026-10-21', start: '09:00', end: '11:00', arrival: '08:50',
+        type: 'reunio', location: 'Sede Barcelona Global', address: 'C/ Aribau 185, Barcelona',
+        speaks: true, speechType: 'Presidencia de la reunión', sync: outlook(),
+        docs: [doc('agenda', 'Orden del día COMEX octubre')] }),
+    E({ title: 'Plenari Chapter Clima', date: '2026-10-28', start: '18:00', end: '20:00', arrival: '17:45',
+        type: 'propi', priority: 'alta',
+        location: 'Roca Barcelona Gallery', address: 'C/ Joan Güell 211, Barcelona',
+        speaks: true, speechType: 'Clausura', speechDuration: '5 min',
+        keyMessage: 'Compromiso del sector privado con la transición climática de Barcelona.',
+        coverage: ['fotos', 'video', 'ndp', 'post', 'story'], sync: outlook(),
+        docs: [doc('briefing', 'Briefing Plenari Clima')] }),
+
+    /* ---- Noviembre 2026 ---- */
+    E({ title: 'Dinar G8', date: '2026-11-02', start: '14:00', end: '16:00', arrival: '13:45',
+        type: 'inst', organizer: 'G8 Entitats Econòmiques', priority: 'alta',
+        location: 'Foment del Treball', address: 'Via Laietana 32, Barcelona',
+        speaks: true, speechType: 'Participación en el debate',
+        companion: 'Directora general', sync: outlook(),
+        docs: [doc('briefing', 'Briefing Dinar G8 noviembre')] }),
+    E({ title: 'COMEX B&P', date: '2026-11-12', start: '09:00', end: '10:30', arrival: '08:50',
+        type: 'reunio', location: 'Sede Barcelona Global', address: 'C/ Aribau 185, Barcelona',
+        speaks: true, speechType: 'Presidencia de la reunión', sync: outlook(),
+        docs: [doc('agenda', 'Orden del día B&P noviembre')] }),
+    E({ title: 'Festival Vibez', date: '2026-11-13', start: '19:00', end: '23:00',
+        type: 'extern', organizer: 'Vibez BCN', status: 'delegat', attends: 'no',
+        location: 'Poble Espanyol', address: 'Av. Francesc Ferrer i Guàrdia 13, Barcelona',
+        notes: 'Asiste en representación la vicepresidenta.', coverage: ['story'] }),
+    E({ title: 'Kickoff Barcelona 2047', date: '2026-11-16', start: '09:30', end: '12:00', arrival: '09:00',
+        type: 'propi', priority: 'alta',
+        location: 'CaixaForum Barcelona', address: 'Av. Francesc Ferrer i Guàrdia 6-8, Barcelona',
+        mapLink: 'https://maps.google.com/?q=CaixaForum+Barcelona',
+        description: 'Presentación pública del proyecto estratégico Barcelona 2047.',
+        speaks: true, speechType: 'Discurso inaugural', speechDuration: '15 min',
+        keyMessage: 'Una visión de ciudad a 20 años construida entre el sector público y el privado.',
+        contentOwner: 'Dirección de Comunicación', companion: 'Directora general y Directora de Comunicación',
+        coverage: ['fotos', 'ndp', 'post', 'story'], sync: outlook(),
+        docs: [doc('briefing', 'Briefing Kickoff 2047'), doc('speech', 'Discurso inaugural 2047'), doc('agenda', 'Escaleta del acto')] }),
+    E({ title: 'COMEX BG', date: '2026-11-18', start: '09:00', end: '11:00', arrival: '08:50',
+        type: 'reunio', location: 'Sede Barcelona Global', address: 'C/ Aribau 185, Barcelona',
+        speaks: true, speechType: 'Presidencia de la reunión', sync: outlook(),
+        docs: [doc('agenda', 'Orden del día COMEX noviembre')] }),
+    E({ title: 'Esmorzar de nous socis', date: '2026-11-25', start: '08:30', end: '10:00', arrival: '08:15',
+        type: 'propi', location: 'Sede Barcelona Global', address: 'C/ Aribau 185, Barcelona',
+        speaks: true, speechType: 'Bienvenida a nuevos socios', speechDuration: '10 min',
+        coverage: ['fotos', 'story'], sync: outlook(),
+        docs: [doc('briefing', 'Perfiles de nuevos socios · noviembre')] }),
+
+    /* ---- Diciembre 2026 ---- */
+    E({ title: 'Dinar G8', date: '2026-12-07', start: '14:00', end: '16:00', arrival: '13:45',
+        type: 'inst', organizer: 'G8 Entitats Econòmiques',
+        location: 'Cambra de Comerç de Barcelona', address: 'Av. Diagonal 452, Barcelona',
+        speaks: true, speechType: 'Participación en el debate', sync: outlook(),
+        docs: [doc('briefing', 'Briefing Dinar G8 diciembre')] }),
+    E({ title: 'Sopar de Nadal COMEX', date: '2026-12-16', start: '20:30', end: '23:00', arrival: '20:15',
+        type: 'reunio', priority: 'mitjana',
+        location: 'Restaurante Windsor', address: 'C/ Còrsega 286, Barcelona',
+        speaks: true, speechType: 'Brindis de cierre de año', speechDuration: '5 min',
+        coverage: ['fotos', 'post', 'story'], sync: outlook(),
+        docs: [doc('briefing', 'Notas para el brindis')] }),
+    E({ title: 'Barcelona on the Global Map', date: '2026-12-22', start: '12:00', end: '14:00', arrival: '11:40',
+        type: 'propi', priority: 'alta',
+        location: 'Saló de Cent · Ajuntament de Barcelona', address: 'Pl. de Sant Jaume 1, Barcelona',
+        mapLink: 'https://maps.google.com/?q=Ajuntament+de+Barcelona',
+        description: 'Presentación del informe anual de posicionamiento internacional de Barcelona.',
+        speaks: true, speechType: 'Presentación del informe', speechDuration: '20 min',
+        keyMessage: 'Resultados 2026 del posicionamiento global de Barcelona.',
+        contentOwner: 'Dirección de Comunicación', companion: 'Directora general',
+        coverage: ['fotos', 'video', 'ndp', 'post', 'story'], sync: outlook(),
+        docs: [doc('briefing', 'Briefing BOGM 2026'), doc('speech', 'Presentación BOGM')] }),
+    E({ title: 'Esmorzar International Council', date: '2026-12-23', start: '09:00', end: '11:00', arrival: '08:45',
+        type: 'propi', priority: 'alta',
+        location: 'Hotel Mandarin Oriental', address: 'Pg. de Gràcia 38-40, Barcelona',
+        speaks: true, speechType: 'Intervención de apertura', speechDuration: '10 min', speechLang: 'Inglés',
+        coverage: ['fotos', 'video', 'ndp', 'post', 'story'], sync: outlook(),
+        docs: [doc('briefing', 'Briefing International Council')] }),
+  ];
+}
+
+/* ---------- Persistencia ---------- */
+let events = [];
+function loadData(){
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (raw){ events = JSON.parse(raw); return; }
+  } catch (e) { /* localStorage no disponible o datos corruptos */ }
+  events = seedEvents();
+  saveData();
+}
+function saveData(){
+  try { localStorage.setItem(LS_KEY, JSON.stringify(events)); } catch (e) { /* sin persistencia */ }
+}
+function resetData(){
+  events = seedEvents();
+  saveData();
+}
+
+/* ---------- Utilidades ---------- */
+const $ = (sel, root) => (root || document).querySelector(sel);
+const $$ = (sel, root) => Array.from((root || document).querySelectorAll(sel));
+function esc(s){
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+function uid(){ return 'ev-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 7); }
+function todayISO(){ const d = new Date(); return d.toISOString().slice(0, 10); }
+function parseDT(dateStr, timeStr){
+  const [y, m, d] = (dateStr || todayISO()).split('-').map(Number);
+  const [hh, mm] = (timeStr || '00:00').split(':').map(Number);
+  return new Date(y, m - 1, d, hh || 0, mm || 0);
+}
+function evStart(ev){ return parseDT(ev.date, ev.start); }
+function evEnd(ev){ return parseDT(ev.date, ev.end || ev.start); }
+function fmtDateLong(dateStr){
+  const d = parseDT(dateStr, '00:00');
+  return DOWS[(d.getDay() + 6) % 7] + ' ' + d.getDate() + ' de ' + MONTHS[d.getMonth()] + ' de ' + d.getFullYear();
+}
+function fmtDateShort(dateStr){
+  const d = parseDT(dateStr, '00:00');
+  return DOWS_S[(d.getDay() + 6) % 7] + ' ' + d.getDate() + ' ' + MONTHS_S[d.getMonth()];
+}
+function fmtTimeRange(ev){
+  if (!ev.start) return 'Hora por confirmar';
+  return ev.start + (ev.end ? ' – ' + ev.end : '') + ' h';
+}
+function fmtRelative(iso){
+  const diff = Date.now() - new Date(iso).getTime();
+  const h = Math.floor(diff / 3.6e6);
+  if (h < 1) return 'hace unos minutos';
+  if (h < 24) return 'hace ' + h + ' h';
+  const d = Math.floor(h / 24);
+  return d === 1 ? 'ayer' : 'hace ' + d + ' días';
+}
+function isUpcoming(ev){ return evEnd(ev) >= new Date(); }
+function isActive(ev){ return !ev.archived && ev.status !== 'cancelat' && ev.status !== 'rebutjat'; }
+function presVisible(ev){
+  // Aparece en la agenda del presidente cuando Comunicación marca que asiste (o está pendiente).
+  return !ev.archived && ev.status !== 'cancelat' && ev.status !== 'rebutjat' && ev.status !== 'delegat' && ev.attends !== 'no';
+}
+function hasDoc(ev, kind){ return (ev.docs || []).some(d => d.kind === kind); }
+function recentChanges(ev, days){
+  const lim = Date.now() - (days || 7) * 864e5;
+  return (ev.changes || []).filter(c => new Date(c.ts).getTime() >= lim);
+}
+function overlap(a, b){
+  if (a.date !== b.date || !a.start || !b.start) return false;
+  return evStart(a) < evEnd(b) && evStart(b) < evEnd(a);
+}
+function findOverlaps(list){
+  const res = [];
+  for (let i = 0; i < list.length; i++)
+    for (let j = i + 1; j < list.length; j++)
+      if (overlap(list[i], list[j])) res.push([list[i], list[j]]);
+  return res;
+}
+function hasOverlap(ev){
+  return events.some(o => o.id !== ev.id && presVisible(o) && presVisible(ev) && overlap(o, ev));
+}
+function byId(id){ return events.find(e => e.id === id); }
+function logChange(ev, message){
+  ev.changes = ev.changes || [];
+  ev.changes.unshift({ ts: new Date().toISOString(), message });
+  if (ev.sync.state === 'synced') ev.sync.state = 'pending';
+}
+
+/* ---------- Incidencias ---------- */
+function computeIncidents(){
+  const incs = [];
+  const active = events.filter(e => isActive(e) && isUpcoming(e));
+  const presEvents = active.filter(e => e.attends !== 'no');
+  findOverlaps(presEvents).forEach(([a, b]) => {
+    incs.push({ sev: 'high', ico: '⏱', title: 'Eventos solapados en la agenda del presidente',
+      text: '«' + a.title + '» (' + fmtTimeRange(a) + ') coincide con «' + b.title + '» (' + fmtTimeRange(b) + ') el ' + fmtDateShort(a.date) + '.', evId: a.id });
+  });
+  active.forEach(e => {
+    if (e.status === 'confirmat' && e.attends === 'si' && e.sync.state !== 'synced' && e.sync.state !== 'syncing' && e.sync.state !== 'pending')
+      incs.push({ sev: 'high', ico: '📅', title: 'Confirmado pero no sincronizado',
+        text: '«' + e.title + '» (' + fmtDateShort(e.date) + ') está confirmado y no figura en el calendario de Outlook del presidente.', evId: e.id });
+    if (e.sync.state === 'pending')
+      incs.push({ sev: 'mid', ico: '🔄', title: 'Actualización pendiente en Outlook',
+        text: '«' + e.title + '» tiene cambios sin trasladar al calendario del presidente.', evId: e.id });
+    if (e.attends === 'si' && e.speaks && !hasDoc(e, 'briefing'))
+      incs.push({ sev: 'mid', ico: '📄', title: 'Intervención sin briefing',
+        text: 'El presidente interviene en «' + e.title + '» (' + fmtDateShort(e.date) + ') y todavía no hay briefing adjunto.', evId: e.id });
+    if (e.attends !== 'no' && !e.location && !e.address)
+      incs.push({ sev: 'mid', ico: '📍', title: 'Evento sin ubicación',
+        text: '«' + e.title + '» (' + fmtDateShort(e.date) + ') no tiene ubicación definida.', evId: e.id });
+    const daysTo = (evStart(e) - Date.now()) / 864e5;
+    if (daysTo >= 0 && daysTo <= 7 && recentChanges(e, 3).length)
+      incs.push({ sev: 'high', ico: '⚠️', title: 'Cambio importante cerca de la fecha',
+        text: '«' + e.title + '» se celebra en menos de 7 días y ha registrado cambios recientes: ' + recentChanges(e, 3)[0].message, evId: e.id });
+  });
+  return incs;
+}
+/* ---------- Estado de interfaz ---------- */
+const state = {
+  role: 'president',            // president | comms
+  presTab: 'home',              // home | calendar
+  commsTab: 'table',            // table | cards | calendar | incidents
+  cal: { date: new Date(), mode: 'month', onlyPres: false, onlySpeaks: false },
+  filters: { q: '', from: '', to: '', status: '', prio: '', pres: '', type: '', archived: false },
+};
+
+/* ---------- Fragmentos reutilizables ---------- */
+function chipStatus(ev){ return '<span class="chip chip-status-' + ev.status + '">' + esc(STATUSES[ev.status]) + '</span>'; }
+function chipType(ev){ return '<span class="chip chip-type chip-' + ev.type + '">' + esc(TYPES[ev.type].label) + '</span>'; }
+function chipSync(ev){ return '<span class="chip chip-sync-' + ev.sync.state + '">' + esc(SYNC[ev.sync.state]) + '</span>'; }
+function chipPrio(ev){ return '<span class="chip chip-prio-' + ev.priority + '">' + esc(PRIORITIES[ev.priority]) + '</span>'; }
+function chipsParticipation(ev){
+  let h = '';
+  if (ev.attends === 'si') h += '<span class="chip chip-asiste">Asiste</span>';
+  else if (ev.attends === 'pendent') h += '<span class="chip chip-pendiente-p">Asistencia pendiente</span>';
+  if (ev.attends !== 'no' && ev.speaks) h += '<span class="chip chip-interviene">🎤 Interviene</span>';
+  return h;
+}
+function typeColorVars(ev){
+  return 'background:var(--t-' + ev.type + '-bg);color:var(--t-' + ev.type + ')';
+}
+
+function eventCard(ev, opts){
+  opts = opts || {};
+  const alerts = recentChanges(ev, 7);
+  const dt = parseDT(ev.date, '00:00');
+  return '<div class="ecard' + (ev.status === 'cancelat' || ev.status === 'rebutjat' ? ' dim' : '') + '" data-open="' + ev.id + '">' +
+    '<div class="ecard-date">' +
+      '<div class="d">' + dt.getDate() + '</div>' +
+      '<div class="m">' + MONTHS_S[dt.getMonth()] + '</div>' +
+      '<div class="t">' + (ev.start ? esc(ev.start) : '—') + '</div>' +
+    '</div>' +
+    '<div class="ecard-main">' +
+      '<div class="ecard-title">' + esc(ev.title) + (hasOverlap(ev) && isUpcoming(ev) ? ' <span class="dot-warn" title="Se solapa con otro evento">⏱</span>' : '') + '</div>' +
+      '<div class="ecard-place">📍 ' + esc(ev.location || 'Ubicación por confirmar') + '</div>' +
+      '<div class="ecard-tags">' +
+        chipStatus(ev) + chipsParticipation(ev) +
+        (ev.attends !== 'no' && ev.speaks && ev.speechType ? '<span class="chip" style="background:var(--blue-soft);color:var(--blue-dark)">' + esc(ev.speechType) + '</span>' : '') +
+        (opts.showType ? chipType(ev) : '') +
+      '</div>' +
+      (alerts.length ? '<div class="ecard-alert">⚠️ ' + esc(alerts[0].message) + '</div>' : '') +
+    '</div>' +
+  '</div>';
+}
+
+/* =====================================================
+   VISTA DEL PRESIDENTE
+   ===================================================== */
+function renderPresident(){
+  renderHero();
+  const list = events.filter(presVisible).sort((a, b) => evStart(a) - evStart(b));
+  const now = new Date();
+  const in7 = new Date(now.getTime() + 7 * 864e5);
+
+  const week = list.filter(e => isUpcoming(e) && evStart(e) <= in7 && e.attends === 'si');
+  const upcoming = list.filter(e => isUpcoming(e) && evStart(e) > in7 && e.attends === 'si' && e.status === 'confirmat');
+  const pending = list.filter(e => isUpcoming(e) && (e.attends === 'pendent' || e.status === 'pendent' || e.status === 'valorar'));
+
+  fillList('list-week', 'n-week', week, 'Sin compromisos esta semana.');
+  fillList('list-upcoming', 'n-upcoming', upcoming.slice(0, 8), 'Sin eventos confirmados a la vista.');
+  fillList('list-pending', 'n-pending', pending, 'No hay decisiones pendientes.');
+}
+function fillList(bodyId, nId, list, emptyMsg){
+  $('#' + nId).textContent = list.length || '';
+  $('#' + bodyId).innerHTML = list.length ? list.map(e => eventCard(e)).join('') : '<div class="block-empty">' + emptyMsg + '</div>';
+}
+
+let heroTimer = null;
+function renderHero(){
+  const root = $('#p-hero');
+  const next = events.filter(e => presVisible(e) && e.attends === 'si' && isUpcoming(e))
+    .sort((a, b) => evStart(a) - evStart(b))[0];
+  if (!next){
+    root.innerHTML = '<div class="hero"><div class="hero-label">Próximo compromiso</div><p class="hero-empty">No hay compromisos confirmados en la agenda.</p></div>';
+    return;
+  }
+  const alerts = recentChanges(next, 7);
+  const briefing = (next.docs || []).find(d => d.kind === 'briefing');
+  root.innerHTML =
+    '<div class="hero">' +
+      '<div class="hero-countdown"><div class="cd-num" id="cd-num"></div><div class="cd-lbl" id="cd-lbl"></div></div>' +
+      '<div class="hero-label">Próximo compromiso</div>' +
+      '<h2>' + esc(next.title) + '</h2>' +
+      '<div class="hero-meta">' +
+        '<span>📅 ' + esc(fmtDateLong(next.date)) + '</span>' +
+        '<span>🕐 ' + esc(fmtTimeRange(next)) + (next.arrival ? ' · llegada ' + esc(next.arrival) + ' h' : '') + '</span>' +
+        '<span>📍 ' + esc(next.location || 'Ubicación por confirmar') + '</span>' +
+        (next.organizer ? '<span>🏛 ' + esc(next.organizer) + '</span>' : '') +
+      '</div>' +
+      '<div class="hero-badges">' + chipsParticipation(next) +
+        (next.speaks && next.speechType ? '<span class="chip" style="background:rgba(255,255,255,.14);color:#fff">' + esc(next.speechType) + (next.speechDuration && next.speechDuration !== '—' ? ' · ' + esc(next.speechDuration) : '') + '</span>' : '') +
+      '</div>' +
+      '<div class="hero-actions">' +
+        '<button class="btn" data-open="' + next.id + '">Ver ficha completa</button>' +
+        (briefing ? '<button class="btn" data-doc="' + next.id + '|briefing">📄 Abrir briefing</button>' : '') +
+        (next.mapLink || next.address ? '<a class="btn outline" target="_blank" rel="noopener" href="' + esc(next.mapLink || ('https://maps.google.com/?q=' + encodeURIComponent(next.address))) + '">🗺 Cómo llegar</a>' : '') +
+      '</div>' +
+      (alerts.length ? '<div class="hero-alerts">' + alerts.slice(0, 2).map(a =>
+        '<div class="alert">⚠️ <span>' + esc(a.message) + '</span><span class="when">' + esc(fmtRelative(a.ts)) + '</span></div>').join('') + '</div>' : '') +
+    '</div>';
+  const target = evStart(next);
+  function tick(){
+    const el = $('#cd-num'); if (!el) return;
+    let ms = target - Date.now();
+    if (ms < 0) ms = 0;
+    const d = Math.floor(ms / 864e5), h = Math.floor(ms % 864e5 / 3.6e6), m = Math.floor(ms % 3.6e6 / 6e4);
+    el.textContent = d > 0 ? d + ' d ' + h + ' h' : h + ' h ' + m + ' min';
+    $('#cd-lbl').textContent = 'cuenta atrás';
+  }
+  clearInterval(heroTimer); heroTimer = setInterval(tick, 30000); tick();
+}
+
+/* =====================================================
+   CALENDARIO (compartido)
+   ===================================================== */
+function calVisibleEvents(scope){
+  let list = events.filter(e => !e.archived);
+  if (scope === 'pres') list = list.filter(presVisible);
+  else {
+    if (state.cal.onlyPres) list = list.filter(e => e.attends !== 'no');
+    if (state.cal.onlySpeaks) list = list.filter(e => e.attends !== 'no' && e.speaks);
+  }
+  return list.sort((a, b) => evStart(a) - evStart(b));
+}
+function renderCalendar(rootId, scope){
+  const root = $('#' + rootId);
+  const c = state.cal;
+  const d = c.date;
+  let title;
+  if (c.mode === 'month') title = MONTHS[d.getMonth()] + ' ' + d.getFullYear();
+  else if (c.mode === 'week'){
+    const mon = mondayOf(d), sun = new Date(mon.getTime() + 6 * 864e5);
+    title = mon.getDate() + ' ' + MONTHS_S[mon.getMonth()] + ' – ' + sun.getDate() + ' ' + MONTHS_S[sun.getMonth()] + ' ' + sun.getFullYear();
+  } else title = 'Agenda · próximos 60 días';
+
+  root.innerHTML =
+    '<div class="cal-toolbar">' +
+      '<div class="cal-nav">' +
+        '<button class="btn" data-cal="prev">‹</button>' +
+        '<button class="btn" data-cal="today">Hoy</button>' +
+        '<button class="btn" data-cal="next">›</button>' +
+      '</div>' +
+      '<h3>' + esc(title) + '</h3>' +
+      '<div class="seg">' +
+        ['month|Mes', 'week|Semana', 'agenda|Agenda'].map(x => {
+          const [k, l] = x.split('|');
+          return '<button data-calmode="' + k + '" class="' + (c.mode === k ? 'active' : '') + '">' + l + '</button>';
+        }).join('') +
+      '</div>' +
+      (scope === 'comms' ?
+        '<div class="cal-filters">' +
+          '<button class="fchip ' + (c.onlyPres ? 'active' : '') + '" data-calf="onlyPres">Solo presidente</button>' +
+          '<button class="fchip ' + (c.onlySpeaks ? 'active' : '') + '" data-calf="onlySpeaks">🎤 Interviene</button>' +
+        '</div>' : '') +
+    '</div>' +
+    '<div id="cal-body"></div>' +
+    '<div class="legend">' +
+      Object.keys(TYPES).map(t => '<span><i style="background:var(--t-' + t + '-bg);border:1px solid var(--t-' + t + ')"></i>' + esc(TYPES[t].label) + '</span>').join('') +
+      '<span><i style="background:#fff;border:2px solid var(--blue)"></i>Evento del presidente</span>' +
+      '<span>⏱ solapado · ⚠️ cambio reciente</span>' +
+    '</div>';
+
+  const body = $('#cal-body', root);
+  const list = calVisibleEvents(scope);
+  if (c.mode === 'month') body.innerHTML = renderMonth(list);
+  else if (c.mode === 'week') body.innerHTML = renderWeek(list);
+  else body.innerHTML = renderAgendaList(list);
+
+  $$('[data-cal]', root).forEach(b => b.addEventListener('click', () => {
+    const dir = b.dataset.cal;
+    if (dir === 'today') c.date = new Date();
+    else {
+      const step = dir === 'prev' ? -1 : 1;
+      if (c.mode === 'week') c.date = new Date(c.date.getTime() + step * 7 * 864e5);
+      else c.date = new Date(c.date.getFullYear(), c.date.getMonth() + step, 1);
+    }
+    renderCalendar(rootId, scope);
+  }));
+  $$('[data-calmode]', root).forEach(b => b.addEventListener('click', () => { c.mode = b.dataset.calmode; renderCalendar(rootId, scope); }));
+  $$('[data-calf]', root).forEach(b => b.addEventListener('click', () => { c[b.dataset.calf] = !c[b.dataset.calf]; renderCalendar(rootId, scope); }));
+}
+function mondayOf(d){
+  const x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  x.setDate(x.getDate() - (x.getDay() + 6) % 7);
+  return x;
+}
+function calEvChip(ev, cls){
+  const warn = (hasOverlap(ev) && isUpcoming(ev) ? ' <span class="w">⏱</span>' : '') + (recentChanges(ev, 7).length ? ' <span class="w">⚠️</span>' : '');
+  return '<button class="' + cls + (ev.attends !== 'no' ? ' pres' : '') + '" style="' + typeColorVars(ev) + '" data-open="' + ev.id + '" title="' + esc(ev.title) + '">' +
+    (cls === 'cal-wev' ? '<span class="tm">' + esc(ev.start || '') + '</span><b>' + esc(ev.title) + warn + '</b>' + (ev.speaks && ev.attends !== 'no' ? '🎤 interviene' : '') :
+      (ev.start ? esc(ev.start) + ' ' : '') + esc(ev.title) + (ev.speaks && ev.attends !== 'no' ? ' 🎤' : '') + warn) +
+  '</button>';
+}
+function renderMonth(list){
+  const d = state.cal.date;
+  const first = new Date(d.getFullYear(), d.getMonth(), 1);
+  const start = mondayOf(first);
+  const today = todayISO();
+  let html = '<div class="cal-grid">' + DOWS_S.map(x => '<div class="cal-dow">' + x + '</div>').join('');
+  for (let i = 0; i < 42; i++){
+    const day = new Date(start.getTime() + i * 864e5);
+    const iso = day.getFullYear() + '-' + String(day.getMonth() + 1).padStart(2, '0') + '-' + String(day.getDate()).padStart(2, '0');
+    const out = day.getMonth() !== d.getMonth();
+    const dayEvents = list.filter(e => e.date === iso);
+    html += '<div class="cal-cell' + (out ? ' out' : '') + (iso === today ? ' today' : '') + '">' +
+      '<div class="dn">' + day.getDate() + '</div>' +
+      dayEvents.map(e => calEvChip(e, 'cal-ev')).join('') +
+    '</div>';
+  }
+  html += '</div><div class="cal-grid-mobilenote">En pantallas pequeñas utiliza las vistas <b>Semana</b> o <b>Agenda</b>.</div>';
+  return html;
+}
+function renderWeek(list){
+  const mon = mondayOf(state.cal.date);
+  const today = todayISO();
+  let html = '<div class="cal-week">';
+  for (let i = 0; i < 7; i++){
+    const day = new Date(mon.getTime() + i * 864e5);
+    const iso = day.getFullYear() + '-' + String(day.getMonth() + 1).padStart(2, '0') + '-' + String(day.getDate()).padStart(2, '0');
+    const dayEvents = list.filter(e => e.date === iso);
+    html += '<div class="cal-wday' + (iso === today ? ' today' : '') + '">' +
+      '<div class="cal-wday-h">' + DOWS_S[i] + ' ' + day.getDate() + '</div>' +
+      (dayEvents.length ? dayEvents.map(e => calEvChip(e, 'cal-wev')).join('') : '<div style="color:var(--faint);font-size:12px">—</div>') +
+    '</div>';
+  }
+  return html + '</div>';
+}
+function renderAgendaList(list){
+  const now = new Date(); now.setHours(0, 0, 0, 0);
+  const lim = new Date(now.getTime() + 60 * 864e5);
+  const upcoming = list.filter(e => evStart(e) >= now && evStart(e) <= lim);
+  if (!upcoming.length) return '<div class="block-empty">Sin eventos en los próximos 60 días.</div>';
+  let html = '<div class="cal-agenda">', lastDate = '';
+  upcoming.forEach(e => {
+    if (e.date !== lastDate){ lastDate = e.date; html += '<div class="cal-agenda-day">' + esc(fmtDateLong(e.date)) + '</div>'; }
+    html += eventCard(e, { showType: true });
+  });
+  return html + '</div>';
+}
+
+/* =====================================================
+   DASHBOARD DE COMUNICACIÓN
+   ===================================================== */
+function filteredEvents(){
+  const f = state.filters;
+  const q = f.q.trim().toLowerCase();
+  return events.filter(e => {
+    if (e.archived && !f.archived) return false;
+    if (q && !(e.title + ' ' + e.organizer + ' ' + e.location + ' ' + e.owner).toLowerCase().includes(q)) return false;
+    if (f.from && e.date < f.from) return false;
+    if (f.to && e.date > f.to) return false;
+    if (f.status && e.status !== f.status) return false;
+    if (f.prio && e.priority !== f.prio) return false;
+    if (f.type && e.type !== f.type) return false;
+    if (f.pres === 'interviene'){ if (!(e.speaks && e.attends !== 'no')) return false; }
+    else if (f.pres && e.attends !== f.pres) return false;
+    return true;
+  }).sort((a, b) => evStart(a) - evStart(b));
+}
+function renderComms(){
+  const incs = computeIncidents();
+  $('#inc-count').textContent = incs.length;
+  $('#inc-count').style.display = incs.length ? '' : 'none';
+  const tab = state.commsTab;
+  $('#c-table').classList.toggle('hidden', tab !== 'table');
+  $('#c-cards').classList.toggle('hidden', tab !== 'cards');
+  $('#c-calendar').classList.toggle('hidden', tab !== 'calendar');
+  $('#c-incidents').classList.toggle('hidden', tab !== 'incidents');
+  if (tab === 'table') renderTable();
+  else if (tab === 'cards') renderCards();
+  else if (tab === 'calendar') renderCalendar('c-cal-root', 'comms');
+  else renderIncidents(incs);
+}
+function renderTable(){
+  const list = filteredEvents();
+  let html = '<thead><tr>' +
+    ['Fecha', 'Evento', 'Organizador', 'Estado', 'Prioridad', 'Presidente', 'Interviene', 'Sincronización', 'Responsable', ''].map(h => '<th>' + h + '</th>').join('') +
+    '</tr></thead><tbody>';
+  if (!list.length) html += '<tr><td colspan="10" style="text-align:center;color:var(--faint);padding:26px">No hay eventos que coincidan con los filtros.</td></tr>';
+  list.forEach(e => {
+    html += '<tr class="row">' +
+      '<td style="white-space:nowrap"><b>' + esc(fmtDateShort(e.date)) + '</b><br><small style="color:var(--muted)">' + esc(ev2time(e)) + '</small></td>' +
+      '<td><span class="evt-t" data-open="' + e.id + '">' + esc(e.title) + '</span>' +
+        (hasOverlap(e) && isUpcoming(e) ? ' <span class="dot-warn" title="Solapado">⏱</span>' : '') +
+        (recentChanges(e, 7).length ? ' <span class="dot-warn" title="Cambios recientes">⚠️</span>' : '') +
+        '<br>' + chipType(e) + '</td>' +
+      '<td>' + esc(e.organizer) + '</td>' +
+      '<td><select class="mini" data-quick="status" data-id="' + e.id + '">' +
+        Object.keys(STATUSES).map(k => '<option value="' + k + '"' + (e.status === k ? ' selected' : '') + '>' + STATUSES[k] + '</option>').join('') + '</select></td>' +
+      '<td><select class="mini" data-quick="priority" data-id="' + e.id + '">' +
+        Object.keys(PRIORITIES).map(k => '<option value="' + k + '"' + (e.priority === k ? ' selected' : '') + '>' + PRIORITIES[k] + '</option>').join('') + '</select></td>' +
+      '<td><select class="mini" data-quick="attends" data-id="' + e.id + '">' +
+        [['si', 'Asiste'], ['pendent', 'Pendiente'], ['no', 'No asiste']].map(x => '<option value="' + x[0] + '"' + (e.attends === x[0] ? ' selected' : '') + '>' + x[1] + '</option>').join('') + '</select></td>' +
+      '<td>' + (e.attends !== 'no' && e.speaks ? '<span class="chip chip-interviene">🎤 Sí</span>' : '<span style="color:var(--faint)">No</span>') + '</td>' +
+      '<td>' + chipSync(e) + '</td>' +
+      '<td>' + esc(e.owner || '—') + '</td>' +
+      '<td><div class="row-actions">' +
+        '<button class="iconbtn" title="Editar" data-edit="' + e.id + '">✏️</button>' +
+        '<button class="iconbtn" title="Ficha" data-open="' + e.id + '">👁</button>' +
+        '<button class="iconbtn danger" title="Archivar" data-archive="' + e.id + '">🗄</button>' +
+      '</div></td>' +
+    '</tr>';
+  });
+  $('#tbl').innerHTML = html + '</tbody>';
+}
+function ev2time(e){ return e.start ? e.start + (e.end ? '–' + e.end : '') : '—'; }
+function renderCards(){
+  const list = filteredEvents();
+  $('#cards-root').innerHTML = list.length ? list.map(e => eventCard(e, { showType: true })).join('') :
+    '<div class="block-empty">No hay eventos que coincidan con los filtros.</div>';
+}
+function renderIncidents(incs){
+  $('#inc-root').innerHTML = incs.length ? incs.map(i =>
+    '<div class="inc sev-' + i.sev + '">' +
+      '<div class="inc-ico">' + i.ico + '</div>' +
+      '<div><b>' + esc(i.title) + '</b><p>' + esc(i.text) + '</p></div>' +
+      '<button class="btn btn-sm" data-open="' + i.evId + '">Revisar</button>' +
+    '</div>').join('') :
+    '<div class="inc-ok">✓ Sin incidencias detectadas. La agenda está en orden.</div>';
+}
+
+/* =====================================================
+   FICHA DE EVENTO (detalle)
+   ===================================================== */
+function openDetail(id){
+  const e = byId(id); if (!e) return;
+  const isComms = state.role === 'comms';
+  const briefing = (e.docs || []).find(d => d.kind === 'briefing');
+  const docLabels = { briefing: 'Briefing', invitation: 'Invitación', agenda: 'Agenda / escaleta', speech: 'Discurso · talking points', link: 'Enlace' };
+  const changes = (e.changes || []).slice(0, 5);
+  const mapHref = e.mapLink || (e.address ? 'https://maps.google.com/?q=' + encodeURIComponent(e.address) : '');
+
+  let syncBox = '';
+  if (isComms){
+    const canSync = e.attends === 'si' && e.status !== 'cancelat' && e.status !== 'rebutjat';
+    syncBox =
+      '<div class="dsec"><h4>Calendario del presidente (Outlook)</h4>' +
+      '<div class="sync-box">' + chipSync(e) +
+        '<div class="grow">' +
+          (e.sync.outlookId && e.sync.state !== 'removed' ? '<small>ID del evento: ' + esc(e.sync.outlookId) + '</small>' : '') +
+          (e.sync.lastSync ? '<small>Última sincronización: ' + esc(fmtRelative(e.sync.lastSync)) + '</small>' : '<small>Este evento no figura en el calendario del presidente.</small>') +
+        '</div>' +
+        (canSync && (e.sync.state === 'none' || e.sync.state === 'removed' || e.sync.state === 'error') ?
+          '<button class="btn btn-primary btn-sm" data-sync="add|' + e.id + '">📅 Añadir al calendario del presidente</button>' : '') +
+        (e.sync.state === 'pending' ? '<button class="btn btn-primary btn-sm" data-sync="update|' + e.id + '">🔄 Actualizar evento sincronizado</button>' : '') +
+        ((e.sync.state === 'synced' || e.sync.state === 'pending') ? '<button class="btn btn-danger btn-sm" data-sync="remove|' + e.id + '">Retirar del calendario</button>' : '') +
+      '</div>' +
+      (!canSync && e.attends !== 'si' ? '<small style="color:var(--muted)">Activa «Presidente asiste» para poder añadirlo a su calendario.</small>' : '') +
+      '</div>';
+  }
+
+  const body =
+    '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">' +
+      chipStatus(e) + chipType(e) + chipPrio(e) + chipsParticipation(e) + (isComms ? chipSync(e) : '') +
+    '</div>' +
+    (changes.length ? '<div class="dsec"><h4>Avisos y cambios recientes</h4><div class="changes-list">' +
+      changes.map(c => '<div class="alert">⚠️ <span>' + esc(c.message) + '</span><span class="when">' + esc(fmtRelative(c.ts)) + '</span></div>').join('') +
+    '</div></div>' : '') +
+    '<div class="dsec"><h4>Información básica</h4><div class="dgrid">' +
+      dit('Fecha', fmtDateLong(e.date)) +
+      dit('Horario', fmtTimeRange(e)) +
+      (e.arrival ? dit('Hora recomendada de llegada', e.arrival + ' h') : '') +
+      dit('Organizador', e.organizer || '—') +
+      dit('Lugar', e.location || 'Por confirmar') +
+      (e.address ? dit('Dirección', e.address) : '') +
+      dit('Modalidad', { presencial: 'Presencial', virtual: 'Virtual', hibrida: 'Híbrida' }[e.modality] || e.modality) +
+      (e.link ? '<div class="dit"><span class="k">Enlace oficial</span><a class="v" href="' + esc(e.link) + '" target="_blank" rel="noopener">Abrir enlace</a></div>' : '') +
+    '</div>' +
+    (e.description ? '<p style="margin-top:10px;font-size:13.5px;color:var(--muted)">' + esc(e.description) + '</p>' : '') +
+    '</div>' +
+    '<div class="dsec"><h4>Participación del presidente</h4><div class="dgrid">' +
+      dit('Asiste', { si: 'Sí', no: 'No', pendent: 'Pendiente' }[e.attends]) +
+      dit('Interviene', e.attends !== 'no' && e.speaks ? 'Sí' : 'No') +
+      (e.speaks && e.attends !== 'no' ? (
+        dit('Tipo de intervención', e.speechType || '—') +
+        dit('Duración', e.speechDuration || '—') +
+        dit('Idioma', e.speechLang || '—') +
+        (e.keyMessage ? dit('Mensaje principal', e.keyMessage) : '') +
+        (e.contentOwner ? dit('Prepara el contenido', e.contentOwner) : '')
+      ) : '') +
+    '</div></div>' +
+    '<div class="dsec"><h4>Información operativa</h4><div class="dgrid">' +
+      (e.companion ? dit('Acompaña al presidente', e.companion) : '') +
+      (isComms ? dit('Responsable interno', e.owner || '—') : '') +
+      (isComms && e.orgContact ? dit('Contacto del organizador', e.orgContact) : '') +
+      (e.access ? dit('Acceso', e.access) : '') +
+      (e.transport ? dit('Transporte / parking', e.transport) : '') +
+      (e.notes ? dit('Observaciones', e.notes) : '') +
+      (!e.companion && !e.access && !e.transport && !e.notes && !isComms ? '<div class="dit" style="color:var(--faint)">Sin indicaciones adicionales.</div>' : '') +
+    '</div></div>' +
+    '<div class="dsec"><h4>Documentación</h4>' +
+      ((e.docs || []).length ? e.docs.map(d =>
+        '<div class="doc-row">📄 <span><b>' + esc(docLabels[d.kind] || d.kind) + '</b> · ' + esc(d.name) +
+        (d.updatedAt ? ' <small style="color:var(--amber)">(actualizado ' + esc(fmtRelative(d.updatedAt)) + ')</small>' : '') + '</span>' +
+        '<button class="btn btn-sm" data-doc="' + e.id + '|' + esc(d.kind) + '">Abrir</button></div>').join('') :
+        '<div style="color:var(--faint);font-size:13px">Sin documentación adjunta.</div>') +
+    '</div>' +
+    syncBox +
+    (isComms && e.coverage && e.coverage.length ? '<div class="dsec"><h4>Cobertura de comunicación</h4><div style="display:flex;gap:6px;flex-wrap:wrap">' +
+      e.coverage.map(c => '<span class="chip" style="background:var(--gray-bg);color:#4c566d">' + esc({ fotos: 'Fotos', video: 'Vídeo', ndp: 'Nota de prensa', post: 'Post', story: 'Story' }[c] || c) + '</span>').join('') + '</div></div>' : '');
+
+  let foot = '';
+  if (isComms){
+    foot =
+      (e.attends !== 'si' ? '<button class="btn" data-act="attend-yes|' + e.id + '">✓ Confirmar asistencia</button>' : '') +
+      (e.attends !== 'no' ? '<button class="btn" data-act="attend-no|' + e.id + '">✗ No asistirá</button>' : '') +
+      (e.status !== 'delegat' ? '<button class="btn" data-act="delegate|' + e.id + '">Delegar</button>' : '') +
+      '<button class="btn" data-edit="' + e.id + '">✏️ Editar</button>' +
+      (e.status !== 'cancelat' ? '<button class="btn btn-danger" data-act="cancel|' + e.id + '">Cancelar evento</button>' : '') +
+      '<button class="btn" data-act="archive|' + e.id + '">🗄 Archivar</button>' +
+      '<button class="btn" data-ics="' + e.id + '">⤓ ICS</button>';
+  } else {
+    foot =
+      (briefing ? '<button class="btn btn-primary" data-doc="' + e.id + '|briefing">📄 Abrir briefing</button>' : '') +
+      (mapHref ? '<a class="btn" target="_blank" rel="noopener" href="' + esc(mapHref) + '">🗺 Abrir ubicación</a>' : '') +
+      (e.attends === 'pendent' ? '<button class="btn" data-act="attend-yes|' + e.id + '">✓ Confirmar asistencia</button>' +
+        '<button class="btn" data-act="attend-no|' + e.id + '">✗ No asistiré</button>' : '') +
+      '<button class="btn" data-ics="' + e.id + '">⤓ Añadir a mi calendario (ICS)</button>';
+  }
+
+  showModal('<div class="modal-h"><h3>' + esc(e.title) + '</h3><button class="modal-close" data-close>×</button></div>' +
+    '<div class="modal-b">' + body + '</div>' +
+    '<div class="modal-f">' + foot + '</div>');
+}
+function dit(k, v){ return '<div class="dit"><span class="k">' + esc(k) + '</span><span class="v">' + esc(v) + '</span></div>'; }
+
+/* ---------- Visor de documentos (simulado) ---------- */
+function openDoc(id, kind){
+  const e = byId(id); if (!e) return;
+  const d = (e.docs || []).find(x => x.kind === kind);
+  const title = d ? d.name : 'Documento';
+  const content = kind === 'briefing' ?
+    '<p><b>Evento:</b> ' + esc(e.title) + '</p>' +
+    '<p><b>Fecha:</b> ' + esc(fmtDateLong(e.date)) + ' · ' + esc(fmtTimeRange(e)) + '</p>' +
+    '<p><b>Lugar:</b> ' + esc(e.location || '—') + (e.address ? ' (' + esc(e.address) + ')' : '') + '</p>' +
+    '<p><b>Organiza:</b> ' + esc(e.organizer) + '</p>' +
+    (e.speaks ? '<p><b>Intervención:</b> ' + esc(e.speechType || '—') + (e.speechDuration ? ' · ' + esc(e.speechDuration) : '') + (e.speechLang ? ' · ' + esc(e.speechLang) : '') + '</p>' : '') +
+    (e.keyMessage ? '<p><b>Mensaje principal:</b> ' + esc(e.keyMessage) + '</p>' : '') +
+    (e.companion ? '<p><b>Acompaña:</b> ' + esc(e.companion) + '</p>' : '') +
+    (e.access ? '<p><b>Acceso:</b> ' + esc(e.access) + '</p>' : '') +
+    (e.notes ? '<p><b>Observaciones:</b> ' + esc(e.notes) + '</p>' : '') +
+    '<p style="color:var(--faint)">Documento de demostración generado a partir de la ficha del evento.</p>'
+    : '<p style="color:var(--muted)">Vista previa simulada del documento «' + esc(title) + '». En la versión final se abriría el archivo real.</p>';
+  showModal('<div class="modal-h"><h3>📄 ' + esc(title) + '</h3><button class="modal-close" data-close>×</button></div>' +
+    '<div class="modal-b" style="display:grid;gap:9px;font-size:14px">' + content + '</div>' +
+    '<div class="modal-f"><button class="btn" data-close>Cerrar</button></div>', true);
+}
+
+/* =====================================================
+   FORMULARIO DE CREACIÓN / EDICIÓN
+   ===================================================== */
+function openEditor(id){
+  const e = id ? byId(id) : null;
+  const v = (k, def) => esc(e ? (e[k] != null ? e[k] : '') : (def != null ? def : ''));
+  const docVal = (kind) => { const d = e && (e.docs || []).find(x => x.kind === kind); return d ? esc(d.name) : ''; };
+  const sel = (opts, cur) => opts.map(o => '<option value="' + o[0] + '"' + (cur === o[0] ? ' selected' : '') + '>' + o[1] + '</option>').join('');
+  const html =
+    '<div class="modal-h"><h3>' + (e ? 'Editar evento' : 'Nuevo evento') + '</h3><button class="modal-close" data-close>×</button></div>' +
+    '<div class="modal-b"><form id="ev-form">' +
+    '<fieldset class="fset"><legend>Información básica</legend><div class="fgrid">' +
+      fld('Título *', '<input required name="title" value="' + v('title') + '">', true) +
+      fld('Organizador', '<input name="organizer" value="' + v('organizer', 'Barcelona Global') + '">') +
+      fld('Tipo', '<select name="type">' + sel(Object.keys(TYPES).map(k => [k, TYPES[k].label]), e ? e.type : 'propi') + '</select>') +
+      fld('Fecha *', '<input required type="date" name="date" value="' + v('date', todayISO()) + '">') +
+      fld('Hora inicio', '<input type="time" name="start" value="' + v('start') + '">') +
+      fld('Hora fin', '<input type="time" name="end" value="' + v('end') + '">') +
+      fld('Hora recomendada de llegada', '<input type="time" name="arrival" value="' + v('arrival') + '">') +
+      fld('Modalidad', '<select name="modality">' + sel([['presencial', 'Presencial'], ['virtual', 'Virtual'], ['hibrida', 'Híbrida']], e ? e.modality : 'presencial') + '</select>') +
+      fld('Lugar', '<input name="location" value="' + v('location') + '">') +
+      fld('Dirección', '<input name="address" value="' + v('address') + '">') +
+      fld('Enlace de ubicación (mapa)', '<input name="mapLink" value="' + v('mapLink') + '">') +
+      fld('Enlace oficial', '<input name="link" value="' + v('link') + '">') +
+      fld('Estado', '<select name="status">' + sel(Object.keys(STATUSES).map(k => [k, STATUSES[k]]), e ? e.status : 'valorar') + '</select>') +
+      fld('Prioridad', '<select name="priority">' + sel(Object.keys(PRIORITIES).map(k => [k, PRIORITIES[k]]), e ? e.priority : 'mitjana') + '</select>') +
+      fld('Descripción breve', '<textarea name="description">' + v('description') + '</textarea>', true) +
+    '</div></fieldset>' +
+    '<fieldset class="fset"><legend>Participación del presidente</legend>' +
+      '<div class="switch-row' + (e && e.attends === 'si' ? ' on' : '') + '" style="margin-bottom:10px">' +
+        '<div style="flex:1"><b>Presidente asiste</b><small>Al activarlo, el evento aparece en la agenda del presidente y podrá añadirse a su calendario de Outlook.</small></div>' +
+        '<select name="attends">' + sel([['pendent', 'Pendiente'], ['si', 'Sí'], ['no', 'No']], e ? e.attends : 'pendent') + '</select>' +
+      '</div>' +
+      '<div class="fgrid">' +
+      fld('Interviene', '<select name="speaks">' + sel([['no', 'No'], ['si', 'Sí']], e && e.speaks ? 'si' : 'no') + '</select>') +
+      fld('Tipo de intervención', '<input name="speechType" value="' + v('speechType') + '" placeholder="Discurso, mesa redonda, bienvenida…">') +
+      fld('Duración', '<input name="speechDuration" value="' + v('speechDuration') + '" placeholder="10 min">') +
+      fld('Idioma', '<input name="speechLang" value="' + v('speechLang', 'Catalán') + '">') +
+      fld('Mensaje principal', '<textarea name="keyMessage">' + v('keyMessage') + '</textarea>', true) +
+      fld('Responsable de preparar el contenido', '<input name="contentOwner" value="' + v('contentOwner') + '">', true) +
+    '</div></fieldset>' +
+    '<fieldset class="fset"><legend>Información operativa</legend><div class="fgrid">' +
+      fld('Responsable interno', '<input name="owner" value="' + v('owner', 'Ester Gravalos') + '">') +
+      fld('Acompaña al presidente', '<input name="companion" value="' + v('companion') + '">') +
+      fld('Contacto del organizador', '<input name="orgContact" value="' + v('orgContact') + '">') +
+      fld('Indicaciones de acceso', '<input name="access" value="' + v('access') + '">') +
+      fld('Transporte / parking', '<input name="transport" value="' + v('transport') + '">') +
+      fld('Observaciones', '<textarea name="notes">' + v('notes') + '</textarea>', true) +
+    '</div></fieldset>' +
+    '<fieldset class="fset"><legend>Documentación (nombre del archivo o enlace)</legend><div class="fgrid">' +
+      fld('Briefing', '<input name="doc_briefing" value="' + docVal('briefing') + '" placeholder="Briefing del evento">') +
+      fld('Invitación', '<input name="doc_invitation" value="' + docVal('invitation') + '">') +
+      fld('Agenda / escaleta', '<input name="doc_agenda" value="' + docVal('agenda') + '">') +
+      fld('Discurso · talking points', '<input name="doc_speech" value="' + docVal('speech') + '">') +
+    '</div></fieldset>' +
+    '</form></div>' +
+    '<div class="modal-f">' +
+      '<button class="btn" data-close>Cancelar</button>' +
+      '<button class="btn btn-primary" id="btn-save" data-save="' + (e ? e.id : '') + '">' + (e ? 'Guardar cambios' : 'Crear evento') + '</button>' +
+    '</div>';
+  showModal(html);
+}
+function fld(label, control, full){
+  return '<div class="fld' + (full ? ' full' : '') + '"><label>' + label + '</label>' + control + '</div>';
+}
+function saveEditor(id){
+  const form = $('#ev-form');
+  if (!form.reportValidity()) return;
+  const fd = new FormData(form);
+  const g = (k) => (fd.get(k) || '').toString().trim();
+  const prev = id ? byId(id) : null;
+  const e = prev || Object.assign(seedBlank(), { id: uid() });
+
+  const before = prev ? { date: prev.date, start: prev.start, end: prev.end, location: prev.location, speaks: prev.speaks, companion: prev.companion, status: prev.status, briefing: hasDoc(prev, 'briefing') } : null;
+
+  ['title', 'organizer', 'type', 'date', 'start', 'end', 'arrival', 'modality', 'location', 'address', 'mapLink', 'link',
+   'status', 'priority', 'attends', 'speechType', 'speechDuration', 'speechLang', 'keyMessage', 'contentOwner',
+   'owner', 'companion', 'orgContact', 'access', 'transport', 'notes', 'description'].forEach(k => { e[k] = g(k); });
+  e.speaks = g('speaks') === 'si';
+  e.docs = (e.docs || []).filter(d => !['briefing', 'invitation', 'agenda', 'speech'].includes(d.kind));
+  ['briefing', 'invitation', 'agenda', 'speech'].forEach(kind => {
+    const name = g('doc_' + kind);
+    if (name) e.docs.push({ kind, name, url: '#', updatedAt: before && before.briefing && kind === 'briefing' ? new Date().toISOString() : null });
+  });
+
+  if (before){
+    if (before.date !== e.date) logChange(e, 'La fecha ha cambiado: ahora es el ' + fmtDateShort(e.date) + '.');
+    if (before.start !== e.start || before.end !== e.end) logChange(e, 'El horario se ha modificado: ' + fmtTimeRange(e) + '.');
+    if (before.location !== e.location) logChange(e, 'La ubicación ha cambiado: ' + (e.location || 'por confirmar') + '.');
+    if (!before.speaks && e.speaks) logChange(e, 'Se ha añadido una intervención: ' + (e.speechType || 'por definir') + '.');
+    if (before.speaks && !e.speaks) logChange(e, 'Se ha retirado la intervención prevista.');
+    if (before.companion !== e.companion && e.companion) logChange(e, 'Cambia la persona que acompaña: ' + e.companion + '.');
+    if (before.status !== e.status && e.status === 'cancelat') logChange(e, 'El evento ha sido cancelado.');
+    if (!before.briefing && hasDoc(e, 'briefing')) logChange(e, 'Se ha añadido el briefing.');
+    else if (before.briefing && hasDoc(e, 'briefing')) { /* posible actualización silenciosa */ }
+  }
+  if (!prev) events.push(e);
+  saveData(); closeModal(); renderAll();
+  toast(prev ? 'Evento actualizado.' : 'Evento creado.', 'ok');
+}
+function seedBlank(){
+  return { id: '', title: '', organizer: 'Barcelona Global', date: todayISO(), start: '', end: '', arrival: '',
+    location: '', address: '', mapLink: '', modality: 'presencial', description: '', link: '',
+    type: 'propi', priority: 'mitjana', status: 'valorar', attends: 'pendent',
+    speaks: false, speechType: '', speechDuration: '', speechLang: 'Catalán', keyMessage: '', contentOwner: '',
+    owner: '', companion: '', orgContact: '', access: '', transport: '', notes: '', coverage: [],
+    docs: [], sync: { state: 'none', outlookId: null, lastSync: null }, changes: [], archived: false };
+}
+
+/* =====================================================
+   ACCIONES Y SINCRONIZACIÓN SIMULADA
+   ===================================================== */
+function doAction(act, id){
+  const e = byId(id); if (!e) return;
+  const finish = (msg) => { saveData(); closeModal(); renderAll(); if (msg) toast(msg, 'ok'); };
+  switch (act){
+    case 'attend-yes':
+      e.attends = 'si'; if (e.status === 'valorar' || e.status === 'pendent') e.status = 'confirmat';
+      finish('Asistencia confirmada.'); break;
+    case 'attend-no':
+      confirmDialog('¿Marcar que el presidente no asistirá a «' + e.title + '»?', () => {
+        e.attends = 'no'; if (e.status === 'confirmat') e.status = 'rebutjat';
+        logChange(e, 'El presidente no asistirá a este evento.');
+        if (e.sync.state === 'synced' || e.sync.state === 'pending') removeFromOutlook(e, true);
+        finish('Marcado como no asiste.');
+      }); break;
+    case 'delegate':
+      confirmDialog('¿Delegar la asistencia a «' + e.title + '» en otra persona?', () => {
+        e.status = 'delegat'; e.attends = 'no';
+        logChange(e, 'Asistencia delegada.');
+        if (e.sync.state === 'synced' || e.sync.state === 'pending') removeFromOutlook(e, true);
+        finish('Evento delegado.');
+      }); break;
+    case 'cancel':
+      confirmDialog('¿Cancelar el evento «' + e.title + '»? Se retirará también del calendario del presidente.', () => {
+        e.status = 'cancelat';
+        logChange(e, 'El evento ha sido cancelado.');
+        if (e.sync.state === 'synced' || e.sync.state === 'pending') removeFromOutlook(e, true);
+        finish('Evento cancelado.');
+      }); break;
+    case 'archive':
+      confirmDialog('¿Archivar «' + e.title + '»? Dejará de mostrarse en las vistas habituales.', () => {
+        e.archived = true; finish('Evento archivado.');
+      }); break;
+  }
+}
+function doSync(op, id){
+  const e = byId(id); if (!e) return;
+  if (op === 'remove'){
+    confirmDialog('¿Retirar «' + e.title + '» del calendario de Outlook del presidente?', () => {
+      removeFromOutlook(e, false);
+      saveData(); closeModal(); renderAll();
+      toast('Evento retirado del calendario del presidente.', 'ok');
+    });
+    return;
+  }
+  // add | update — nunca se crea un duplicado: si ya existe outlookId, se reutiliza.
+  e.sync.state = 'syncing';
+  saveData(); closeModal(); renderAll();
+  toast(op === 'add' ? 'Creando el evento en Outlook…' : 'Actualizando el evento de Outlook…');
+  setTimeout(() => {
+    if (!e.sync.outlookId) e.sync.outlookId = 'OUTLOOK-' + Math.random().toString(36).slice(2, 10).toUpperCase();
+    e.sync.state = 'synced';
+    e.sync.lastSync = new Date().toISOString();
+    saveData(); renderAll();
+    toast(op === 'add' ? 'Evento añadido al calendario del presidente.' : 'Evento sincronizado con Outlook.', 'ok');
+  }, 1400);
+}
+function removeFromOutlook(e, silent){
+  e.sync.state = 'removed';
+  e.sync.outlookId = null;
+  e.sync.lastSync = new Date().toISOString();
+  if (!silent) logChange(e, 'El evento se ha retirado del calendario del presidente.');
+}
+
+/* =====================================================
+   EXPORTACIÓN ICS
+   ===================================================== */
+function icsEscape(s){ return String(s || '').replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n'); }
+function icsDate(dateStr, timeStr){
+  return dateStr.replace(/-/g, '') + 'T' + (timeStr || '09:00').replace(':', '') + '00';
+}
+function buildICS(list){
+  const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Barcelona Global//Agenda Institucional//ES', 'CALSCALE:GREGORIAN'];
+  list.forEach(e => {
+    lines.push('BEGIN:VEVENT',
+      'UID:' + e.id + '@barcelonaglobal.org',
+      'DTSTAMP:' + new Date().toISOString().replace(/[-:]/g, '').slice(0, 15) + 'Z',
+      'DTSTART:' + icsDate(e.date, e.start),
+      'DTEND:' + icsDate(e.date, e.end || e.start),
+      'SUMMARY:' + icsEscape(e.title),
+      'LOCATION:' + icsEscape((e.location ? e.location + (e.address ? ', ' + e.address : '') : e.address)),
+      'DESCRIPTION:' + icsEscape((e.organizer ? 'Organiza: ' + e.organizer + '. ' : '') +
+        (e.speaks ? 'Interviene: ' + (e.speechType || 'sí') + '. ' : '') + (e.description || '')),
+      'STATUS:' + (e.status === 'confirmat' ? 'CONFIRMED' : e.status === 'cancelat' ? 'CANCELLED' : 'TENTATIVE'),
+      'END:VEVENT');
+  });
+  lines.push('END:VCALENDAR');
+  return lines.join('\r\n');
+}
+function downloadICS(list, filename){
+  if (!list.length){ toast('No hay eventos para exportar.', 'err'); return; }
+  const blob = new Blob([buildICS(list)], { type: 'text/calendar;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename || 'agenda-barcelona-global.ics';
+  document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 400);
+  toast('Archivo ICS exportado (' + list.length + ' evento' + (list.length === 1 ? '' : 's') + ').', 'ok');
+}
+
+/* =====================================================
+   MODALES, CONFIRMACIÓN Y TOASTS
+   ===================================================== */
+let modalStack = [];
+function showModal(inner, stacked){
+  const root = $('#modal-root');
+  if (!stacked){ root.innerHTML = ''; modalStack = []; }
+  const ov = document.createElement('div');
+  ov.className = 'overlay';
+  ov.innerHTML = '<div class="modal' + (inner.length < 900 && inner.indexOf('ev-form') === -1 ? '' : '') + '">' + inner + '</div>';
+  ov.addEventListener('click', (ev) => { if (ev.target === ov) popModal(); });
+  root.appendChild(ov);
+  modalStack.push(ov);
+}
+function popModal(){
+  const ov = modalStack.pop();
+  if (ov) ov.remove();
+}
+function closeModal(){
+  modalStack.forEach(o => o.remove());
+  modalStack = [];
+}
+function confirmDialog(text, onOk){
+  const ov = document.createElement('div');
+  ov.className = 'overlay';
+  ov.innerHTML =
+    '<div class="modal narrow">' +
+      '<div class="modal-h"><h3>Confirmar acción</h3><button class="modal-close" data-cc>×</button></div>' +
+      '<div class="modal-b"><p style="font-size:14.5px">' + esc(text) + '</p></div>' +
+      '<div class="modal-f"><button class="btn" data-cc>Volver</button><button class="btn btn-primary" data-ok>Confirmar</button></div>' +
+    '</div>';
+  ov.addEventListener('click', (ev) => {
+    if (ev.target === ov || ev.target.closest('[data-cc]')) { ov.remove(); return; }
+    if (ev.target.closest('[data-ok]')) { ov.remove(); onOk(); }
+  });
+  $('#modal-root').appendChild(ov);
+  modalStack.push(ov);
+}
+function toast(msg, kind){
+  const t = document.createElement('div');
+  t.className = 'toast' + (kind ? ' ' + kind : '');
+  t.textContent = msg;
+  $('#toasts').appendChild(t);
+  setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity .3s'; setTimeout(() => t.remove(), 350); }, 3200);
+}
+
+/* =====================================================
+   RENDER GLOBAL Y ARRANQUE
+   ===================================================== */
+function renderAll(){
+  const pres = state.role === 'president';
+  $('#view-president').classList.toggle('hidden', !pres);
+  $('#view-comms').classList.toggle('hidden', pres);
+  $('#rs-president').classList.toggle('active', pres);
+  $('#rs-comms').classList.toggle('active', !pres);
+  if (pres){
+    $('#p-home').classList.toggle('hidden', state.presTab !== 'home');
+    $('#p-calendar').classList.toggle('hidden', state.presTab !== 'calendar');
+    $$('#view-president [data-ptab]').forEach(b => b.classList.toggle('active', b.dataset.ptab === state.presTab));
+    if (state.presTab === 'home') renderPresident();
+    else renderCalendar('p-cal-root', 'pres');
+  } else {
+    $$('#view-comms [data-ctab]').forEach(b => b.classList.toggle('active', b.dataset.ctab === state.commsTab));
+    renderComms();
+  }
+}
+
+function init(){
+  loadData();
+
+  $('#rs-president').addEventListener('click', () => { state.role = 'president'; renderAll(); });
+  $('#rs-comms').addEventListener('click', () => { state.role = 'comms'; renderAll(); });
+  $$('#view-president [data-ptab]').forEach(b => b.addEventListener('click', () => { state.presTab = b.dataset.ptab; renderAll(); }));
+  $$('#view-comms [data-ctab]').forEach(b => b.addEventListener('click', () => { state.commsTab = b.dataset.ctab; renderAll(); }));
+
+  $('#btn-new').addEventListener('click', () => openEditor(null));
+  $('#btn-reset').addEventListener('click', () => confirmDialog('¿Restaurar los datos de demostración? Se perderán los cambios guardados en este navegador.', () => {
+    resetData(); renderAll(); toast('Datos de demostración restaurados.', 'ok');
+  }));
+  $('#btn-export-ics').addEventListener('click', () => {
+    const list = state.role === 'president'
+      ? events.filter(e => presVisible(e) && e.attends === 'si' && isUpcoming(e))
+      : filteredEvents().filter(e => e.status !== 'cancelat');
+    downloadICS(list, state.role === 'president' ? 'agenda-presidente.ics' : 'agenda-barcelona-global.ics');
+  });
+
+  // Filtros del dashboard de Comunicación
+  const F = state.filters;
+  $('#f-q').addEventListener('input', (e) => { F.q = e.target.value; renderComms(); });
+  $('#f-from').addEventListener('change', (e) => { F.from = e.target.value; renderComms(); });
+  $('#f-to').addEventListener('change', (e) => { F.to = e.target.value; renderComms(); });
+  $('#f-status').addEventListener('change', (e) => { F.status = e.target.value; renderComms(); });
+  $('#f-prio').addEventListener('change', (e) => { F.prio = e.target.value; renderComms(); });
+  $('#f-pres').addEventListener('change', (e) => { F.pres = e.target.value; renderComms(); });
+  $('#f-type').addEventListener('change', (e) => { F.type = e.target.value; renderComms(); });
+  $('#f-archived').addEventListener('change', (e) => { F.archived = e.target.checked; renderComms(); });
+  $('#f-clear').addEventListener('click', () => {
+    Object.assign(F, { q: '', from: '', to: '', status: '', prio: '', pres: '', type: '', archived: false });
+    $('#f-q').value = ''; $('#f-from').value = ''; $('#f-to').value = '';
+    $('#f-status').value = ''; $('#f-prio').value = ''; $('#f-pres').value = ''; $('#f-type').value = '';
+    $('#f-archived').checked = false;
+    renderComms();
+  });
+
+  // Delegación global de clics (fichas, acciones, documentos, sync…)
+  document.addEventListener('click', (ev) => {
+    const t = ev.target;
+    const open = t.closest('[data-open]');
+    const edit = t.closest('[data-edit]');
+    const docBtn = t.closest('[data-doc]');
+    const act = t.closest('[data-act]');
+    const sync = t.closest('[data-sync]');
+    const save = t.closest('[data-save]');
+    const ics = t.closest('[data-ics]');
+    const close = t.closest('[data-close]');
+    const arch = t.closest('[data-archive]');
+    if (close){ popModal(); return; }
+    if (save){ saveEditor(save.dataset.save || null); return; }
+    if (docBtn){ const [id, kind] = docBtn.dataset.doc.split('|'); openDoc(id, kind); return; }
+    if (sync){ const [op, id] = sync.dataset.sync.split('|'); doSync(op, id); return; }
+    if (act){ const [op, id] = act.dataset.act.split('|'); doAction(op, id); return; }
+    if (ics){ const e = byId(ics.dataset.ics); if (e) downloadICS([e], 'evento.ics'); return; }
+    if (edit){ openEditor(edit.dataset.edit); return; }
+    if (arch){ doAction('archive', arch.dataset.archive); return; }
+    if (open){ openDetail(open.dataset.open); return; }
+  });
+
+  // Edición rápida en la tabla
+  document.addEventListener('change', (ev) => {
+    const q = ev.target.closest('[data-quick]');
+    if (!q) return;
+    const e = byId(q.dataset.id); if (!e) return;
+    const field = q.dataset.quick, val = q.value;
+    if (field === 'status'){
+      if (val === 'cancelat'){ q.value = e.status; doAction('cancel', e.id); return; }
+      e.status = val;
+    } else if (field === 'attends'){
+      if (val === 'no'){ q.value = e.attends; doAction('attend-no', e.id); return; }
+      e.attends = val;
+      if (val === 'si' && (e.status === 'valorar' || e.status === 'pendent')) e.status = 'confirmat';
+    } else if (field === 'priority'){
+      e.priority = val;
+    }
+    saveData(); renderComms();
+  });
+
+  document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape') popModal(); });
+
+  renderAll();
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
