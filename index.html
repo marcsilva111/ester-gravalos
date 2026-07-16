@@ -147,6 +147,40 @@ a{color:var(--blue)}
   padding:9px 20px;font-size:13px;font-weight:600;display:flex;gap:9px;align-items:center;
 }
 
+/* ---------- Menú desplegable (acciones secundarias) ---------- */
+.menu{position:relative}
+.menu-list{
+  position:absolute;right:0;top:calc(100% + 6px);background:#fff;border:1px solid var(--line);
+  border-radius:11px;box-shadow:var(--shadow);display:none;min-width:210px;z-index:55;padding:5px;
+}
+.menu.open .menu-list{display:block}
+.menu-list button{
+  display:block;width:100%;text-align:left;padding:8px 12px;border-radius:8px;font-size:13px;font-weight:600;color:var(--ink);
+}
+.menu-list button:hover{background:var(--blue-soft)}
+
+/* ---------- Punto de prioridad ---------- */
+.pdot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:1px}
+.pdot-alta{background:var(--red)}
+.pdot-mitjana{background:var(--amber)}
+.pdot-baixa{background:#c6cbd9}
+
+/* ---------- Pantalla de acceso ---------- */
+.login-wrap{position:fixed;inset:0;background:var(--bg);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px}
+.login-card{
+  background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);
+  padding:36px 32px;max-width:390px;width:100%;text-align:center;display:grid;gap:14px;
+}
+.login-card h2{font-size:20px;letter-spacing:-.3px;color:var(--blue-dark)}
+.login-card p{font-size:13.5px;color:var(--muted)}
+.login-card input{
+  border:1px solid var(--line);border-radius:10px;padding:11px 13px;font-size:15px;text-align:center;width:100%;
+}
+.login-card input:focus{outline:2px solid rgba(30,45,190,.25);border-color:var(--blue)}
+.login-card .btn{justify-content:center;padding:11px}
+.login-err{color:var(--red);font-size:13px;font-weight:600;min-height:18px}
+.login-note{font-size:12px;color:var(--faint)}
+
 /* ---------- President hero ---------- */
 .hero{
   background:linear-gradient(135deg,var(--blue-dark),var(--blue) 70%);color:#fff;border-radius:18px;
@@ -272,7 +306,7 @@ a{color:var(--blue)}
 
 /* ---------- Table ---------- */
 .table-wrap{background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);overflow-x:auto}
-table{width:100%;border-collapse:collapse;font-size:13px;min-width:1020px}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:860px}
 th{
   text-align:left;padding:10px 12px;font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);
   border-bottom:1px solid var(--line);background:#fafbfe;white-space:nowrap;position:sticky;top:0;
@@ -415,10 +449,16 @@ td select.mini:hover{border-color:var(--line);background:#fff}
     <button class="btn btn-sm" id="btn-export-ics" title="Exportar los eventos visibles a un archivo .ics">
       <span class="ico">⤓</span> Exportar ICS
     </button>
-    <button class="btn btn-sm" id="btn-backup" title="Descargar una copia de seguridad de los datos (JSON)">⇩ Copia</button>
-    <button class="btn btn-sm" id="btn-restore" title="Cargar una copia de seguridad (JSON)">⇪ Restaurar</button>
+    <div class="menu" id="more-menu">
+      <button class="btn btn-sm" id="btn-more" title="Más opciones">⋯</button>
+      <div class="menu-list">
+        <button id="btn-backup">⇩ Guardar copia de datos</button>
+        <button id="btn-restore">⇪ Restaurar copia</button>
+        <button id="btn-reset">↺ Restaurar datos demo</button>
+      </div>
+    </div>
+    <button class="btn btn-sm hidden" id="btn-logout" title="Cerrar la sesión">Salir</button>
     <input type="file" id="file-restore" accept="application/json,.json" class="hidden">
-    <button class="btn btn-sm btn-ghost" id="btn-reset" title="Restaurar los datos de demostración">↺ Datos demo</button>
   </div>
   <div class="role-switch" role="tablist" aria-label="Cambiar de vista">
     <button id="rs-president" class="active">Presidente</button>
@@ -811,7 +851,76 @@ function seedEvents(){
    modo local con localStorage, como antes. */
 let events = [];
 let storageOK = true;
-const remote = { enabled: false, online: false, version: 0, pushTimer: null, pushing: false, dirty: false };
+const remote = { enabled: false, online: false, version: 0, pushTimer: null, pushing: false, dirty: false, pollStarted: false };
+
+/* ---------- Sesión y roles ---------- */
+const AUTH_KEY = 'bg-auth-v1';
+let auth = { token: null, role: null };
+function loadAuth(){
+  try { const raw = localStorage.getItem(AUTH_KEY); if (raw) auth = JSON.parse(raw); } catch (e) {}
+}
+function saveAuth(){
+  try {
+    if (auth.token) localStorage.setItem(AUTH_KEY, JSON.stringify(auth));
+    else localStorage.removeItem(AUTH_KEY);
+  } catch (e) {}
+}
+function authHeaders(extra){
+  const h = Object.assign({}, extra || {});
+  if (auth.token) h['Authorization'] = 'Bearer ' + auth.token;
+  return h;
+}
+function canEdit(){ return !(remote.enabled && auth.role === 'president'); }
+function applyRole(){
+  const presOnly = remote.enabled && auth.role === 'president';
+  if (presOnly) state.role = 'president';
+  const sw = $('.role-switch'); if (sw) sw.classList.toggle('hidden', presOnly);
+  const mm = $('#more-menu'); if (mm) mm.classList.toggle('hidden', presOnly);
+  const lo = $('#btn-logout'); if (lo) lo.classList.toggle('hidden', !(remote.enabled && auth.token));
+}
+function showLogin(msg){
+  let w = $('#login-screen');
+  if (!w){
+    w = document.createElement('div');
+    w.id = 'login-screen'; w.className = 'login-wrap';
+    w.innerHTML =
+      '<form class="login-card" id="login-form">' +
+        '<div style="display:flex;justify-content:center">' +
+          '<svg width="64" height="64" viewBox="0 0 100 100"><circle cx="50" cy="50" r="42" fill="none" stroke="#1e2dbe" stroke-width="11"/><text x="50" y="66" text-anchor="middle" font-family="Arial, sans-serif" font-size="46" font-weight="800" fill="#1e2dbe">15</text></svg>' +
+        '</div>' +
+        '<h2>Barcelona Global<br>Agenda Institucional</h2>' +
+        '<p>Introduce tu clave de acceso para continuar.</p>' +
+        '<input type="password" id="login-pass" placeholder="Clave de acceso" autocomplete="current-password" autofocus>' +
+        '<div class="login-err" id="login-err"></div>' +
+        '<button class="btn btn-primary" type="submit">Entrar</button>' +
+        '<p class="login-note">Comunicación: gestión completa · Presidencia: consulta</p>' +
+      '</form>';
+    document.body.appendChild(w);
+    $('#login-form').addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+      const pass = $('#login-pass').value;
+      if (!pass) return;
+      try {
+        const r = await fetch('/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: pass }) });
+        if (!r.ok){ $('#login-err').textContent = 'Clave incorrecta.'; $('#login-pass').select(); return; }
+        const data = await r.json();
+        auth = { token: data.token, role: data.role };
+        saveAuth();
+        w.remove();
+        await initData();
+        renderAll();
+        toast(data.role === 'comms' ? 'Sesión iniciada: Comunicación (edición completa).' : 'Sesión iniciada: Presidencia (consulta).', 'ok');
+      } catch (e) { $('#login-err').textContent = 'No se pudo contactar con el servidor.'; }
+    });
+  }
+  if (msg) $('#login-err').textContent = msg;
+  const inp = $('#login-pass'); if (inp) inp.focus();
+}
+function sessionExpired(){
+  auth = { token: null, role: null };
+  saveAuth();
+  showLogin('La sesión ha caducado. Vuelve a introducir tu clave.');
+}
 
 function checkStorage(){
   try {
@@ -834,10 +943,17 @@ async function initData(){
   const isHTTP = location.protocol === 'http:' || location.protocol === 'https:';
   if (isHTTP){
     try {
-      const r = await fetch('/api/events', { cache: 'no-store' });
+      const r = await fetch('/api/events', { cache: 'no-store', headers: authHeaders() });
+      if (r.status === 401 || r.status === 403){
+        remote.enabled = true; remote.online = true;
+        auth = { token: null, role: null }; saveAuth();
+        updateConnBadge(); applyRole(); showLogin();
+        return;
+      }
       if (r.ok){
         const data = await r.json();
         remote.enabled = true; remote.online = true;
+        if (data.role) auth.role = data.role;
         if (data && Array.isArray(data.events)){
           events = data.events;
           remote.version = data.version || 0;
@@ -846,21 +962,21 @@ async function initData(){
           // Servidor recién estrenado: se siembra con los datos locales o de demo.
           events = loadLocal() || seedEvents();
           saveLocal();
-          await pushRemote();
+          if (auth.role === 'comms') await pushRemote();
         }
-        setInterval(pollRemote, 4000);
-        updateConnBadge();
+        if (!remote.pollStarted){ setInterval(pollRemote, 4000); remote.pollStarted = true; }
+        updateConnBadge(); applyRole();
         return;
       }
     } catch (e) { /* sin API: modo local */ }
   }
   events = loadLocal();
   if (!events){ events = seedEvents(); saveLocal(); }
-  updateConnBadge();
+  updateConnBadge(); applyRole();
 }
 function saveData(){
   saveLocal();
-  if (remote.enabled){
+  if (remote.enabled && auth.role === 'comms'){
     remote.dirty = true;
     clearTimeout(remote.pushTimer);
     remote.pushTimer = setTimeout(pushRemote, 350);
@@ -872,9 +988,10 @@ async function pushRemote(){
   try {
     const r = await fetch('/api/events', {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({ events }),
     });
+    if (r.status === 401){ remote.pushing = false; sessionExpired(); return; }
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const data = await r.json();
     remote.version = data.version || remote.version + 1;
@@ -889,14 +1006,15 @@ async function pushRemote(){
   updateConnBadge();
 }
 async function pollRemote(){
-  if (!remote.enabled || remote.dirty || remote.pushing) return;
+  if (!remote.enabled || remote.dirty || remote.pushing || !auth.token) return;
   try {
-    const r = await fetch('/api/version', { cache: 'no-store' });
+    const r = await fetch('/api/version', { cache: 'no-store', headers: authHeaders() });
+    if (r.status === 401){ sessionExpired(); return; }
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const v = (await r.json()).version || 0;
     remote.online = true;
     if (v > remote.version && modalStack.length === 0){
-      const rr = await fetch('/api/events', { cache: 'no-store' });
+      const rr = await fetch('/api/events', { cache: 'no-store', headers: authHeaders() });
       const data = await rr.json();
       if (data && Array.isArray(data.events)){
         events = data.events;
@@ -1047,6 +1165,16 @@ function eventCard(ev, opts){
   opts = opts || {};
   const alerts = recentChanges(ev, 7);
   const dt = parseDT(ev.date, '00:00');
+  // En modo "simple" (agenda del presidente) solo se etiqueta lo excepcional:
+  // lo confirmado y con asistencia es la norma y no necesita chip.
+  const tags = [];
+  if (!(opts.simple && ev.status === 'confirmat')) tags.push(chipStatus(ev));
+  if (ev.attends === 'pendent') tags.push('<span class="chip chip-pendiente-p">Asistencia pendiente</span>');
+  else if (ev.attends === 'si' && !opts.simple) tags.push('<span class="chip chip-asiste">Asiste</span>');
+  if (ev.attends !== 'no' && ev.speaks)
+    tags.push('<span class="chip chip-interviene">🎤 ' + esc(ev.speechType || 'Interviene') +
+      (ev.speechDuration && ev.speechDuration !== '—' ? ' · ' + esc(ev.speechDuration) : '') + '</span>');
+  if (opts.showType) tags.push(chipType(ev));
   return '<div class="ecard' + (ev.status === 'cancelat' || ev.status === 'rebutjat' ? ' dim' : '') + '" data-open="' + ev.id + '">' +
     '<div class="ecard-date">' +
       '<div class="d">' + dt.getDate() + '</div>' +
@@ -1056,11 +1184,7 @@ function eventCard(ev, opts){
     '<div class="ecard-main">' +
       '<div class="ecard-title">' + esc(ev.title) + (hasOverlap(ev) && isUpcoming(ev) ? ' <span class="dot-warn" title="Se solapa con otro evento">⏱</span>' : '') + '</div>' +
       '<div class="ecard-place">📍 ' + esc(ev.location || 'Ubicación por confirmar') + '</div>' +
-      '<div class="ecard-tags">' +
-        chipStatus(ev) + chipsParticipation(ev) +
-        (ev.attends !== 'no' && ev.speaks && ev.speechType ? '<span class="chip" style="background:var(--blue-soft);color:var(--blue-dark)">' + esc(ev.speechType) + '</span>' : '') +
-        (opts.showType ? chipType(ev) : '') +
-      '</div>' +
+      (tags.length ? '<div class="ecard-tags">' + tags.join('') + '</div>' : '') +
       (alerts.length ? '<div class="ecard-alert">⚠️ ' + esc(alerts[0].message) + '</div>' : '') +
     '</div>' +
   '</div>';
@@ -1085,7 +1209,7 @@ function renderPresident(){
 }
 function fillList(bodyId, nId, list, emptyMsg){
   $('#' + nId).textContent = list.length || '';
-  $('#' + bodyId).innerHTML = list.length ? list.map(e => eventCard(e)).join('') : '<div class="block-empty">' + emptyMsg + '</div>';
+  $('#' + bodyId).innerHTML = list.length ? list.map(e => eventCard(e, { simple: true })).join('') : '<div class="block-empty">' + emptyMsg + '</div>';
 }
 
 let heroTimer = null;
@@ -1297,24 +1421,22 @@ function renderComms(){
 function renderTable(){
   const list = filteredEvents();
   let html = '<thead><tr>' +
-    ['Fecha', 'Evento', 'Organizador', 'Estado', 'Prioridad', 'Presidente', 'Interviene', 'Sincronización', 'Responsable', ''].map(h => '<th>' + h + '</th>').join('') +
+    ['Fecha', 'Evento', 'Estado', 'Participación', 'Sincronización', 'Responsable', ''].map(h => '<th>' + h + '</th>').join('') +
     '</tr></thead><tbody>';
-  if (!list.length) html += '<tr><td colspan="10" style="text-align:center;color:var(--faint);padding:26px">No hay eventos que coincidan con los filtros.</td></tr>';
+  if (!list.length) html += '<tr><td colspan="7" style="text-align:center;color:var(--faint);padding:26px">No hay eventos que coincidan con los filtros.</td></tr>';
   list.forEach(e => {
     html += '<tr class="row">' +
       '<td style="white-space:nowrap"><b>' + esc(fmtDateShort(e.date)) + '</b><br><small style="color:var(--muted)">' + esc(ev2time(e)) + '</small></td>' +
-      '<td><span class="evt-t" data-open="' + e.id + '">' + esc(e.title) + '</span>' +
+      '<td><span class="pdot pdot-' + e.priority + '" title="Prioridad ' + esc(PRIORITIES[e.priority].toLowerCase()) + '"></span>' +
+        '<span class="evt-t" data-open="' + e.id + '">' + esc(e.title) + '</span>' +
         (hasOverlap(e) && isUpcoming(e) ? ' <span class="dot-warn" title="Solapado">⏱</span>' : '') +
         (recentChanges(e, 7).length ? ' <span class="dot-warn" title="Cambios recientes">⚠️</span>' : '') +
-        '<br>' + chipType(e) + '</td>' +
-      '<td>' + esc(e.organizer) + '</td>' +
+        '<br><small style="color:var(--muted)">' + esc(TYPES[e.type].label) + (e.organizer && e.organizer !== 'Barcelona Global' ? ' · ' + esc(e.organizer) : '') + '</small></td>' +
       '<td><select class="mini" data-quick="status" data-id="' + e.id + '">' +
         Object.keys(STATUSES).map(k => '<option value="' + k + '"' + (e.status === k ? ' selected' : '') + '>' + STATUSES[k] + '</option>').join('') + '</select></td>' +
-      '<td><select class="mini" data-quick="priority" data-id="' + e.id + '">' +
-        Object.keys(PRIORITIES).map(k => '<option value="' + k + '"' + (e.priority === k ? ' selected' : '') + '>' + PRIORITIES[k] + '</option>').join('') + '</select></td>' +
       '<td><select class="mini" data-quick="attends" data-id="' + e.id + '">' +
-        [['si', 'Asiste'], ['pendent', 'Pendiente'], ['no', 'No asiste']].map(x => '<option value="' + x[0] + '"' + (e.attends === x[0] ? ' selected' : '') + '>' + x[1] + '</option>').join('') + '</select></td>' +
-      '<td>' + (e.attends !== 'no' && e.speaks ? '<span class="chip chip-interviene">🎤 Sí</span>' : '<span style="color:var(--faint)">No</span>') + '</td>' +
+        [['si', 'Asiste'], ['pendent', 'Pendiente'], ['no', 'No asiste']].map(x => '<option value="' + x[0] + '"' + (e.attends === x[0] ? ' selected' : '') + '>' + x[1] + '</option>').join('') + '</select>' +
+        (e.attends !== 'no' && e.speaks ? '<br><span class="chip chip-interviene">🎤 Interviene</span>' : '') + '</td>' +
       '<td>' + chipSync(e) + '</td>' +
       '<td>' + esc(e.owner || '—') + '</td>' +
       '<td><div class="row-actions">' +
@@ -1438,7 +1560,7 @@ function openDetail(id){
     foot =
       (briefing ? '<button class="btn btn-primary" data-doc="' + e.id + '|briefing">📄 Abrir briefing</button>' : '') +
       (mapHref ? '<a class="btn" target="_blank" rel="noopener" href="' + esc(mapHref) + '">🗺 Abrir ubicación</a>' : '') +
-      (e.attends === 'pendent' ? '<button class="btn" data-act="attend-yes|' + e.id + '">✓ Confirmar asistencia</button>' +
+      (e.attends === 'pendent' && canEdit() ? '<button class="btn" data-act="attend-yes|' + e.id + '">✓ Confirmar asistencia</button>' +
         '<button class="btn" data-act="attend-no|' + e.id + '">✗ No asistiré</button>' : '') +
       '<button class="btn" data-ics="' + e.id + '">⤓ Añadir a mi calendario (ICS)</button>';
   }
@@ -1757,8 +1879,19 @@ function renderAll(){
 
 async function init(){
   checkStorage();
+  loadAuth();
   await initData();
   if (!storageOK && !remote.enabled) $('#storage-banner').classList.remove('hidden');
+
+  // Menú de opciones secundarias y cierre de sesión
+  $('#btn-more').addEventListener('click', (ev) => { ev.stopPropagation(); $('#more-menu').classList.toggle('open'); });
+  document.addEventListener('click', () => { const m = $('#more-menu'); if (m) m.classList.remove('open'); });
+  $('#btn-logout').addEventListener('click', async () => {
+    try { await fetch('/api/logout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token: auth.token }) }); } catch (e) {}
+    auth = { token: null, role: null };
+    saveAuth();
+    location.reload();
+  });
 
   // Copia de seguridad / restauración (JSON) para mover los datos entre navegadores
   $('#btn-backup').addEventListener('click', () => {

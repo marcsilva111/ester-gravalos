@@ -6,42 +6,72 @@
    Uso:   node server.js         (http://localhost:3000)
           PORT=8080 node server.js
 
-   API:
-     GET /api/events   → { version, events }
-     GET /api/version  → { version }
-     PUT /api/events   → body { events: [...] } → { version }
+   Claves de acceso (cámbialas con variables de entorno):
+     COMMS_PASSWORD      → rol "comms" (edición completa)
+     PRESIDENT_PASSWORD  → rol "president" (solo consulta)
 
-   Los datos se guardan en data/events.json. Todos los
-   navegadores conectados comparten la misma base y se
-   actualizan solos mediante sondeo de versión.
+   API:
+     POST /api/login    body { password }        → { token, role }
+     POST /api/logout   body { token }           → { ok }
+     GET  /api/events   (Authorization: Bearer)  → { version, events }
+     GET  /api/version  (Authorization: Bearer)  → { version }
+     PUT  /api/events   (solo rol comms)         → { version }
+
+   Los datos se guardan en data/events.json y las sesiones
+   en data/sessions.json (sobreviven a reinicios).
    ===================================================== */
 
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 
 const PORT = process.env.PORT || 3000;
 const ROOT = __dirname;
 const DATA_DIR = path.join(ROOT, 'data');
 const DATA_FILE = path.join(DATA_DIR, 'events.json');
+const SESSIONS_FILE = path.join(DATA_DIR, 'sessions.json');
 const MAX_BODY = 8 * 1024 * 1024; // 8 MB
 
-let store = { version: 0, events: null };
+const PASSWORDS = {
+  comms: process.env.COMMS_PASSWORD || 'comunicacio2026',
+  president: process.env.PRESIDENT_PASSWORD || 'presidencia2026',
+};
 
+let store = { version: 0, events: null };
+let sessions = {}; // token → role
+
+function ensureDataDir(){
+  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+}
 function loadStore(){
   try {
-    const raw = fs.readFileSync(DATA_FILE, 'utf8');
-    const parsed = JSON.parse(raw);
+    const parsed = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
     if (parsed && Array.isArray(parsed.events)) store = { version: parsed.version || 1, events: parsed.events };
-  } catch (e) { /* primera ejecución: sin datos todavía */ }
+  } catch (e) { /* primera ejecución */ }
 }
 function saveStore(){
   try {
-    if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+    ensureDataDir();
     const tmp = DATA_FILE + '.tmp';
     fs.writeFileSync(tmp, JSON.stringify(store));
     fs.renameSync(tmp, DATA_FILE);
   } catch (e) { console.error('No se pudo guardar data/events.json:', e.message); }
+}
+function loadSessions(){
+  try { sessions = JSON.parse(fs.readFileSync(SESSIONS_FILE, 'utf8')) || {}; } catch (e) { sessions = {}; }
+}
+function saveSessions(){
+  try { ensureDataDir(); fs.writeFileSync(SESSIONS_FILE, JSON.stringify(sessions)); } catch (e) { /* sin persistencia de sesiones */ }
+}
+function roleOf(req){
+  const m = (req.headers.authorization || '').match(/^Bearer (.+)$/);
+  return m ? sessions[m[1]] || null : null;
+}
+function safeEqual(a, b){
+  const ha = crypto.createHash('sha256').update(String(a)).digest();
+  const hb = crypto.createHash('sha256').update(String(b)).digest();
+  return crypto.timingSafeEqual(ha, hb);
 }
 
 const MIME = {
@@ -54,49 +84,75 @@ const MIME = {
 };
 
 function sendJSON(res, code, obj){
-  const body = JSON.stringify(obj);
   res.writeHead(code, {
     'Content-Type': 'application/json; charset=utf-8',
     'Cache-Control': 'no-store',
     'Access-Control-Allow-Origin': '*',
   });
-  res.end(body);
+  res.end(JSON.stringify(obj));
+}
+function readBody(req, res, cb){
+  let body = '';
+  let tooBig = false;
+  req.on('data', (chunk) => {
+    body += chunk;
+    if (body.length > MAX_BODY){ tooBig = true; req.destroy(); }
+  });
+  req.on('end', () => {
+    if (tooBig) return;
+    try { cb(JSON.parse(body || '{}')); }
+    catch (e) { sendJSON(res, 400, { error: 'JSON no válido' }); }
+  });
 }
 
 function handleAPI(req, res, pathname){
   if (req.method === 'OPTIONS'){
     res.writeHead(204, {
       'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, PUT, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
+      'Access-Control-Allow-Methods': 'GET, PUT, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     });
     return res.end();
   }
+
+  if (pathname === '/api/login' && req.method === 'POST'){
+    return readBody(req, res, (data) => {
+      const pass = data.password || '';
+      let role = null;
+      if (safeEqual(pass, PASSWORDS.comms)) role = 'comms';
+      else if (safeEqual(pass, PASSWORDS.president)) role = 'president';
+      if (!role) return sendJSON(res, 401, { error: 'Clave incorrecta' });
+      const token = crypto.randomBytes(24).toString('hex');
+      sessions[token] = role;
+      saveSessions();
+      sendJSON(res, 200, { token, role });
+    });
+  }
+  if (pathname === '/api/logout' && req.method === 'POST'){
+    return readBody(req, res, (data) => {
+      if (data.token && sessions[data.token]){ delete sessions[data.token]; saveSessions(); }
+      sendJSON(res, 200, { ok: true });
+    });
+  }
+
+  const role = roleOf(req);
+  if (!role) return sendJSON(res, 401, { error: 'No autorizado' });
+
   if (pathname === '/api/version' && req.method === 'GET')
     return sendJSON(res, 200, { version: store.version });
 
   if (pathname === '/api/events' && req.method === 'GET')
-    return sendJSON(res, 200, { version: store.version, events: store.events });
+    return sendJSON(res, 200, { version: store.version, events: store.events, role });
 
   if (pathname === '/api/events' && req.method === 'PUT'){
-    let body = '';
-    let tooBig = false;
-    req.on('data', (chunk) => {
-      body += chunk;
-      if (body.length > MAX_BODY){ tooBig = true; req.destroy(); }
+    if (role !== 'comms') return sendJSON(res, 403, { error: 'El acceso de Presidencia es solo de consulta' });
+    return readBody(req, res, (data) => {
+      if (!data || !Array.isArray(data.events)) return sendJSON(res, 400, { error: 'Se esperaba { events: [...] }' });
+      store.events = data.events;
+      store.version += 1;
+      saveStore();
+      sendJSON(res, 200, { version: store.version });
     });
-    req.on('close', () => { if (tooBig) console.warn('PUT rechazado: cuerpo demasiado grande'); });
-    req.on('end', () => {
-      try {
-        const parsed = JSON.parse(body);
-        if (!parsed || !Array.isArray(parsed.events)) return sendJSON(res, 400, { error: 'Se esperaba { events: [...] }' });
-        store.events = parsed.events;
-        store.version += 1;
-        saveStore();
-        sendJSON(res, 200, { version: store.version });
-      } catch (e) { sendJSON(res, 400, { error: 'JSON no válido' }); }
-    });
-    return;
   }
   sendJSON(res, 404, { error: 'Ruta no encontrada' });
 }
@@ -115,6 +171,7 @@ function serveStatic(req, res, pathname){
 }
 
 loadStore();
+loadSessions();
 http.createServer((req, res) => {
   const pathname = decodeURIComponent(new URL(req.url, 'http://localhost').pathname);
   if (pathname.startsWith('/api/')) return handleAPI(req, res, pathname);
@@ -122,5 +179,6 @@ http.createServer((req, res) => {
   serveStatic(req, res, pathname);
 }).listen(PORT, () => {
   console.log('Agenda Barcelona Global disponible en http://localhost:' + PORT);
-  console.log('Datos compartidos en ' + DATA_FILE);
+  const custom = process.env.COMMS_PASSWORD && process.env.PRESIDENT_PASSWORD;
+  if (!custom) console.log('AVISO: usando claves por defecto. Cámbialas con COMMS_PASSWORD y PRESIDENT_PASSWORD.');
 });

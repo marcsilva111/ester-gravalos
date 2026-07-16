@@ -12,6 +12,23 @@ node server.js
 
 Abre `http://localhost:3000` (o la dirección del servidor donde lo despliegues: Render, Railway, un VPS…). No requiere `npm install`: el servidor no tiene dependencias. Los datos se guardan en `data/events.json`. La cabecera muestra el estado de conexión («Base compartida» / «Sin conexión»); si el servidor no responde, los cambios se conservan localmente y se reenvían al recuperar la conexión.
 
+### Acceso con clave
+
+En modo compartido la aplicación pide una clave de acceso. Hay dos, cada una con su rol:
+
+| Rol | Clave por defecto | Permisos |
+|---|---|---|
+| Comunicación | `comunicacio2026` | Gestión completa: crear, editar, sincronizar, eliminar |
+| Presidencia | `presidencia2026` | Solo consulta de su agenda (el servidor rechaza cualquier escritura) |
+
+**Cambia las claves antes de desplegar**, definiendo las variables de entorno:
+
+```bash
+COMMS_PASSWORD='clave-comunicacion' PRESIDENT_PASSWORD='clave-presidencia' node server.js
+```
+
+Las sesiones se guardan en `data/sessions.json` y sobreviven a reinicios del servidor. El botón «Salir» de la cabecera cierra la sesión.
+
 **Modo local** — abre `index.html` con doble clic en cualquier navegador, sin instalación. Los cambios se guardan solo en ese navegador (`localStorage`).
 
 ## Dos experiencias sobre una misma base de eventos
