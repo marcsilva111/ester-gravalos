@@ -1,27 +1,35 @@
 'use strict';
 /* =====================================================
-   Barcelona Global · Agenda Institucional — Backend
-   Servidor Node.js sin dependencias externas.
+   Barcelona Global · Agenda Institucional — Servidor
+   Node.js sin dependencias externas.
 
-   Uso:   node server.js         (http://localhost:3000)
-          PORT=8080 node server.js
+   Uso:   node server.js                  (http://localhost:3000)
 
-   Claves de acceso (cámbialas con variables de entorno):
-     COMMS_PASSWORD      → rol "comms" (edición completa)
+   Claves de acceso (defínelas siempre en producción):
+     COMMS_PASSWORD      → rol "comms" (gestión completa)
      PRESIDENT_PASSWORD  → rol "president" (solo consulta)
 
-   API:
-     POST /api/login    body { password }        → { token, role }
-     POST /api/logout   body { token }           → { ok }
-     GET  /api/events   (Authorization: Bearer)  → { version, events }
-     GET  /api/version  (Authorization: Bearer)  → { version }
-     PUT  /api/events   (solo rol comms)         → { version }
+   Dónde se guardan los eventos:
+     · Por defecto, en disco: data/events.json (o DATA_DIR).
+     · Si se definen GITHUB_TOKEN y GITHUB_REPO, en un archivo de ese
+       repositorio. Así la agenda sobrevive aunque el servidor se
+       reinicie y borre su disco, que es lo que hacen los alojamientos
+       gratuitos. Cada cambio queda además como una versión más en el
+       historial del repositorio.
+         GITHUB_REPO    propietario/repositorio
+         GITHUB_BRANCH  rama de datos (por defecto agenda-datos)
+         GITHUB_PATH    archivo (por defecto data/events.json)
 
-   Los datos se guardan en data/events.json y las sesiones
-   en data/sessions.json (sobreviven a reinicios).
+   API:
+     POST /api/login    { password }              → { token, role }
+     POST /api/logout   { token }                 → { ok }
+     GET  /api/events   (Authorization: Bearer)   → { version, events, role }
+     GET  /api/version  (Authorization: Bearer)   → { version }
+     PUT  /api/events   (solo rol comms)          → { version }
    ===================================================== */
 
 const http = require('http');
+const https = require('https');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -30,110 +38,212 @@ const PORT = process.env.PORT || 3000;
 const ROOT = __dirname;
 const DATA_DIR = process.env.DATA_DIR ? path.resolve(process.env.DATA_DIR) : path.join(ROOT, 'data');
 const DATA_FILE = path.join(DATA_DIR, 'events.json');
-const SESSIONS_FILE = path.join(DATA_DIR, 'sessions.json');
-const MAX_BODY = 8 * 1024 * 1024; // 8 MB
+const MAX_BODY = 8 * 1024 * 1024;
+const SESSION_DAYS = 30;
 
 const PASSWORDS = {
   comms: process.env.COMMS_PASSWORD || 'comunicacio2026',
   president: process.env.PRESIDENT_PASSWORD || 'presidencia2026',
 };
+// Firma las sesiones. Si no se define, se deriva de las claves: así las
+// sesiones siguen siendo válidas tras reiniciar, sin guardar nada.
+const SECRET = process.env.SESSION_SECRET ||
+  crypto.createHash('sha256').update(PASSWORDS.comms + '|' + PASSWORDS.president).digest('hex');
+
+const GH = {
+  token: process.env.GITHUB_TOKEN || '',
+  repo: process.env.GITHUB_REPO || '',
+  branch: process.env.GITHUB_BRANCH || 'agenda-datos',
+  file: process.env.GITHUB_PATH || 'data/events.json',
+  api: process.env.GITHUB_API || 'https://api.github.com',
+  sha: null,
+};
+const usingGitHub = () => !!(GH.token && GH.repo);
 
 let store = { version: 0, events: null };
-let sessions = {}; // token → role
+let flushTimer = null;
+let flushing = false;
+let pendingFlush = false;
 
-function ensureDataDir(){
-  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
-}
-function loadStore(){
-  try {
-    const parsed = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
-    if (parsed && Array.isArray(parsed.events)) store = { version: parsed.version || 1, events: parsed.events };
-  } catch (e) { /* primera ejecución */ }
-}
-function saveStore(){
-  try {
-    ensureDataDir();
-    const tmp = DATA_FILE + '.tmp';
-    fs.writeFileSync(tmp, JSON.stringify(store));
-    fs.renameSync(tmp, DATA_FILE);
-  } catch (e) { console.error('No se pudo guardar data/events.json:', e.message); }
-}
-function loadSessions(){
-  try { sessions = JSON.parse(fs.readFileSync(SESSIONS_FILE, 'utf8')) || {}; } catch (e) { sessions = {}; }
-}
-function saveSessions(){
-  try { ensureDataDir(); fs.writeFileSync(SESSIONS_FILE, JSON.stringify(sessions)); } catch (e) { /* sin persistencia de sesiones */ }
+/* ---------- Sesiones firmadas (sin almacenamiento) ---------- */
+function signToken(role){
+  const exp = Date.now() + SESSION_DAYS * 864e5;
+  const body = role + '.' + exp;
+  const mac = crypto.createHmac('sha256', SECRET).update(body).digest('hex');
+  return body + '.' + mac;
 }
 function roleOf(req){
   const m = (req.headers.authorization || '').match(/^Bearer (.+)$/);
-  return m ? sessions[m[1]] || null : null;
+  if (!m) return null;
+  const parts = m[1].split('.');
+  if (parts.length !== 3) return null;
+  const [role, exp, mac] = parts;
+  if (!(role === 'comms' || role === 'president')) return null;
+  if (!(Number(exp) > Date.now())) return null;
+  const expected = crypto.createHmac('sha256', SECRET).update(role + '.' + exp).digest('hex');
+  if (mac.length !== expected.length) return null;
+  if (!crypto.timingSafeEqual(Buffer.from(mac), Buffer.from(expected))) return null;
+  return role;
 }
-function safeEqual(a, b){
+function samePassword(a, b){
   const ha = crypto.createHash('sha256').update(String(a)).digest();
   const hb = crypto.createHash('sha256').update(String(b)).digest();
   return crypto.timingSafeEqual(ha, hb);
 }
 
+/* ---------- Almacenamiento en GitHub ---------- */
+function ghRequest(method, urlPath, body){
+  return new Promise((resolve, reject) => {
+    const url = new URL(GH.api + urlPath);
+    const data = body ? JSON.stringify(body) : null;
+    const req = (url.protocol === 'http:' ? http : https).request({
+      method,
+      hostname: url.hostname,
+      port: url.port || (url.protocol === 'http:' ? 80 : 443),
+      path: url.pathname + url.search,
+      headers: Object.assign({
+        'Authorization': 'Bearer ' + GH.token,
+        'Accept': 'application/vnd.github+json',
+        'User-Agent': 'agenda-barcelona-global',
+      }, data ? { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(data) } : {}),
+    }, (res) => {
+      let out = '';
+      res.on('data', (c) => { out += c; });
+      res.on('end', () => {
+        let parsed = null;
+        try { parsed = out ? JSON.parse(out) : null; } catch (e) { /* respuesta no JSON */ }
+        resolve({ status: res.statusCode, body: parsed });
+      });
+    });
+    req.on('error', reject);
+    if (data) req.write(data);
+    req.end();
+  });
+}
+// La rama de datos debe existir; si no, se crea a partir de la rama principal.
+async function ghEnsureBranch(){
+  const ref = await ghRequest('GET', '/repos/' + GH.repo + '/git/ref/heads/' + GH.branch);
+  if (ref.status === 200) return true;
+  const repo = await ghRequest('GET', '/repos/' + GH.repo);
+  if (repo.status !== 200) return false;
+  const base = await ghRequest('GET', '/repos/' + GH.repo + '/git/ref/heads/' + repo.body.default_branch);
+  if (base.status !== 200) return false;
+  const made = await ghRequest('POST', '/repos/' + GH.repo + '/git/refs',
+    { ref: 'refs/heads/' + GH.branch, sha: base.body.object.sha });
+  return made.status === 201;
+}
+async function ghLoad(){
+  const r = await ghRequest('GET', '/repos/' + GH.repo + '/contents/' + GH.file + '?ref=' + GH.branch);
+  if (r.status === 404) return null;                    // todavía no hay agenda guardada
+  if (r.status !== 200 || !r.body || !r.body.content) throw new Error('GitHub respondió ' + r.status);
+  GH.sha = r.body.sha;
+  return JSON.parse(Buffer.from(r.body.content, 'base64').toString('utf8'));
+}
+async function ghSave(){
+  const payload = {
+    message: 'Actualizar la agenda (' + (store.events || []).length + ' eventos)',
+    content: Buffer.from(JSON.stringify(store, null, 2), 'utf8').toString('base64'),
+    branch: GH.branch,
+  };
+  if (GH.sha) payload.sha = GH.sha;
+  let r = await ghRequest('PUT', '/repos/' + GH.repo + '/contents/' + GH.file, payload);
+  if (r.status === 409 || r.status === 422){
+    // Otro proceso escribió antes: se relee la versión actual y se reintenta una vez.
+    const cur = await ghRequest('GET', '/repos/' + GH.repo + '/contents/' + GH.file + '?ref=' + GH.branch);
+    if (cur.status === 200 && cur.body){ payload.sha = cur.body.sha; }
+    else { delete payload.sha; }
+    r = await ghRequest('PUT', '/repos/' + GH.repo + '/contents/' + GH.file, payload);
+  }
+  if (r.status !== 200 && r.status !== 201) throw new Error('GitHub respondió ' + r.status);
+  GH.sha = r.body && r.body.content ? r.body.content.sha : GH.sha;
+}
+
+/* ---------- Almacenamiento en disco ---------- */
+function diskLoad(){
+  try {
+    const parsed = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
+    if (parsed && Array.isArray(parsed.events)) return parsed;
+  } catch (e) { /* primera ejecución */ }
+  return null;
+}
+function diskSave(){
+  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+  const tmp = DATA_FILE + '.tmp';
+  fs.writeFileSync(tmp, JSON.stringify(store));
+  fs.renameSync(tmp, DATA_FILE);
+}
+
+/* ---------- Carga y guardado ---------- */
+async function loadStore(){
+  let loaded = null;
+  if (usingGitHub()){
+    try {
+      await ghEnsureBranch();
+      loaded = await ghLoad();
+      console.log(loaded ? 'Agenda cargada desde GitHub (' + loaded.events.length + ' eventos).'
+                         : 'Sin agenda previa en GitHub: se creará con el primer cambio.');
+    } catch (e) {
+      console.error('No se pudo leer la agenda de GitHub:', e.message);
+    }
+  } else {
+    loaded = diskLoad();
+  }
+  if (loaded && Array.isArray(loaded.events)) store = { version: loaded.version || 1, events: loaded.events };
+}
+// Se agrupan los cambios seguidos en un solo guardado.
+function scheduleSave(){
+  if (!usingGitHub()){ try { diskSave(); } catch (e) { console.error('No se pudo guardar:', e.message); } return; }
+  pendingFlush = true;
+  clearTimeout(flushTimer);
+  flushTimer = setTimeout(flush, 2000);
+}
+async function flush(){
+  if (flushing || !pendingFlush) return;
+  flushing = true; pendingFlush = false;
+  try { await ghSave(); }
+  catch (e) {
+    console.error('No se pudo guardar en GitHub:', e.message);
+    pendingFlush = true;
+    clearTimeout(flushTimer);
+    flushTimer = setTimeout(flush, 10000);   // reintento
+  }
+  flushing = false;
+  if (pendingFlush){ clearTimeout(flushTimer); flushTimer = setTimeout(flush, 2000); }
+}
+
+/* ---------- HTTP ---------- */
 const MIME = {
-  '.html': 'text/html; charset=utf-8',
-  '.js': 'text/javascript; charset=utf-8',
-  '.css': 'text/css; charset=utf-8',
-  '.json': 'application/json; charset=utf-8',
+  '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8',
+  '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8',
   '.png': 'image/png', '.jpg': 'image/jpeg', '.svg': 'image/svg+xml',
   '.ico': 'image/x-icon', '.ics': 'text/calendar; charset=utf-8',
 };
-
 function sendJSON(res, code, obj){
-  res.writeHead(code, {
-    'Content-Type': 'application/json; charset=utf-8',
-    'Cache-Control': 'no-store',
-    'Access-Control-Allow-Origin': '*',
-  });
+  res.writeHead(code, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
   res.end(JSON.stringify(obj));
 }
 function readBody(req, res, cb){
-  let body = '';
-  let tooBig = false;
-  req.on('data', (chunk) => {
-    body += chunk;
-    if (body.length > MAX_BODY){ tooBig = true; req.destroy(); }
-  });
+  let body = '', tooBig = false;
+  req.on('data', (chunk) => { body += chunk; if (body.length > MAX_BODY){ tooBig = true; req.destroy(); } });
   req.on('end', () => {
     if (tooBig) return;
     try { cb(JSON.parse(body || '{}')); }
     catch (e) { sendJSON(res, 400, { error: 'JSON no válido' }); }
   });
 }
-
 function handleAPI(req, res, pathname){
-  if (req.method === 'OPTIONS'){
-    res.writeHead(204, {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, PUT, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    });
-    return res.end();
-  }
-
   if (pathname === '/api/login' && req.method === 'POST'){
     return readBody(req, res, (data) => {
       const pass = data.password || '';
       let role = null;
-      if (safeEqual(pass, PASSWORDS.comms)) role = 'comms';
-      else if (safeEqual(pass, PASSWORDS.president)) role = 'president';
+      if (samePassword(pass, PASSWORDS.comms)) role = 'comms';
+      else if (samePassword(pass, PASSWORDS.president)) role = 'president';
       if (!role) return sendJSON(res, 401, { error: 'Clave incorrecta' });
-      const token = crypto.randomBytes(24).toString('hex');
-      sessions[token] = role;
-      saveSessions();
-      sendJSON(res, 200, { token, role });
+      sendJSON(res, 200, { token: signToken(role), role });
     });
   }
-  if (pathname === '/api/logout' && req.method === 'POST'){
-    return readBody(req, res, (data) => {
-      if (data.token && sessions[data.token]){ delete sessions[data.token]; saveSessions(); }
-      sendJSON(res, 200, { ok: true });
-    });
-  }
+  if (pathname === '/api/logout' && req.method === 'POST')
+    return readBody(req, res, () => sendJSON(res, 200, { ok: true }));
 
   const role = roleOf(req);
   if (!role) return sendJSON(res, 401, { error: 'No autorizado' });
@@ -150,19 +260,16 @@ function handleAPI(req, res, pathname){
       if (!data || !Array.isArray(data.events)) return sendJSON(res, 400, { error: 'Se esperaba { events: [...] }' });
       store.events = data.events;
       store.version += 1;
-      saveStore();
+      scheduleSave();
       sendJSON(res, 200, { version: store.version });
     });
   }
   sendJSON(res, 404, { error: 'Ruta no encontrada' });
 }
-
 function serveStatic(req, res, pathname){
   if (pathname === '/') pathname = '/index.html';
   const file = path.normalize(path.join(ROOT, pathname));
-  if (!file.startsWith(ROOT) || file.startsWith(DATA_DIR)){
-    res.writeHead(403); return res.end('Prohibido');
-  }
+  if (!file.startsWith(ROOT) || file.startsWith(DATA_DIR)){ res.writeHead(403); return res.end('Prohibido'); }
   fs.readFile(file, (err, data) => {
     if (err){ res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' }); return res.end('No encontrado'); }
     res.writeHead(200, { 'Content-Type': MIME[path.extname(file).toLowerCase()] || 'application/octet-stream' });
@@ -170,15 +277,18 @@ function serveStatic(req, res, pathname){
   });
 }
 
-loadStore();
-loadSessions();
-http.createServer((req, res) => {
-  const pathname = decodeURIComponent(new URL(req.url, 'http://localhost').pathname);
-  if (pathname.startsWith('/api/')) return handleAPI(req, res, pathname);
-  if (req.method !== 'GET'){ res.writeHead(405); return res.end(); }
-  serveStatic(req, res, pathname);
-}).listen(PORT, () => {
-  console.log('Agenda Barcelona Global disponible en http://localhost:' + PORT);
-  const custom = process.env.COMMS_PASSWORD && process.env.PRESIDENT_PASSWORD;
-  if (!custom) console.log('AVISO: usando claves por defecto. Cámbialas con COMMS_PASSWORD y PRESIDENT_PASSWORD.');
+loadStore().then(() => {
+  http.createServer((req, res) => {
+    const pathname = decodeURIComponent(new URL(req.url, 'http://localhost').pathname);
+    if (pathname.startsWith('/api/')) return handleAPI(req, res, pathname);
+    if (req.method !== 'GET'){ res.writeHead(405); return res.end(); }
+    serveStatic(req, res, pathname);
+  }).listen(PORT, () => {
+    console.log('Agenda Barcelona Global en http://localhost:' + PORT);
+    console.log('Datos: ' + (usingGitHub() ? 'GitHub ' + GH.repo + ' (rama ' + GH.branch + ')' : DATA_FILE));
+    if (!(process.env.COMMS_PASSWORD && process.env.PRESIDENT_PASSWORD))
+      console.log('AVISO: claves por defecto. Define COMMS_PASSWORD y PRESIDENT_PASSWORD.');
+  });
 });
+// Último intento de guardado si la plataforma detiene el servicio.
+process.on('SIGTERM', () => { flush().finally(() => process.exit(0)); });

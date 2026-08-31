@@ -402,12 +402,6 @@ td select.mini:hover{border-color:var(--line);background:#fff}
 .toast.ok{background:var(--green)}
 .toast.err{background:var(--red)}
 
-/* ---------- Sync banner in detail ---------- */
-.sync-box{
-  border:1px solid var(--line);border-radius:11px;padding:12px 14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:#fafbfe;
-}
-.sync-box .grow{flex:1;min-width:170px}
-.sync-box small{color:var(--muted);display:block}
 
 /* ---------- Responsive ---------- */
 @media (max-width:900px){
@@ -595,14 +589,6 @@ const STATUSES = {
   finalitzat: 'Finalizado',
 };
 const PRIORITIES = { alta: 'Alta', mitjana: 'Media', baixa: 'Baja' };
-const SYNC = {
-  none:    'No sincronizado',
-  syncing: 'Sincronizando…',
-  synced:  'Sincronizado',
-  pending: 'Actualización pendiente',
-  error:   'Error de sincronización',
-  removed: 'Retirado del calendario',
-};
 const MONTHS = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 const MONTHS_S = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
 const DOWS = ['lunes','martes','miércoles','jueves','viernes','sábado','domingo'];
@@ -623,20 +609,18 @@ function seedEvents(){
     keyMessage: '', contentOwner: '',
     owner: 'Ester Gravalos', companion: '', orgContact: '', access: '', transport: '', notes: '',
     coverage: [],             // fotos, video, ndp, post, story
-    docs: [],                 // {kind, name, url, updatedAt}
-    sync: { state: 'none', outlookId: null, lastSync: null },
+    docs: [],                 // {kind, name, url, updatedAt},
     changes: [],              // {ts, message}
     archived: false,
   }, o);
   const doc = (kind, name, updatedAt) => ({ kind, name, url: '#', updatedAt: updatedAt || null });
-  const outlook = (when) => ({ state: 'synced', outlookId: 'OUTLOOK-' + Math.random().toString(36).slice(2, 10).toUpperCase(), lastSync: when || daysAgoISO(3) });
 
   return [
     /* ---- Julio 2026 (ejemplos próximos para la demo) ---- */
     E({ title: 'Junta Directiva Barcelona Global', date: '2026-07-08', start: '09:00', end: '11:00',
         type: 'reunio', status: 'finalitzat', speaks: true, speechType: 'Presidencia de la reunión',
         location: 'Sede Barcelona Global', address: 'C/ Aribau 185, Barcelona',
-        owner: 'Ester Gravalos', companion: 'Directora general', sync: outlook(daysAgoISO(20)),
+        owner: 'Ester Gravalos', companion: 'Directora general',
         docs: [doc('agenda', 'Orden del día · Junta julio')] }),
     E({ title: 'Reunió Alcaldia · Estratègia Barcelona 2047', date: '2026-07-21', start: '12:30', end: '13:30',
         arrival: '12:15', type: 'inst', organizer: 'Ajuntament de Barcelona', priority: 'alta',
@@ -646,7 +630,7 @@ function seedEvents(){
         keyMessage: 'Posicionar Barcelona 2047 como proyecto de ciudad compartido público-privado.',
         contentOwner: 'Dirección de Comunicación', companion: 'Directora general',
         orgContact: 'Gabinet d’Alcaldia · 93 402 70 00', access: 'Acceso por Pl. Sant Jaume. Acreditación en recepción.',
-        transport: 'Coche oficial. Parking Pl. Catalunya.', sync: { state: 'pending', outlookId: 'OUTLOOK-ALC2047', lastSync: daysAgoISO(6) },
+        transport: 'Coche oficial. Parking Pl. Catalunya.',
         docs: [doc('briefing', 'Briefing reunión Alcaldía', daysAgoISO(1)), doc('speech', 'Talking points Barcelona 2047')],
         changes: [{ ts: daysAgoISO(1), message: 'El horario se ha modificado: pasa de 12:00 a 12:30.' },
                   { ts: daysAgoISO(1), message: 'Briefing actualizado.' }] }),
@@ -657,7 +641,7 @@ function seedEvents(){
         speaks: true, speechType: 'Intervención de apertura', speechDuration: '10 min',
         keyMessage: 'Balance de los 15 años de Barcelona Global y prioridades del curso.',
         contentOwner: 'Dirección de Comunicación', companion: 'Directora de Comunicación',
-        coverage: ['fotos', 'post', 'ndp'], sync: outlook(),
+        coverage: ['fotos', 'post', 'ndp'],
         docs: [doc('briefing', 'Briefing esmorzar mitjans'), doc('agenda', 'Escaleta del acto')] }),
 
     /* ---- Septiembre 2026 ---- */
@@ -667,7 +651,7 @@ function seedEvents(){
         mapLink: 'https://maps.google.com/?q=Proven%C3%A7a+298+Barcelona',
         speaks: true, speechType: 'Participación en el debate', speechDuration: '—',
         keyMessage: 'Coordinación de las entidades económicas de la ciudad.',
-        companion: 'Directora general', sync: outlook(),
+        companion: 'Directora general',
         docs: [doc('briefing', 'Briefing Dinar G8 septiembre')],
         changes: [{ ts: daysAgoISO(2), message: 'El horario se ha modificado: comienza a las 14:00.' }] }),
     E({ title: 'Hola Barcelona! Cocktail', date: '2026-09-09', start: '19:00', end: '21:30', arrival: '18:30',
@@ -678,7 +662,7 @@ function seedEvents(){
         speaks: true, speechType: 'Discurso de bienvenida', speechDuration: '10 min', speechLang: 'Inglés',
         keyMessage: 'Barcelona, ciudad abierta al talento internacional.',
         contentOwner: 'Dirección de Comunicación', companion: 'Directora de Comunicación',
-        coverage: ['fotos', 'video', 'ndp', 'post', 'story'], sync: outlook(),
+        coverage: ['fotos', 'video', 'ndp', 'post', 'story'],
         docs: [doc('briefing', 'Briefing Hola Barcelona!', daysAgoISO(2)), doc('speech', 'Welcome speech (EN)'), doc('agenda', 'Escaleta del cocktail')],
         changes: [{ ts: daysAgoISO(2), message: 'Briefing actualizado.' }] }),
     E({ title: 'AIJEC · Premi Jove Empresari', date: '2026-09-14', start: '18:30', end: '20:30',
@@ -691,20 +675,19 @@ function seedEvents(){
         type: 'reunio', priority: 'alta',
         location: 'Sede Barcelona Global', address: 'C/ Aribau 185, Barcelona',
         speaks: true, speechType: 'Presidencia de la reunión',
-        companion: 'Directora general', sync: outlook(),
+        companion: 'Directora general',
         docs: [doc('agenda', 'Orden del día COMEX septiembre')] }),
     E({ title: 'Català de l’Any', date: '2026-09-16', start: '19:00', end: '22:00',
         type: 'extern', organizer: 'El Periódico', status: 'confirmat',
         location: 'TNC · Teatre Nacional de Catalunya', address: 'Pl. de les Arts 1, Barcelona',
         mapLink: 'https://maps.google.com/?q=Teatre+Nacional+de+Catalunya',
-        companion: 'Directora de Comunicación', coverage: ['fotos'],
-        sync: { state: 'none', outlookId: null, lastSync: null } }),
+        companion: 'Directora de Comunicación', coverage: ['fotos'] }),
     E({ title: 'COMEX · Museu Grifols', date: '2026-09-17', start: '17:00', end: '19:00', arrival: '16:45',
         type: 'propi', organizer: 'Barcelona Global · Grifols',
         location: 'Museu Grifols', address: 'C/ Jesús i Maria 6, Barcelona',
         mapLink: 'https://maps.google.com/?q=Grifols+Barcelona',
         speaks: false, coverage: ['fotos', 'video', 'post', 'story'],
-        companion: 'Directora general', sync: outlook(),
+        companion: 'Directora general',
         docs: [doc('agenda', 'Programa de la visita')] }),
     E({ title: 'Gala Betevé', date: '2026-09-17', start: '20:00', end: '22:30',
         type: 'extern', organizer: 'Betevé', status: 'pendent', attends: 'pendent',
@@ -712,29 +695,26 @@ function seedEvents(){
         changes: [{ ts: daysAgoISO(5), message: 'Asistencia pendiente de confirmación.' }] }),
     E({ title: 'COMEX B&P', date: '2026-09-21', start: '09:00', end: '10:30', arrival: '08:50',
         type: 'reunio', location: 'Sede Barcelona Global', address: 'C/ Aribau 185, Barcelona',
-        speaks: true, speechType: 'Presidencia de la reunión', sync: outlook(),
+        speaks: true, speechType: 'Presidencia de la reunión',
         docs: [doc('agenda', 'Orden del día B&P')] }),
     E({ title: 'Recepció Consolat General de França', date: '2026-09-23', start: '19:00', end: '21:00',
         type: 'inst', organizer: 'Consulat de França', status: 'cancelat', attends: 'no',
         location: 'Residència consular', address: 'Rda. Universitat 22, Barcelona',
-        sync: { state: 'removed', outlookId: null, lastSync: daysAgoISO(3) },
         changes: [{ ts: daysAgoISO(3), message: 'El evento ha sido cancelado por el organizador.' }] }),
     E({ title: 'Premis La Vanguardia', date: '2026-09-28', start: '19:30', end: '22:00', arrival: '19:00',
         type: 'extern', organizer: 'La Vanguardia', priority: 'alta',
         location: 'MNAC (nueva ubicación)', address: 'Palau Nacional, Parc de Montjuïc, Barcelona',
         mapLink: 'https://maps.google.com/?q=MNAC+Barcelona',
         companion: 'Directora de Comunicación', coverage: ['fotos', 'post'],
-        sync: { state: 'pending', outlookId: 'OUTLOOK-LVG26', lastSync: daysAgoISO(9) },
         changes: [{ ts: daysAgoISO(2), message: 'La ubicación ha cambiado: el acto se traslada al MNAC.' }] }),
     E({ title: 'Patronat FBCN', date: '2026-09-30', start: '18:00', end: '19:30', arrival: '17:50',
         type: 'reunio', organizer: 'Fundació Barcelona Cultura',
         location: 'Palau de la Virreina', address: 'La Rambla 99, Barcelona',
-        speaks: true, speechType: 'Intervención como patrono', speechDuration: '5 min',
-        sync: outlook(), docs: [] /* interviene sin briefing → incidencia */ }),
+        speaks: true, speechType: 'Intervención como patrono', speechDuration: '5 min', docs: [] /* interviene sin briefing → incidencia */ }),
     E({ title: 'Premis PIMEC', date: '2026-09-30', start: '19:00', end: '21:30',
         type: 'extern', organizer: 'PIMEC',
         location: 'L’Auditori', address: 'C/ Lepant 150, Barcelona',
-        coverage: ['fotos'], sync: outlook() /* solapa con Patronat FBCN → incidencia */ }),
+        coverage: ['fotos'] /* solapa con Patronat FBCN → incidencia */ }),
 
     /* ---- Octubre 2026 ---- */
     E({ title: 'Acte Ryder Cup', date: '2026-10-01', start: '12:00', end: '14:00', arrival: '11:40',
@@ -744,7 +724,7 @@ function seedEvents(){
         speaks: true, speechType: 'Intervención institucional', speechDuration: '8 min',
         keyMessage: 'El deporte como palanca de proyección internacional de Barcelona.',
         contentOwner: 'Dirección de Comunicación', companion: 'Directora general',
-        coverage: ['fotos', 'video', 'post', 'story'], sync: outlook(),
+        coverage: ['fotos', 'video', 'post', 'story'],
         docs: [doc('briefing', 'Briefing Acte Ryder Cup'), doc('speech', 'Talking points Ryder Cup')] }),
     E({ title: 'MBA Day (por confirmar fecha)', date: '2026-10-05', start: '10:00', end: '17:00',
         type: 'propi', status: 'valorar', attends: 'pendent',
@@ -754,13 +734,12 @@ function seedEvents(){
     E({ title: 'Esmorzar de nous socis', date: '2026-10-07', start: '08:30', end: '10:00', arrival: '08:15',
         type: 'propi', location: 'Sede Barcelona Global', address: 'C/ Aribau 185, Barcelona',
         speaks: true, speechType: 'Bienvenida a nuevos socios', speechDuration: '10 min',
-        coverage: ['fotos', 'story'], sync: outlook(),
+        coverage: ['fotos', 'story'],
         docs: [doc('briefing', 'Perfiles de nuevos socios · octubre')] }),
     E({ title: 'Visita Casa Moratiel', date: '2026-10-08', start: '11:00', end: '12:30',
         type: 'collab', organizer: 'Fundació Mies van der Rohe',
         location: '', address: '' /* sin ubicación → incidencia */,
-        coverage: ['fotos', 'video', 'post', 'story'],
-        sync: { state: 'none', outlookId: null, lastSync: null } }),
+        coverage: ['fotos', 'video', 'post', 'story'] }),
     E({ title: 'MBA Day (fecha alternativa)', date: '2026-10-19', start: '10:00', end: '17:00',
         type: 'propi', status: 'valorar', attends: 'pendent',
         description: 'Fecha alternativa de la jornada MBA Day.',
@@ -768,14 +747,14 @@ function seedEvents(){
         coverage: ['fotos', 'video', 'post', 'story', 'ndp'] }),
     E({ title: 'COMEX BG', date: '2026-10-21', start: '09:00', end: '11:00', arrival: '08:50',
         type: 'reunio', location: 'Sede Barcelona Global', address: 'C/ Aribau 185, Barcelona',
-        speaks: true, speechType: 'Presidencia de la reunión', sync: outlook(),
+        speaks: true, speechType: 'Presidencia de la reunión',
         docs: [doc('agenda', 'Orden del día COMEX octubre')] }),
     E({ title: 'Plenari Chapter Clima', date: '2026-10-28', start: '18:00', end: '20:00', arrival: '17:45',
         type: 'propi', priority: 'alta',
         location: 'Roca Barcelona Gallery', address: 'C/ Joan Güell 211, Barcelona',
         speaks: true, speechType: 'Clausura', speechDuration: '5 min',
         keyMessage: 'Compromiso del sector privado con la transición climática de Barcelona.',
-        coverage: ['fotos', 'video', 'ndp', 'post', 'story'], sync: outlook(),
+        coverage: ['fotos', 'video', 'ndp', 'post', 'story'],
         docs: [doc('briefing', 'Briefing Plenari Clima')] }),
 
     /* ---- Noviembre 2026 ---- */
@@ -783,11 +762,11 @@ function seedEvents(){
         type: 'inst', organizer: 'G8 Entitats Econòmiques', priority: 'alta',
         location: 'Foment del Treball', address: 'Via Laietana 32, Barcelona',
         speaks: true, speechType: 'Participación en el debate',
-        companion: 'Directora general', sync: outlook(),
+        companion: 'Directora general',
         docs: [doc('briefing', 'Briefing Dinar G8 noviembre')] }),
     E({ title: 'COMEX B&P', date: '2026-11-12', start: '09:00', end: '10:30', arrival: '08:50',
         type: 'reunio', location: 'Sede Barcelona Global', address: 'C/ Aribau 185, Barcelona',
-        speaks: true, speechType: 'Presidencia de la reunión', sync: outlook(),
+        speaks: true, speechType: 'Presidencia de la reunión',
         docs: [doc('agenda', 'Orden del día B&P noviembre')] }),
     E({ title: 'Festival Vibez', date: '2026-11-13', start: '19:00', end: '23:00',
         type: 'extern', organizer: 'Vibez BCN', status: 'delegat', attends: 'no',
@@ -801,29 +780,29 @@ function seedEvents(){
         speaks: true, speechType: 'Discurso inaugural', speechDuration: '15 min',
         keyMessage: 'Una visión de ciudad a 20 años construida entre el sector público y el privado.',
         contentOwner: 'Dirección de Comunicación', companion: 'Directora general y Directora de Comunicación',
-        coverage: ['fotos', 'ndp', 'post', 'story'], sync: outlook(),
+        coverage: ['fotos', 'ndp', 'post', 'story'],
         docs: [doc('briefing', 'Briefing Kickoff 2047'), doc('speech', 'Discurso inaugural 2047'), doc('agenda', 'Escaleta del acto')] }),
     E({ title: 'COMEX BG', date: '2026-11-18', start: '09:00', end: '11:00', arrival: '08:50',
         type: 'reunio', location: 'Sede Barcelona Global', address: 'C/ Aribau 185, Barcelona',
-        speaks: true, speechType: 'Presidencia de la reunión', sync: outlook(),
+        speaks: true, speechType: 'Presidencia de la reunión',
         docs: [doc('agenda', 'Orden del día COMEX noviembre')] }),
     E({ title: 'Esmorzar de nous socis', date: '2026-11-25', start: '08:30', end: '10:00', arrival: '08:15',
         type: 'propi', location: 'Sede Barcelona Global', address: 'C/ Aribau 185, Barcelona',
         speaks: true, speechType: 'Bienvenida a nuevos socios', speechDuration: '10 min',
-        coverage: ['fotos', 'story'], sync: outlook(),
+        coverage: ['fotos', 'story'],
         docs: [doc('briefing', 'Perfiles de nuevos socios · noviembre')] }),
 
     /* ---- Diciembre 2026 ---- */
     E({ title: 'Dinar G8', date: '2026-12-07', start: '14:00', end: '16:00', arrival: '13:45',
         type: 'inst', organizer: 'G8 Entitats Econòmiques',
         location: 'Cambra de Comerç de Barcelona', address: 'Av. Diagonal 452, Barcelona',
-        speaks: true, speechType: 'Participación en el debate', sync: outlook(),
+        speaks: true, speechType: 'Participación en el debate',
         docs: [doc('briefing', 'Briefing Dinar G8 diciembre')] }),
     E({ title: 'Sopar de Nadal COMEX', date: '2026-12-16', start: '20:30', end: '23:00', arrival: '20:15',
         type: 'reunio', priority: 'mitjana',
         location: 'Restaurante Windsor', address: 'C/ Còrsega 286, Barcelona',
         speaks: true, speechType: 'Brindis de cierre de año', speechDuration: '5 min',
-        coverage: ['fotos', 'post', 'story'], sync: outlook(),
+        coverage: ['fotos', 'post', 'story'],
         docs: [doc('briefing', 'Notas para el brindis')] }),
     E({ title: 'Barcelona on the Global Map', date: '2026-12-22', start: '12:00', end: '14:00', arrival: '11:40',
         type: 'propi', priority: 'alta',
@@ -833,13 +812,13 @@ function seedEvents(){
         speaks: true, speechType: 'Presentación del informe', speechDuration: '20 min',
         keyMessage: 'Resultados 2026 del posicionamiento global de Barcelona.',
         contentOwner: 'Dirección de Comunicación', companion: 'Directora general',
-        coverage: ['fotos', 'video', 'ndp', 'post', 'story'], sync: outlook(),
+        coverage: ['fotos', 'video', 'ndp', 'post', 'story'],
         docs: [doc('briefing', 'Briefing BOGM 2026'), doc('speech', 'Presentación BOGM')] }),
     E({ title: 'Esmorzar International Council', date: '2026-12-23', start: '09:00', end: '11:00', arrival: '08:45',
         type: 'propi', priority: 'alta',
         location: 'Hotel Mandarin Oriental', address: 'Pg. de Gràcia 38-40, Barcelona',
         speaks: true, speechType: 'Intervención de apertura', speechDuration: '10 min', speechLang: 'Inglés',
-        coverage: ['fotos', 'video', 'ndp', 'post', 'story'], sync: outlook(),
+        coverage: ['fotos', 'video', 'ndp', 'post', 'story'],
         docs: [doc('briefing', 'Briefing International Council')] }),
   ];
 }
@@ -1196,7 +1175,6 @@ function byId(id){ return events.find(e => e.id === id); }
 function logChange(ev, message){
   ev.changes = ev.changes || [];
   ev.changes.unshift({ ts: new Date().toISOString(), message });
-  if (ev.sync.state === 'synced') ev.sync.state = 'pending';
 }
 
 /* ---------- Incidencias ---------- */
@@ -1209,12 +1187,6 @@ function computeIncidents(){
       text: '«' + a.title + '» (' + fmtTimeRange(a) + ') coincide con «' + b.title + '» (' + fmtTimeRange(b) + ') el ' + fmtDateShort(a.date) + '.', evId: a.id });
   });
   active.forEach(e => {
-    if (e.status === 'confirmat' && e.attends === 'si' && e.sync.state !== 'synced' && e.sync.state !== 'syncing' && e.sync.state !== 'pending')
-      incs.push({ sev: 'high', ico: '📅', title: 'Confirmado pero no sincronizado',
-        text: '«' + e.title + '» (' + fmtDateShort(e.date) + ') está confirmado y no figura en el calendario de Outlook del presidente.', evId: e.id });
-    if (e.sync.state === 'pending')
-      incs.push({ sev: 'mid', ico: '🔄', title: 'Actualización pendiente en Outlook',
-        text: '«' + e.title + '» tiene cambios sin trasladar al calendario del presidente.', evId: e.id });
     if (e.attends === 'si' && e.speaks && !hasDoc(e, 'briefing'))
       incs.push({ sev: 'mid', ico: '📄', title: 'Intervención sin briefing',
         text: 'El presidente interviene en «' + e.title + '» (' + fmtDateShort(e.date) + ') y todavía no hay briefing adjunto.', evId: e.id });
@@ -1240,7 +1212,6 @@ const state = {
 /* ---------- Fragmentos reutilizables ---------- */
 function chipStatus(ev){ return '<span class="chip chip-status-' + ev.status + '">' + esc(STATUSES[ev.status]) + '</span>'; }
 function chipType(ev){ return '<span class="chip chip-type chip-' + ev.type + '">' + esc(TYPES[ev.type].label) + '</span>'; }
-function chipSync(ev){ return '<span class="chip chip-sync-' + ev.sync.state + '">' + esc(SYNC[ev.sync.state]) + '</span>'; }
 function chipPrio(ev){ return '<span class="chip chip-prio-' + ev.priority + '">' + esc(PRIORITIES[ev.priority]) + '</span>'; }
 function chipsParticipation(ev){
   let h = '';
@@ -1513,9 +1484,9 @@ function renderComms(){
 function renderTable(){
   const list = filteredEvents();
   let html = '<thead><tr>' +
-    ['Fecha', 'Evento', 'Estado', 'Participación', 'Sincronización', 'Responsable', ''].map(h => '<th>' + h + '</th>').join('') +
+    ['Fecha', 'Evento', 'Estado', 'Participación', 'Responsable', ''].map(h => '<th>' + h + '</th>').join('') +
     '</tr></thead><tbody>';
-  if (!list.length) html += '<tr><td colspan="7" style="text-align:center;color:var(--faint);padding:26px">No hay eventos que coincidan con los filtros.</td></tr>';
+  if (!list.length) html += '<tr><td colspan="6" style="text-align:center;color:var(--faint);padding:26px">No hay eventos que coincidan con los filtros.</td></tr>';
   list.forEach(e => {
     html += '<tr class="row">' +
       '<td style="white-space:nowrap"><b>' + esc(fmtDateShort(e.date)) + '</b><br><small style="color:var(--muted)">' + esc(ev2time(e)) + '</small></td>' +
@@ -1529,7 +1500,6 @@ function renderTable(){
       '<td><select class="mini" data-quick="attends" data-id="' + e.id + '">' +
         [['si', 'Asiste'], ['pendent', 'Pendiente'], ['no', 'No asiste']].map(x => '<option value="' + x[0] + '"' + (e.attends === x[0] ? ' selected' : '') + '>' + x[1] + '</option>').join('') + '</select>' +
         (e.attends !== 'no' && e.speaks ? '<br><span class="chip chip-interviene">🎤 Interviene</span>' : '') + '</td>' +
-      '<td>' + chipSync(e) + '</td>' +
       '<td>' + esc(e.owner || '—') + '</td>' +
       '<td><div class="row-actions">' +
         '<button class="iconbtn" title="Editar" data-edit="' + e.id + '">✏️</button>' +
@@ -1568,28 +1538,10 @@ function openDetail(id){
   const changes = (e.changes || []).slice(0, 5);
   const mapHref = e.mapLink || (e.address ? 'https://maps.google.com/?q=' + encodeURIComponent(e.address) : '');
 
-  let syncBox = '';
-  if (isComms){
-    const canSync = e.attends === 'si' && e.status !== 'cancelat' && e.status !== 'rebutjat';
-    syncBox =
-      '<div class="dsec"><h4>Calendario del presidente (Outlook)</h4>' +
-      '<div class="sync-box">' + chipSync(e) +
-        '<div class="grow">' +
-          (e.sync.outlookId && e.sync.state !== 'removed' ? '<small>ID del evento: ' + esc(e.sync.outlookId) + '</small>' : '') +
-          (e.sync.lastSync ? '<small>Última sincronización: ' + esc(fmtRelative(e.sync.lastSync)) + '</small>' : '<small>Este evento no figura en el calendario del presidente.</small>') +
-        '</div>' +
-        (canSync && (e.sync.state === 'none' || e.sync.state === 'removed' || e.sync.state === 'error') ?
-          '<button class="btn btn-primary btn-sm" data-sync="add|' + e.id + '">📅 Añadir al calendario del presidente</button>' : '') +
-        (e.sync.state === 'pending' ? '<button class="btn btn-primary btn-sm" data-sync="update|' + e.id + '">🔄 Actualizar evento sincronizado</button>' : '') +
-        ((e.sync.state === 'synced' || e.sync.state === 'pending') ? '<button class="btn btn-danger btn-sm" data-sync="remove|' + e.id + '">Retirar del calendario</button>' : '') +
-      '</div>' +
-      (!canSync && e.attends !== 'si' ? '<small style="color:var(--muted)">Activa «Presidente asiste» para poder añadirlo a su calendario.</small>' : '') +
-      '</div>';
-  }
 
   const body =
     '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">' +
-      chipStatus(e) + chipType(e) + chipPrio(e) + chipsParticipation(e) + (isComms ? chipSync(e) : '') +
+      chipStatus(e) + chipType(e) + chipPrio(e) + chipsParticipation(e) +
     '</div>' +
     (changes.length ? '<div class="dsec"><h4>Avisos y cambios recientes</h4><div class="changes-list">' +
       changes.map(c => '<div class="alert">⚠️ <span>' + esc(c.message) + '</span><span class="when">' + esc(fmtRelative(c.ts)) + '</span></div>').join('') +
@@ -1633,7 +1585,6 @@ function openDetail(id){
         '<button class="btn btn-sm" data-doc="' + e.id + '|' + esc(d.kind) + '">Abrir</button></div>').join('') :
         '<div style="color:var(--faint);font-size:13px">Sin documentación adjunta.</div>') +
     '</div>' +
-    syncBox +
     (isComms && e.coverage && e.coverage.length ? '<div class="dsec"><h4>Cobertura de comunicación</h4><div style="display:flex;gap:6px;flex-wrap:wrap">' +
       e.coverage.map(c => '<span class="chip" style="background:var(--gray-bg);color:#4c566d">' + esc({ fotos: 'Fotos', video: 'Vídeo', ndp: 'Nota de prensa', post: 'Post', story: 'Story' }[c] || c) + '</span>').join('') + '</div></div>' : '');
 
@@ -1715,7 +1666,7 @@ function openEditor(id){
     '</div></fieldset>' +
     '<fieldset class="fset"><legend>Participación del presidente</legend>' +
       '<div class="switch-row' + (e && e.attends === 'si' ? ' on' : '') + '" style="margin-bottom:10px">' +
-        '<div style="flex:1"><b>Presidente asiste</b><small>Al activarlo, el evento aparece en la agenda del presidente y podrá añadirse a su calendario de Outlook.</small></div>' +
+        '<div style="flex:1"><b>Presidente asiste</b><small>Al activarlo, el evento aparece en la agenda del presidente y se habilitan los campos de su participación.</small></div>' +
         '<select name="attends">' + sel([['pendent', 'Pendiente'], ['si', 'Sí'], ['no', 'No']], e ? e.attends : 'pendent') + '</select>' +
       '</div>' +
       '<div class="fgrid">' +
@@ -1792,7 +1743,7 @@ function seedBlank(){
     type: 'propi', priority: 'mitjana', status: 'valorar', attends: 'pendent',
     speaks: false, speechType: '', speechDuration: '', speechLang: 'Catalán', keyMessage: '', contentOwner: '',
     owner: '', companion: '', orgContact: '', access: '', transport: '', notes: '', coverage: [],
-    docs: [], sync: { state: 'none', outlookId: null, lastSync: null }, changes: [], archived: false };
+    docs: [], changes: [], archived: false };
 }
 
 /* =====================================================
@@ -1809,21 +1760,18 @@ function doAction(act, id){
       confirmDialog('¿Marcar que el presidente no asistirá a «' + e.title + '»?', () => {
         e.attends = 'no'; if (e.status === 'confirmat') e.status = 'rebutjat';
         logChange(e, 'El presidente no asistirá a este evento.');
-        if (e.sync.state === 'synced' || e.sync.state === 'pending') removeFromOutlook(e, true);
         finish('Marcado como no asiste.');
       }); break;
     case 'delegate':
       confirmDialog('¿Delegar la asistencia a «' + e.title + '» en otra persona?', () => {
         e.status = 'delegat'; e.attends = 'no';
         logChange(e, 'Asistencia delegada.');
-        if (e.sync.state === 'synced' || e.sync.state === 'pending') removeFromOutlook(e, true);
         finish('Evento delegado.');
       }); break;
     case 'cancel':
       confirmDialog('¿Cancelar el evento «' + e.title + '»? Se retirará también del calendario del presidente.', () => {
         e.status = 'cancelat';
         logChange(e, 'El evento ha sido cancelado.');
-        if (e.sync.state === 'synced' || e.sync.state === 'pending') removeFromOutlook(e, true);
         finish('Evento cancelado.');
       }); break;
     case 'archive':
@@ -1836,34 +1784,6 @@ function doAction(act, id){
         finish('Evento eliminado definitivamente.');
       }); break;
   }
-}
-function doSync(op, id){
-  const e = byId(id); if (!e) return;
-  if (op === 'remove'){
-    confirmDialog('¿Retirar «' + e.title + '» del calendario de Outlook del presidente?', () => {
-      removeFromOutlook(e, false);
-      saveData(); closeModal(); renderAll();
-      toast('Evento retirado del calendario del presidente.', 'ok');
-    });
-    return;
-  }
-  // add | update — nunca se crea un duplicado: si ya existe outlookId, se reutiliza.
-  e.sync.state = 'syncing';
-  saveData(); closeModal(); renderAll();
-  toast(op === 'add' ? 'Creando el evento en Outlook…' : 'Actualizando el evento de Outlook…');
-  setTimeout(() => {
-    if (!e.sync.outlookId) e.sync.outlookId = 'OUTLOOK-' + Math.random().toString(36).slice(2, 10).toUpperCase();
-    e.sync.state = 'synced';
-    e.sync.lastSync = new Date().toISOString();
-    saveData(); renderAll();
-    toast(op === 'add' ? 'Evento añadido al calendario del presidente.' : 'Evento sincronizado con Outlook.', 'ok');
-  }, 1400);
-}
-function removeFromOutlook(e, silent){
-  e.sync.state = 'removed';
-  e.sync.outlookId = null;
-  e.sync.lastSync = new Date().toISOString();
-  if (!silent) logChange(e, 'El evento se ha retirado del calendario del presidente.');
 }
 
 /* =====================================================
@@ -2098,7 +2018,6 @@ async function init(){
     const edit = t.closest('[data-edit]');
     const docBtn = t.closest('[data-doc]');
     const act = t.closest('[data-act]');
-    const sync = t.closest('[data-sync]');
     const save = t.closest('[data-save]');
     const ics = t.closest('[data-ics]');
     const close = t.closest('[data-close]');
@@ -2108,7 +2027,6 @@ async function init(){
     if (del){ doAction('delete', del.dataset.del); return; }
     if (save){ saveEditor(save.dataset.save || null); return; }
     if (docBtn){ const [id, kind] = docBtn.dataset.doc.split('|'); openDoc(id, kind); return; }
-    if (sync){ const [op, id] = sync.dataset.sync.split('|'); doSync(op, id); return; }
     if (act){ const [op, id] = act.dataset.act.split('|'); doAction(op, id); return; }
     if (ics){ const e = byId(ics.dataset.ics); if (e) downloadICS([e], 'evento.ics'); return; }
     if (edit){ openEditor(edit.dataset.edit); return; }
