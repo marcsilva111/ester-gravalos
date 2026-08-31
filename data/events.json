@@ -1,5 +1,5 @@
 {
-  "version": 9,
+  "version": 10,
   "events": [
     {
       "id": "ev-001",
@@ -1531,8 +1531,8 @@
       "link": "",
       "type": "extern",
       "priority": "mitjana",
-      "status": "valorar",
-      "attends": "pendent",
+      "status": "confirmat",
+      "attends": "si",
       "speaks": false,
       "speechType": "",
       "speechDuration": "",
