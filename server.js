@@ -9,7 +9,12 @@
      COMMS_PASSWORD      → rol "comms" (gestión completa)
      PRESIDENT_PASSWORD  → rol "president" (solo consulta)
 
-   Dónde se guardan los eventos:
+   Dónde se guardan los eventos (se elige con variables de entorno):
+     · Supabase, si se definen SUPABASE_URL y SUPABASE_KEY. Es una base
+       de datos de verdad; la clave debe ser la de servicio y no sale
+       nunca del servidor.
+         SUPABASE_TABLE  tabla (por defecto agenda)
+         SUPABASE_ROW    fila  (por defecto principal)
      · Por defecto, en disco: data/events.json (o DATA_DIR).
      · Si se definen GITHUB_TOKEN y GITHUB_REPO, en un archivo de ese
        repositorio. Así la agenda sobrevive aunque el servidor se
@@ -25,6 +30,7 @@
      POST /api/logout   { token }                 → { ok }
      GET  /api/events   (Authorization: Bearer)   → { version, events, role }
      GET  /api/version  (Authorization: Bearer)   → { version }
+     GET  /api/ping     (sin autenticación)        → { ok }
      PUT  /api/events   (solo rol comms)          → { version }
    ===================================================== */
 
@@ -59,6 +65,14 @@ const GH = {
   sha: null,
 };
 const usingGitHub = () => !!(GH.token && GH.repo);
+
+const SB = {
+  url: (process.env.SUPABASE_URL || '').replace(/\/$/, ''),
+  key: process.env.SUPABASE_KEY || '',
+  table: process.env.SUPABASE_TABLE || 'agenda',
+  row: process.env.SUPABASE_ROW || 'principal',
+};
+const usingSupabase = () => !!(SB.url && SB.key);
 
 let store = { version: 0, events: null };
 let flushTimer = null;
@@ -158,6 +172,50 @@ async function ghSave(){
   GH.sha = r.body && r.body.content ? r.body.content.sha : GH.sha;
 }
 
+/* ---------- Almacenamiento en Supabase ---------- */
+function sbRequest(method, urlPath, body, extraHeaders){
+  return new Promise((resolve, reject) => {
+    const url = new URL(SB.url + urlPath);
+    const data = body ? JSON.stringify(body) : null;
+    const req = (url.protocol === 'http:' ? http : https).request({
+      method,
+      hostname: url.hostname,
+      port: url.port || (url.protocol === 'http:' ? 80 : 443),
+      path: url.pathname + url.search,
+      headers: Object.assign({
+        'apikey': SB.key,
+        'Authorization': 'Bearer ' + SB.key,
+        'Accept': 'application/json',
+      }, data ? { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(data) } : {}, extraHeaders || {}),
+    }, (res) => {
+      let out = '';
+      res.on('data', (c) => { out += c; });
+      res.on('end', () => {
+        let parsed = null;
+        try { parsed = out ? JSON.parse(out) : null; } catch (e) { /* respuesta no JSON */ }
+        resolve({ status: res.statusCode, body: parsed });
+      });
+    });
+    req.on('error', reject);
+    if (data) req.write(data);
+    req.end();
+  });
+}
+async function sbLoad(){
+  const r = await sbRequest('GET', '/rest/v1/' + SB.table + '?id=eq.' + encodeURIComponent(SB.row) + '&select=version,events');
+  if (r.status !== 200) throw new Error('Supabase respondió ' + r.status + (r.body && r.body.message ? ': ' + r.body.message : ''));
+  const row = Array.isArray(r.body) ? r.body[0] : null;
+  if (!row) return null;                                  // todavía no hay agenda guardada
+  return { version: row.version || 0, events: row.events || [] };
+}
+async function sbSave(){
+  const r = await sbRequest('POST', '/rest/v1/' + SB.table,
+    [{ id: SB.row, version: store.version, events: store.events || [] }],
+    { 'Prefer': 'resolution=merge-duplicates,return=minimal' });
+  if (r.status !== 200 && r.status !== 201 && r.status !== 204)
+    throw new Error('Supabase respondió ' + r.status + (r.body && r.body.message ? ': ' + r.body.message : ''));
+}
+
 /* ---------- Almacenamiento en disco ---------- */
 function diskLoad(){
   try {
@@ -176,7 +234,15 @@ function diskSave(){
 /* ---------- Carga y guardado ---------- */
 async function loadStore(){
   let loaded = null;
-  if (usingGitHub()){
+  if (usingSupabase()){
+    try {
+      loaded = await sbLoad();
+      console.log(loaded ? 'Agenda cargada desde Supabase (' + loaded.events.length + ' eventos).'
+                         : 'Sin agenda previa en Supabase: se creará con el primer cambio.');
+    } catch (e) {
+      console.error('No se pudo leer la agenda de Supabase:', e.message);
+    }
+  } else if (usingGitHub()){
     try {
       await ghEnsureBranch();
       loaded = await ghLoad();
@@ -192,7 +258,7 @@ async function loadStore(){
 }
 // Se agrupan los cambios seguidos en un solo guardado.
 function scheduleSave(){
-  if (!usingGitHub()){ try { diskSave(); } catch (e) { console.error('No se pudo guardar:', e.message); } return; }
+  if (!usingGitHub() && !usingSupabase()){ try { diskSave(); } catch (e) { console.error('No se pudo guardar:', e.message); } return; }
   pendingFlush = true;
   clearTimeout(flushTimer);
   flushTimer = setTimeout(flush, 2000);
@@ -200,9 +266,9 @@ function scheduleSave(){
 async function flush(){
   if (flushing || !pendingFlush) return;
   flushing = true; pendingFlush = false;
-  try { await ghSave(); }
+  try { await (usingSupabase() ? sbSave() : ghSave()); }
   catch (e) {
-    console.error('No se pudo guardar en GitHub:', e.message);
+    console.error('No se pudo guardar la agenda:', e.message);
     pendingFlush = true;
     clearTimeout(flushTimer);
     flushTimer = setTimeout(flush, 10000);   // reintento
@@ -245,6 +311,14 @@ function handleAPI(req, res, pathname){
   if (pathname === '/api/logout' && req.method === 'POST')
     return readBody(req, res, () => sendJSON(res, 200, { ok: true }));
 
+  // Punto de control para servicios de monitorización: mantiene el
+  // servicio despierto y, con Supabase, evita que el proyecto se pause
+  // por inactividad. No devuelve ningún dato.
+  if (pathname === '/api/ping' && req.method === 'GET'){
+    if (usingSupabase()) sbLoad().catch(() => {});
+    return sendJSON(res, 200, { ok: true });
+  }
+
   const role = roleOf(req);
   if (!role) return sendJSON(res, 401, { error: 'No autorizado' });
 
@@ -285,7 +359,8 @@ loadStore().then(() => {
     serveStatic(req, res, pathname);
   }).listen(PORT, () => {
     console.log('Agenda Barcelona Global en http://localhost:' + PORT);
-    console.log('Datos: ' + (usingGitHub() ? 'GitHub ' + GH.repo + ' (rama ' + GH.branch + ')' : DATA_FILE));
+    console.log('Datos: ' + (usingSupabase() ? 'Supabase (tabla ' + SB.table + ')'
+      : usingGitHub() ? 'GitHub ' + GH.repo + ' (rama ' + GH.branch + ')' : DATA_FILE));
     if (!(process.env.COMMS_PASSWORD && process.env.PRESIDENT_PASSWORD))
       console.log('AVISO: claves por defecto. Define COMMS_PASSWORD y PRESIDENT_PASSWORD.');
   });

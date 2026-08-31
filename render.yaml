@@ -20,3 +20,7 @@ services:
         value: marcsilva111/ester-gravalos
       - key: GITHUB_BRANCH       # rama solo de datos: no dispara despliegues
         value: agenda-datos
+  # Para guardar la agenda en Supabase en lugar de GitHub, define estas
+  # dos variables en el panel de Render (tienen prioridad sobre GitHub):
+  #   SUPABASE_URL  https://<proyecto>.supabase.co
+  #   SUPABASE_KEY  la clave service_role del proyecto

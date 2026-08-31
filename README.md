@@ -28,9 +28,47 @@ Esa dirección es la que se pasa a la directora y al presidente. Cada uno entra 
 
 La rama de datos (`agenda-datos`) se crea sola en el primer guardado. Al ser una rama distinta de la del código, guardar la agenda **no** dispara despliegues.
 
+### Dónde se guarda la agenda: dos opciones gratuitas
+
+El servidor no depende de ninguna en concreto; se elige con variables de entorno. Ambas están probadas.
+
+**Opción A · GitHub** (la que trae `render.yaml` por defecto)
+
+Guarda la agenda en la rama `agenda-datos` de este mismo repositorio.
+
+- No se pausa nunca y no hay nada más que dar de alta.
+- Cada cambio queda como una versión en el historial: se ve qué cambió y cuándo, y se puede recuperar una versión anterior.
+- Variables: `GITHUB_TOKEN`, `GITHUB_REPO`, `GITHUB_BRANCH`.
+
+**Opción B · Supabase**
+
+Una base de datos PostgreSQL de verdad, con plan gratuito de 500 MB.
+
+1. Crea un proyecto en <https://supabase.com> (no pide tarjeta).
+2. En el *SQL Editor*, ejecuta:
+
+   ```sql
+   create table if not exists agenda (
+     id text primary key,
+     version bigint not null default 0,
+     events jsonb not null default '[]'::jsonb,
+     updated_at timestamptz not null default now()
+   );
+   alter table agenda enable row level security;
+   ```
+
+3. En *Project Settings → API*, copia la URL del proyecto y la clave **service_role**.
+4. En Render, define `SUPABASE_URL` y `SUPABASE_KEY` (y borra las variables de GitHub, o deja las dos: Supabase tiene prioridad).
+
+> La clave *service_role* da acceso completo a la base de datos. Va únicamente en las variables del servidor y **nunca** en el navegador ni en el código del repositorio.
+
+**Cuál elegir.** Para vuestro volumen —una agenda institucional que mantiene una persona— las dos van sobradas. GitHub es más sencilla (un token y nada más) y regala el historial de cambios, que en una agenda institucional viene muy bien. Supabase es la opción más sólida si algún día crecéis: varias personas editando a la vez, miles de eventos o consultas. Su pega es que **los proyectos gratuitos se pausan tras una semana sin actividad** y hay que reactivarlos a mano desde el panel, algo que en agosto puede pasar perfectamente.
+
 ### Lo que hay que saber del plan gratuito
 
-El servicio **se duerme tras unos 15 minutos sin visitas**, así que la primera carga después de un rato tarda cerca de un minuto; las siguientes son inmediatas. Los datos no se pierden: están en GitHub. Si esa espera molesta, hay dos salidas sin coste: un servicio gratuito de monitorización (UptimeRobot, cron-job.org) que visite la dirección cada 10 minutos y la mantenga despierta, o pasar al plan de pago de Render (unos 7 USD al mes), que no duerme.
+El servicio de Render **se duerme tras unos 15 minutos sin visitas**, así que la primera carga después de un rato tarda cerca de un minuto; las siguientes son inmediatas. Los datos no se pierden nunca: están fuera del servidor.
+
+Para evitar tanto esa espera como la pausa de Supabase, da de alta la dirección `https://…/api/ping` en un servicio gratuito de monitorización (UptimeRobot, cron-job.org) con una visita cada 10 minutos. Ese punto de control mantiene despierto el servidor y, si usas Supabase, también activa la base de datos. No requiere clave y no expone ningún dato.
 
 ### Claves y roles
 
