@@ -317,8 +317,6 @@ td select.mini:hover{border-color:var(--line);background:#fff}
 .iconbtn:hover{background:var(--blue-soft);color:var(--blue)}
 .iconbtn.danger:hover{background:var(--red-bg);color:var(--red)}
 
-/* ---------- Comms cards grid ---------- */
-.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px}
 
 /* ---------- Incidents ---------- */
 .inc-list{display:grid;gap:10px}
@@ -429,12 +427,10 @@ td select.mini:hover{border-color:var(--line);background:#fff}
   </div>
   <div class="topbar-actions">
     <span id="conn-badge" class="chip chip-sync-none" title="">●</span>
-    <button class="btn btn-sm" id="btn-export-ics" title="Exportar los eventos visibles a un archivo .ics">
-      <span class="ico">⤓</span> Exportar ICS
-    </button>
     <div class="menu" id="more-menu">
       <button class="btn btn-sm" id="btn-more" title="Más opciones">⋯</button>
       <div class="menu-list">
+        <button id="btn-export-ics">⤓ Exportar a calendario (ICS)</button>
         <button id="btn-backup">⇩ Guardar copia de datos</button>
         <button id="btn-restore">⇪ Restaurar copia</button>
         <button id="btn-reset">↺ Restaurar datos demo</button>
@@ -486,7 +482,6 @@ td select.mini:hover{border-color:var(--line);background:#fff}
 <div id="view-comms" class="hidden">
   <nav class="tabs">
     <button data-ctab="table" class="active">Tabla</button>
-    <button data-ctab="cards">Tarjetas</button>
     <button data-ctab="calendar">Calendario</button>
     <button data-ctab="incidents">Incidencias <span class="count" id="inc-count">0</span></button>
   </nav>
@@ -501,8 +496,6 @@ td select.mini:hover{border-color:var(--line);background:#fff}
     </div>
     <div id="outlook-info" class="sync-info hidden"></div>
     <div class="filters-row">
-      <label>Desde <input type="date" id="f-from"></label>
-      <label>Hasta <input type="date" id="f-to"></label>
       <select id="f-status">
         <option value="">Estado: todos</option>
         <option value="valorar">Por valorar</option>
@@ -513,27 +506,12 @@ td select.mini:hover{border-color:var(--line);background:#fff}
         <option value="cancelat">Cancelado</option>
         <option value="finalitzat">Finalizado</option>
       </select>
-      <select id="f-prio">
-        <option value="">Prioridad: todas</option>
-        <option value="alta">Alta</option>
-        <option value="mitjana">Media</option>
-        <option value="baixa">Baja</option>
-      </select>
       <select id="f-pres">
         <option value="">Presidente: todos</option>
         <option value="si">Asiste</option>
         <option value="pendent">Pendiente</option>
         <option value="no">No asiste</option>
         <option value="interviene">Interviene</option>
-      </select>
-      <select id="f-type">
-        <option value="">Tipo: todos</option>
-        <option value="propi">Evento propio</option>
-        <option value="inst">Instituciones</option>
-        <option value="extern">Eventos externos</option>
-        <option value="reunio">Reuniones</option>
-        <option value="collab">Colaboraciones</option>
-        <option value="chapter">Chapter Young</option>
       </select>
       <label style="display:inline-flex;align-items:center;gap:5px">
         <input type="checkbox" id="f-archived"> Ver archivados
@@ -542,7 +520,6 @@ td select.mini:hover{border-color:var(--line);background:#fff}
     </div>
 
     <section id="c-table"><div class="table-wrap"><table id="tbl"></table></div></section>
-    <section id="c-cards" class="hidden"><div class="cards-grid" id="cards-root"></div></section>
     <section id="c-calendar" class="hidden"><div id="c-cal-root"></div></section>
     <section id="c-incidents" class="hidden"><div class="inc-list" id="inc-root"></div></section>
   </main>
@@ -925,7 +902,11 @@ function applyRole(){
   const presOnly = isReadOnly();
   if (presOnly) state.role = 'president';
   const sw = $('.role-switch'); if (sw) sw.classList.toggle('hidden', presOnly);
-  const mm = $('#more-menu'); if (mm) mm.classList.toggle('hidden', presOnly);
+  // El presidente conserva el menú para poder exportar; se le ocultan
+  // solo las opciones de gestión.
+  ['#btn-backup', '#btn-restore', '#btn-reset'].forEach((sel) => {
+    const b = $(sel); if (b) b.classList.toggle('hidden', presOnly);
+  });
   const lo = $('#btn-logout'); if (lo) lo.classList.toggle('hidden', !(remote.enabled && auth.token));
 }
 function showLogin(msg){
@@ -1198,7 +1179,7 @@ const state = {
   presTab: 'home',              // home | calendar
   commsTab: 'table',            // table | cards | calendar | incidents
   cal: { date: new Date(), mode: 'month', onlyPres: false, onlySpeaks: false },
-  filters: { q: '', from: '', to: '', status: '', prio: '', pres: '', type: '', archived: false },
+  filters: { q: '', status: '', pres: '', archived: false },
 };
 
 /* ---------- Fragmentos reutilizables ---------- */
@@ -1357,11 +1338,7 @@ function renderCalendar(rootId, scope){
         '</div>' : '') +
     '</div>' +
     '<div id="cal-body"></div>' +
-    '<div class="legend">' +
-      Object.keys(TYPES).map(t => '<span><i style="background:var(--t-' + t + '-bg);border:1px solid var(--t-' + t + ')"></i>' + esc(TYPES[t].label) + '</span>').join('') +
-      '<span><i style="background:#fff;border:2px solid var(--blue)"></i>Evento del presidente</span>' +
-      '<span>⏱ solapado · ⚠️ cambio reciente</span>' +
-    '</div>';
+    '';
 
   const body = $('#cal-body', root);
   const list = calVisibleEvents(scope);
@@ -1450,11 +1427,7 @@ function filteredEvents(){
   return events.filter(e => {
     if (e.archived && !f.archived) return false;
     if (q && !(e.title + ' ' + e.organizer + ' ' + e.location + ' ' + e.owner).toLowerCase().includes(q)) return false;
-    if (f.from && e.date < f.from) return false;
-    if (f.to && e.date > f.to) return false;
     if (f.status && e.status !== f.status) return false;
-    if (f.prio && e.priority !== f.prio) return false;
-    if (f.type && e.type !== f.type) return false;
     if (f.pres === 'interviene'){ if (!(e.speaks && e.attends !== 'no')) return false; }
     else if (f.pres && e.attends !== f.pres) return false;
     return true;
@@ -1491,20 +1464,18 @@ function renderComms(){
   $('#inc-count').style.display = incs.length ? '' : 'none';
   const tab = state.commsTab;
   $('#c-table').classList.toggle('hidden', tab !== 'table');
-  $('#c-cards').classList.toggle('hidden', tab !== 'cards');
   $('#c-calendar').classList.toggle('hidden', tab !== 'calendar');
   $('#c-incidents').classList.toggle('hidden', tab !== 'incidents');
   if (tab === 'table') renderTable();
-  else if (tab === 'cards') renderCards();
   else if (tab === 'calendar') renderCalendar('c-cal-root', 'comms');
   else renderIncidents(incs);
 }
 function renderTable(){
   const list = filteredEvents();
   let html = '<thead><tr>' +
-    ['Fecha', 'Evento', 'Estado', 'Participación', 'Responsable', ''].map(h => '<th>' + h + '</th>').join('') +
+    ['Fecha', 'Evento', 'Estado', 'Participación', ''].map(h => '<th>' + h + '</th>').join('') +
     '</tr></thead><tbody>';
-  if (!list.length) html += '<tr><td colspan="6" style="text-align:center;color:var(--faint);padding:26px">No hay eventos que coincidan con los filtros.</td></tr>';
+  if (!list.length) html += '<tr><td colspan="5" style="text-align:center;color:var(--faint);padding:26px">No hay eventos que coincidan con los filtros.</td></tr>';
   list.forEach(e => {
     html += '<tr class="row">' +
       '<td style="white-space:nowrap"><b>' + esc(fmtDateShort(e.date)) + '</b><br><small style="color:var(--muted)">' + esc(ev2time(e)) + '</small></td>' +
@@ -1519,7 +1490,6 @@ function renderTable(){
       '<td><select class="mini" data-quick="attends" data-id="' + e.id + '">' +
         [['si', 'Asiste'], ['pendent', 'Pendiente'], ['no', 'No asiste']].map(x => '<option value="' + x[0] + '"' + (e.attends === x[0] ? ' selected' : '') + '>' + x[1] + '</option>').join('') + '</select>' +
         (e.attends !== 'no' && e.speaks ? '<br><span class="chip chip-interviene">🎤 Interviene</span>' : '') + '</td>' +
-      '<td>' + esc(e.owner || '—') + '</td>' +
       '<td><div class="row-actions">' +
         '<button class="iconbtn" title="Editar" data-edit="' + e.id + '">✏️</button>' +
         '<button class="iconbtn" title="Ficha" data-open="' + e.id + '">👁</button>' +
@@ -1531,11 +1501,6 @@ function renderTable(){
   $('#tbl').innerHTML = html + '</tbody>';
 }
 function ev2time(e){ return e.start ? e.start + (e.end ? '–' + e.end : '') : '—'; }
-function renderCards(){
-  const list = filteredEvents();
-  $('#cards-root').innerHTML = list.length ? list.map(e => eventCard(e, { showType: true })).join('') :
-    '<div class="block-empty">No hay eventos que coincidan con los filtros.</div>';
-}
 function renderIncidents(incs){
   $('#inc-root').innerHTML = incs.length ? incs.map(i =>
     '<div class="inc sev-' + i.sev + '">' +
@@ -2040,17 +2005,13 @@ async function init(){
   // Filtros del dashboard de Comunicación
   const F = state.filters;
   $('#f-q').addEventListener('input', (e) => { F.q = e.target.value; renderComms(); });
-  $('#f-from').addEventListener('change', (e) => { F.from = e.target.value; renderComms(); });
-  $('#f-to').addEventListener('change', (e) => { F.to = e.target.value; renderComms(); });
   $('#f-status').addEventListener('change', (e) => { F.status = e.target.value; renderComms(); });
-  $('#f-prio').addEventListener('change', (e) => { F.prio = e.target.value; renderComms(); });
   $('#f-pres').addEventListener('change', (e) => { F.pres = e.target.value; renderComms(); });
-  $('#f-type').addEventListener('change', (e) => { F.type = e.target.value; renderComms(); });
   $('#f-archived').addEventListener('change', (e) => { F.archived = e.target.checked; renderComms(); });
   $('#f-clear').addEventListener('click', () => {
-    Object.assign(F, { q: '', from: '', to: '', status: '', prio: '', pres: '', type: '', archived: false });
-    $('#f-q').value = ''; $('#f-from').value = ''; $('#f-to').value = '';
-    $('#f-status').value = ''; $('#f-prio').value = ''; $('#f-pres').value = ''; $('#f-type').value = '';
+    Object.assign(F, { q: '', status: '', pres: '', archived: false });
+    $('#f-q').value = '';
+    $('#f-status').value = ''; $('#f-pres').value = '';
     $('#f-archived').checked = false;
     renderComms();
   });
