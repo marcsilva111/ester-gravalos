@@ -487,6 +487,7 @@ td select.mini:hover{border-color:var(--line);background:#fff}
         <button id="btn-backup">⇩ Guardar copia de datos</button>
         <button id="btn-restore">⇪ Restaurar copia</button>
         <button id="btn-reset">↺ Restaurar datos demo</button>
+        <button id="btn-limpiar-demo">🧹 Vaciar eventos de demostración</button>
       </div>
     </div>
     <button class="btn btn-sm hidden" id="btn-logout" title="Cerrar la sesión">Salir</button>
@@ -629,6 +630,7 @@ function seedEvents(){
     speaks: false, speechType: '', speechDuration: '', speechLang: 'Catalán',
     keyMessage: '', contentOwner: '',
     owner: 'Ester Gravalos', companion: '', orgContact: '', access: '', transport: '', notes: '',
+    demo: true,               // creado como ejemplo, no es un acto real
     coverage: [],             // fotos, video, ndp, post, story
     docs: [],                 // {kind, name, url, updatedAt},
     changes: [],              // {ts, message}
@@ -957,9 +959,15 @@ function applyRole(){
   const sw = $('.role-switch'); if (sw) sw.classList.toggle('hidden', presOnly);
   // El presidente conserva el menú para poder exportar; se le ocultan
   // solo las opciones de gestión.
-  ['#btn-backup', '#btn-restore', '#btn-reset'].forEach((sel) => {
+  ['#btn-backup', '#btn-restore', '#btn-reset', '#btn-limpiar-demo'].forEach((sel) => {
     const b = $(sel); if (b) b.classList.toggle('hidden', presOnly);
   });
+  // Con la agenda en marcha, «restaurar la demostración» sería destructivo:
+  // en su lugar se ofrece vaciar los ejemplos que quedan.
+  const enServicio = remote.enabled || cloud.ready;
+  const reset = $('#btn-reset'); if (reset && !presOnly) reset.classList.toggle('hidden', enServicio);
+  const limpiar = $('#btn-limpiar-demo');
+  if (limpiar && !presOnly) limpiar.classList.toggle('hidden', !enServicio || !events.some(esDemo));
   const lo = $('#btn-logout'); if (lo) lo.classList.toggle('hidden', !(remote.enabled && auth.token));
 }
 function showLogin(msg){
@@ -1686,6 +1694,11 @@ function openDoc(id, kind){
   const e = byId(id); if (!e) return;
   const d = (e.docs || []).find(x => x.kind === kind);
   const title = d ? d.name : 'Documento';
+  // Si lo anotado es un enlace, se abre directamente.
+  if (d && /^https?:\/\//i.test(String(d.name).trim())){
+    window.open(String(d.name).trim(), '_blank', 'noopener');
+    return;
+  }
   const content = kind === 'briefing' ?
     '<p><b>Evento:</b> ' + esc(e.title) + '</p>' +
     '<p><b>Fecha:</b> ' + esc(fmtDateLong(e.date)) + ' · ' + esc(fmtTimeRange(e)) + '</p>' +
@@ -1696,8 +1709,9 @@ function openDoc(id, kind){
     (e.companion ? '<p><b>Acompaña:</b> ' + esc(e.companion) + '</p>' : '') +
     (e.access ? '<p><b>Acceso:</b> ' + esc(e.access) + '</p>' : '') +
     (e.notes ? '<p><b>Observaciones:</b> ' + esc(e.notes) + '</p>' : '') +
-    '<p style="color:var(--faint)">Documento de demostración generado a partir de la ficha del evento.</p>'
-    : '<p style="color:var(--muted)">Vista previa simulada del documento «' + esc(title) + '». En la versión final se abriría el archivo real.</p>';
+    '<p style="color:var(--faint)">Resumen generado con los datos de la ficha. Para adjuntar el briefing real, súbelo como archivo al editar el evento.</p>'
+    : '<p style="color:var(--muted)">Aquí solo está anotado el nombre «' + esc(title) + '»: el archivo no se ha subido.</p>' +
+      '<p style="color:var(--muted)">Para que el presidente pueda abrirlo, súbelo desde <b>Archivos adjuntos para el presidente</b> al editar el evento, o pega aquí un enlace completo (https://…).</p>';
   showModal('<div class="modal-h"><h3>📄 ' + esc(title) + '</h3><button class="modal-close" data-close>×</button></div>' +
     '<div class="modal-b" style="display:grid;gap:9px;font-size:14px">' + content + '</div>' +
     '<div class="modal-f"><button class="btn" data-close>Cerrar</button></div>', true);
@@ -1875,6 +1889,17 @@ function saveEditor(id){
   saveData(); closeModal(); renderAll();
   toast(prev ? 'Evento actualizado.' : 'Evento creado.', 'ok');
 }
+const esDemo = (e) => e.demo === true || /^ev-0\d{2}$/.test(e.id || '');
+function limpiarDemo(){
+  const cuantos = events.filter(esDemo).length;
+  if (!cuantos){ toast('No quedan eventos de demostración.', 'ok'); return; }
+  confirmDialog('¿Vaciar los ' + cuantos + ' eventos de demostración? Los que hayáis creado vosotros y los que llegan de Outlook no se tocan.', () => {
+    events = events.filter((e) => !esDemo(e));
+    saveData(); renderAll();
+    toast(cuantos + ' eventos de demostración eliminados.', 'ok');
+  });
+}
+
 function seedBlank(){
   return { id: '', title: '', organizer: 'Barcelona Global', date: todayISO(), start: '', end: '', arrival: '',
     location: '', address: '', mapLink: '', modality: 'presencial', description: '', link: '', dressCode: '',
@@ -1918,6 +1943,10 @@ function doAction(act, id){
       }); break;
     case 'delete':
       confirmDialog('¿Eliminar definitivamente «' + e.title + '»? Esta acción no se puede deshacer: el evento desaparecerá de la base y de la agenda del presidente.', () => {
+        // Sus archivos adjuntos se retiran también, para no dejarlos huérfanos
+        if (remote.enabled) (e.docs || []).forEach((d) => {
+          if (d.fileId) fetch('/api/files/' + encodeURIComponent(d.fileId), { method: 'DELETE', headers: authHeaders() }).catch(() => {});
+        });
         events = events.filter(x => x.id !== e.id);
         finish('Evento eliminado definitivamente.');
       }); break;
@@ -2097,6 +2126,7 @@ async function init(){
     else if (res !== 'declined') toast('No se ha podido guardar la copia.', 'err');
   });
   $('#btn-restore').addEventListener('click', () => $('#file-restore').click());
+  $('#btn-limpiar-demo').addEventListener('click', limpiarDemo);
   $('#file-restore').addEventListener('change', (ev) => {
     const file = ev.target.files[0];
     ev.target.value = '';
