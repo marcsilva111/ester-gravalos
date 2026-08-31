@@ -47,9 +47,21 @@ const DATA_FILE = path.join(DATA_DIR, 'events.json');
 const MAX_BODY = 8 * 1024 * 1024;
 const SESSION_DAYS = 30;
 
+// Si no se definen las claves, se generan al azar y se muestran al
+// arrancar. Nunca se usan claves por defecto conocidas: el servicio no
+// puede quedar accesible con una contraseña que esté escrita en el
+// repositorio.
+const AVISOS = [];
+function claveDe(nombre, variable){
+  const v = process.env[variable];
+  if (v) return v;
+  const generada = crypto.randomBytes(9).toString('base64url');
+  AVISOS.push('  ' + variable + ' no definida → clave temporal de ' + nombre + ': ' + generada);
+  return generada;
+}
 const PASSWORDS = {
-  comms: process.env.COMMS_PASSWORD || 'comunicacio2026',
-  president: process.env.PRESIDENT_PASSWORD || 'presidencia2026',
+  comms: claveDe('Comunicación', 'COMMS_PASSWORD'),
+  president: claveDe('Presidencia', 'PRESIDENT_PASSWORD'),
 };
 // Firma las sesiones. Si no se define, se deriva de las claves: así las
 // sesiones siguen siendo válidas tras reiniciar, sin guardar nada.
@@ -361,8 +373,16 @@ loadStore().then(() => {
     console.log('Agenda Barcelona Global en http://localhost:' + PORT);
     console.log('Datos: ' + (usingSupabase() ? 'Supabase (tabla ' + SB.table + ')'
       : usingGitHub() ? 'GitHub ' + GH.repo + ' (rama ' + GH.branch + ')' : DATA_FILE));
-    if (!(process.env.COMMS_PASSWORD && process.env.PRESIDENT_PASSWORD))
-      console.log('AVISO: claves por defecto. Define COMMS_PASSWORD y PRESIDENT_PASSWORD.');
+    if (AVISOS.length){
+      console.log('');
+      console.log('ATENCIÓN: faltan claves de acceso en las variables de entorno.');
+      AVISOS.forEach((a) => console.log(a));
+      console.log('  Estas claves cambian en cada reinicio. Defínelas en el panel del servicio.');
+      console.log('');
+    }
+    if (!usingGitHub() && !usingSupabase())
+      console.log('ATENCIÓN: la agenda se guarda en el disco del servidor. En un alojamiento\n' +
+                  '  gratuito ese disco se borra al reiniciar. Define GITHUB_TOKEN y GITHUB_REPO.');
   });
 });
 // Último intento de guardado si la plataforma detiene el servicio.

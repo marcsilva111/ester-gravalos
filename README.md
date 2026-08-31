@@ -77,7 +77,9 @@ Para evitar tanto esa espera como la pausa de Supabase, da de alta la dirección
 | Comunicación | `COMMS_PASSWORD` | Gestión completa: crear, editar y eliminar |
 | Presidencia | `PRESIDENT_PASSWORD` | Solo consulta de su agenda; el servidor rechaza cualquier escritura |
 
-Las sesiones van firmadas, no se guardan en ningún archivo y siguen siendo válidas 30 días aunque el servidor se reinicie. Si no defines las claves, se usan unas por defecto y el servidor lo avisa al arrancar: **defínelas siempre**.
+Las sesiones van firmadas, no se guardan en ningún archivo y siguen siendo válidas 30 días aunque el servidor se reinicie.
+
+Si no defines las claves, el servidor **genera dos al azar y las muestra en el registro de arranque** (cambian en cada reinicio): así el servicio nunca queda accesible con una contraseña conocida, pero tampoco es utilizable de verdad hasta que las definas.
 
 ### Otras formas de abrirlo
 
