@@ -28,7 +28,7 @@ const crypto = require('crypto');
 
 const PORT = process.env.PORT || 3000;
 const ROOT = __dirname;
-const DATA_DIR = path.join(ROOT, 'data');
+const DATA_DIR = process.env.DATA_DIR ? path.resolve(process.env.DATA_DIR) : path.join(ROOT, 'data');
 const DATA_FILE = path.join(DATA_DIR, 'events.json');
 const SESSIONS_FILE = path.join(DATA_DIR, 'sessions.json');
 const MAX_BODY = 8 * 1024 * 1024; // 8 MB

@@ -1,0 +1,22 @@
+# Despliegue en Render (https://render.com) — "Blueprint".
+# Crea el servicio ya configurado: solo hay que conectar el repositorio
+# y escribir las dos claves de acceso cuando Render las pida.
+services:
+  - type: web
+    name: agenda-barcelona-global
+    runtime: node
+    plan: starter          # necesario para el disco persistente
+    buildCommand: echo "Sin dependencias que instalar"
+    startCommand: node server.js
+    healthCheckPath: /
+    disk:
+      name: datos
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: DATA_DIR          # los eventos se guardan en el disco persistente
+        value: /var/data
+      - key: COMMS_PASSWORD    # clave de la Dirección de Comunicación
+        sync: false            # se escribe en el panel de Render, no en el código
+      - key: PRESIDENT_PASSWORD
+        sync: false
