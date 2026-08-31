@@ -119,8 +119,28 @@ La agenda puede leer sola un calendario de Outlook y volcar en ella los eventos,
 - Avisos de cambios recientes (ubicación, horario, intervención, briefing, acompañante, cancelación).
 - Detección de incidencias: solapamientos, intervenciones sin briefing, eventos sin ubicación y cambios importantes cerca de la fecha.
 - Acciones con confirmación para operaciones delicadas (cancelar, delegar, archivar, eliminar).
+- **Código de vestimenta** por evento, visible en el próximo compromiso del presidente.
+- **Archivos adjuntos** que sube Comunicación y abre el presidente.
 - Exportación a **ICS** (agenda completa o evento individual).
 - Persistencia automática según la modalidad: GitHub en el despliegue gratuito, `data/events.json` en un servidor propio o el navegador en el archivo suelto.
+
+## Archivos adjuntos
+
+Comunicación puede adjuntar archivos reales a cada evento (PDF, Word, PowerPoint, Excel, imágenes o texto, hasta 4 MB cada uno) desde el formulario del evento. El presidente los abre desde su ficha o directamente desde el recuadro del próximo compromiso, también en el móvil.
+
+Los archivos **no** se guardan dentro de la agenda, sino como archivos sueltos junto a ella (`data/adjuntos/` en GitHub, una tabla `adjuntos` en Supabase o una carpeta en el disco), de modo que el JSON de eventos no engorda. Para servirlos hace falta sesión iniciada, con cualquiera de los dos roles; adjuntar y retirar es solo de Comunicación.
+
+Si usas Supabase, crea también esta tabla:
+
+```sql
+create table if not exists adjuntos (
+  id text primary key,
+  contenido text not null
+);
+alter table adjuntos enable row level security;
+```
+
+En la versión suelta (archivo sin servidor) no se pueden subir archivos; ahí solo se anotan nombres o enlaces.
 
 ## Datos de demostración
 

@@ -1312,6 +1312,7 @@ function renderHero(){
     return;
   }
   const alerts = recentChanges(next, 7);
+  const adjunto = (next.docs || []).find(d => d.fileId);
   const briefing = (next.docs || []).find(d => d.kind === 'briefing');
   root.innerHTML =
     '<div class="hero">' +
@@ -1323,13 +1324,15 @@ function renderHero(){
         '<span>🕐 ' + esc(fmtTimeRange(next)) + (next.arrival ? ' · llegada ' + esc(next.arrival) + ' h' : '') + '</span>' +
         '<span>📍 ' + esc(next.location || 'Ubicación por confirmar') + '</span>' +
         (next.organizer ? '<span>🏛 ' + esc(next.organizer) + '</span>' : '') +
+        (next.dressCode ? '<span>👔 ' + esc(next.dressCode) + '</span>' : '') +
       '</div>' +
       '<div class="hero-badges">' + chipsParticipation(next) +
         (next.speaks && next.speechType ? '<span class="chip" style="background:rgba(255,255,255,.14);color:#fff">' + esc(next.speechType) + (next.speechDuration && next.speechDuration !== '—' ? ' · ' + esc(next.speechDuration) : '') + '</span>' : '') +
       '</div>' +
       '<div class="hero-actions">' +
         '<button class="btn" data-open="' + next.id + '">Ver ficha completa</button>' +
-        (briefing ? '<button class="btn" data-doc="' + next.id + '|briefing">📄 Abrir briefing</button>' : '') +
+        (adjunto ? '<button class="btn" data-file="' + esc(adjunto.fileId) + '|' + esc(adjunto.name) + '">📎 Abrir ' + esc(adjunto.name.length > 24 ? 'documentación' : adjunto.name) + '</button>'
+                 : briefing ? '<button class="btn" data-doc="' + next.id + '|briefing">📄 Abrir briefing</button>' : '') +
         (next.mapLink || next.address ? '<a class="btn outline" target="_blank" rel="noopener" href="' + esc(next.mapLink || ('https://maps.google.com/?q=' + encodeURIComponent(next.address))) + '">🗺 Cómo llegar</a>' : '') +
       '</div>' +
       (alerts.length ? '<div class="hero-alerts">' + alerts.slice(0, 2).map(a =>
@@ -1571,7 +1574,7 @@ function openDetail(id){
   const e = byId(id); if (!e) return;
   const isComms = state.role === 'comms';
   const briefing = (e.docs || []).find(d => d.kind === 'briefing');
-  const docLabels = { briefing: 'Briefing', invitation: 'Invitación', agenda: 'Agenda / escaleta', speech: 'Discurso · talking points', link: 'Enlace' };
+  const docLabels = { briefing: 'Briefing', invitation: 'Invitación', agenda: 'Agenda / escaleta', speech: 'Discurso · talking points', link: 'Enlace', file: 'Archivo adjunto' };
   const changes = (e.changes || []).slice(0, 5);
   const mapHref = e.mapLink || (e.address ? 'https://maps.google.com/?q=' + encodeURIComponent(e.address) : '');
 
@@ -1592,6 +1595,7 @@ function openDetail(id){
       dit('Lugar', e.location || 'Por confirmar') +
       (e.address ? dit('Dirección', e.address) : '') +
       dit('Modalidad', { presencial: 'Presencial', virtual: 'Virtual', hibrida: 'Híbrida' }[e.modality] || e.modality) +
+      (e.dressCode ? dit('Código de vestimenta', e.dressCode) : '') +
       (e.link ? '<div class="dit"><span class="k">Enlace oficial</span><a class="v" href="' + esc(e.link) + '" target="_blank" rel="noopener">Abrir enlace</a></div>' : '') +
     '</div>' +
     (e.description ? '<p style="margin-top:10px;font-size:13.5px;color:var(--muted)">' + esc(e.description) + '</p>' : '') +
@@ -1617,10 +1621,14 @@ function openDetail(id){
       (!e.companion && !e.access && !e.transport && !e.notes && !isComms ? '<div class="dit" style="color:var(--faint)">Sin indicaciones adicionales.</div>' : '') +
     '</div></div>' +
     '<div class="dsec"><h4>Documentación</h4>' +
-      ((e.docs || []).length ? e.docs.map(d =>
-        '<div class="doc-row">📄 <span><b>' + esc(docLabels[d.kind] || d.kind) + '</b> · ' + esc(d.name) +
+      ((e.docs || []).length ? e.docs.map((d, i) =>
+        '<div class="doc-row">' + (d.fileId ? '📎' : '📄') + ' <span><b>' + esc(docLabels[d.kind] || d.kind) + '</b> · ' + esc(d.name) +
+        (d.size ? ' <small style="color:var(--muted)">' + esc(pesoLegible(d.size)) + '</small>' : '') +
         (d.updatedAt ? ' <small style="color:var(--amber)">(actualizado ' + esc(fmtRelative(d.updatedAt)) + ')</small>' : '') + '</span>' +
-        '<button class="btn btn-sm" data-doc="' + e.id + '|' + esc(d.kind) + '">Abrir</button></div>').join('') :
+        (d.fileId
+          ? '<button class="btn btn-sm btn-primary" data-file="' + esc(d.fileId) + '|' + esc(d.name) + '">Abrir archivo</button>'
+          : '<button class="btn btn-sm" data-doc="' + e.id + '|' + esc(d.kind) + '">Abrir</button>') +
+        '</div>').join('') :
         '<div style="color:var(--faint);font-size:13px">Sin documentación adjunta.</div>') +
     '</div>' +
     (isComms && e.coverage && e.coverage.length ? '<div class="dsec"><h4>Cobertura de comunicación</h4><div style="display:flex;gap:6px;flex-wrap:wrap">' +
@@ -1639,7 +1647,9 @@ function openDetail(id){
       '<button class="btn" data-ics="' + e.id + '">⤓ ICS</button>';
   } else {
     foot =
-      (briefing ? '<button class="btn btn-primary" data-doc="' + e.id + '|briefing">📄 Abrir briefing</button>' : '') +
+      ((e.docs || []).find(d => d.fileId)
+        ? '<button class="btn btn-primary" data-file="' + esc(e.docs.find(d => d.fileId).fileId) + '|' + esc(e.docs.find(d => d.fileId).name) + '">📎 Abrir documentación</button>'
+        : briefing ? '<button class="btn btn-primary" data-doc="' + e.id + '|briefing">📄 Abrir briefing</button>' : '') +
       (mapHref ? '<a class="btn" target="_blank" rel="noopener" href="' + esc(mapHref) + '">🗺 Abrir ubicación</a>' : '') +
       (e.attends === 'pendent' && canEdit() ? '<button class="btn" data-act="attend-yes|' + e.id + '">✓ Confirmar asistencia</button>' +
         '<button class="btn" data-act="attend-no|' + e.id + '">✗ No asistiré</button>' : '') +
@@ -1651,6 +1661,25 @@ function openDetail(id){
     '<div class="modal-f">' + foot + '</div>');
 }
 function dit(k, v){ return '<div class="dit"><span class="k">' + esc(k) + '</span><span class="v">' + esc(v) + '</span></div>'; }
+
+/* ---------- Apertura de un archivo adjunto ---------- */
+async function abrirAdjunto(fileId, nombre){
+  toast('Abriendo ' + nombre + '…');
+  try {
+    const r = await fetch('/api/files/' + encodeURIComponent(fileId), { headers: authHeaders() });
+    if (r.status === 401){ sessionExpired(); return; }
+    if (!r.ok){
+      const d = await r.json().catch(() => ({}));
+      throw new Error(d.error || 'no disponible');
+    }
+    const blob = await r.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.target = '_blank'; a.rel = 'noopener'; a.download = nombre;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+  } catch (e) { toast('No se pudo abrir el archivo: ' + e.message, 'err'); }
+}
 
 /* ---------- Visor de documentos (simulado) ---------- */
 function openDoc(id, kind){
@@ -1694,6 +1723,10 @@ function openEditor(id){
       fld('Hora fin', '<input type="time" name="end" value="' + v('end') + '">') +
       fld('Hora recomendada de llegada', '<input type="time" name="arrival" value="' + v('arrival') + '">') +
       fld('Modalidad', '<select name="modality">' + sel([['presencial', 'Presencial'], ['virtual', 'Virtual'], ['hibrida', 'Híbrida']], e ? e.modality : 'presencial') + '</select>') +
+      fld('Código de vestimenta', '<input name="dressCode" list="lista-vestimenta" value="' + v('dressCode') + '" placeholder="Traje oscuro, business casual…">' +
+        '<datalist id="lista-vestimenta">' +
+          ['Etiqueta (esmoquin)','Traje oscuro','Traje','Business','Business casual','Informal','Sin código'].map(x => '<option value="' + x + '">').join('') +
+        '</datalist>') +
       fld('Lugar', '<input name="location" value="' + v('location') + '">') +
       fld('Dirección', '<input name="address" value="' + v('address') + '">') +
       fld('Enlace de ubicación (mapa)', '<input name="mapLink" value="' + v('mapLink') + '">') +
@@ -1723,6 +1756,10 @@ function openEditor(id){
       fld('Transporte / parking', '<input name="transport" value="' + v('transport') + '">') +
       fld('Observaciones', '<textarea name="notes">' + v('notes') + '</textarea>', true) +
     '</div></fieldset>' +
+    '<fieldset class="fset"><legend>Archivos adjuntos para el presidente</legend>' +
+      '<div id="adjuntos-lista"></div>' +
+      '<div id="adjuntos-zona"></div>' +
+    '</fieldset>' +
     '<fieldset class="fset"><legend>Documentación (nombre del archivo o enlace)</legend><div class="fgrid">' +
       fld('Briefing', '<input name="doc_briefing" value="' + docVal('briefing') + '" placeholder="Briefing del evento">') +
       fld('Invitación', '<input name="doc_invitation" value="' + docVal('invitation') + '">') +
@@ -1735,7 +1772,61 @@ function openEditor(id){
       '<button class="btn btn-primary" id="btn-save" data-save="' + (e ? e.id : '') + '">' + (e ? 'Guardar cambios' : 'Crear evento') + '</button>' +
     '</div>';
   showModal(html);
+  adjuntosEnEdicion = (e && e.docs ? e.docs.filter(d => d.fileId) : []).slice();
+  pintarAdjuntos();
 }
+
+/* ---------- Adjuntos en el formulario ---------- */
+let adjuntosEnEdicion = [];
+const pesoLegible = (n) => n >= 1048576 ? (n / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(n / 1024)) + ' KB';
+function pintarAdjuntos(){
+  const lista = $('#adjuntos-lista');
+  const zona = $('#adjuntos-zona');
+  if (!lista || !zona) return;
+  lista.innerHTML = adjuntosEnEdicion.length
+    ? adjuntosEnEdicion.map((d, i) =>
+        '<div class="doc-row">📎 <span><b>' + esc(d.name) + '</b>' + (d.size ? ' <small style="color:var(--muted)">' + esc(pesoLegible(d.size)) + '</small>' : '') + '</span>' +
+        '<button type="button" class="btn btn-sm btn-danger" data-quita-adj="' + i + '">Quitar</button></div>').join('')
+    : '<div style="color:var(--faint);font-size:13px;margin-bottom:8px">Todavía no hay archivos adjuntos.</div>';
+
+  if (!remote.enabled){
+    zona.innerHTML = '<div class="alert info">📎 <span>Para adjuntar archivos hay que entrar por la dirección del servidor. En esta versión suelta solo se pueden anotar nombres o enlaces.</span></div>';
+    return;
+  }
+  zona.innerHTML =
+    '<input type="file" id="adj-file" class="hidden" multiple ' +
+      'accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.png,.jpg,.jpeg,.gif,.webp,.txt,.md,.csv">' +
+    '<button type="button" class="btn" id="adj-btn">📎 Adjuntar archivo…</button>' +
+    '<small style="display:block;color:var(--muted);margin-top:6px">PDF, Word, PowerPoint, Excel, imágenes o texto. Hasta 4 MB por archivo.</small>';
+  $('#adj-btn').addEventListener('click', () => $('#adj-file').click());
+  $('#adj-file').addEventListener('change', (ev) => subirAdjuntos(Array.from(ev.target.files || [])));
+}
+async function subirAdjuntos(archivos){
+  const btn = $('#adj-btn');
+  for (const f of archivos){
+    if (btn){ btn.disabled = true; btn.textContent = 'Subiendo ' + f.name + '…'; }
+    try {
+      const base64 = await new Promise((res, rej) => {
+        const r = new FileReader();
+        r.onload = () => res(String(r.result).split(',')[1]);
+        r.onerror = () => rej(new Error('lectura'));
+        r.readAsDataURL(f);
+      });
+      const r = await fetch('/api/files', {
+        method: 'POST',
+        headers: authHeaders({ 'Content-Type': 'application/json' }),
+        body: JSON.stringify({ name: f.name, data: base64 }),
+      });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.error || 'no se pudo subir');
+      adjuntosEnEdicion.push({ kind: 'file', name: data.name, fileId: data.id, size: data.size, url: '' });
+      toast('Adjuntado: ' + data.name, 'ok');
+    } catch (e) { toast('No se pudo adjuntar ' + f.name + ': ' + e.message, 'err'); }
+  }
+  if (btn){ btn.disabled = false; btn.textContent = '📎 Adjuntar archivo…'; }
+  pintarAdjuntos();
+}
+
 function fld(label, control, full){
   return '<div class="fld' + (full ? ' full' : '') + '"><label>' + label + '</label>' + control + '</div>';
 }
@@ -1748,13 +1839,14 @@ function saveEditor(id){
   if (id && !prev){ closeModal(); toast('Este evento ya no existe en la base compartida.', 'err'); return; }
   const e = prev || Object.assign(seedBlank(), { id: uid() });
 
+  const antesDocs = prev ? (prev.docs || []).slice() : null;
   const before = prev ? { date: prev.date, start: prev.start, end: prev.end, location: prev.location, speaks: prev.speaks, companion: prev.companion, status: prev.status, briefing: hasDoc(prev, 'briefing') } : null;
 
   ['title', 'organizer', 'type', 'date', 'start', 'end', 'arrival', 'modality', 'location', 'address', 'mapLink', 'link',
    'status', 'priority', 'attends', 'speechType', 'speechDuration', 'speechLang', 'keyMessage', 'contentOwner',
-   'owner', 'companion', 'orgContact', 'access', 'transport', 'notes', 'description'].forEach(k => { e[k] = g(k); });
+   'owner', 'companion', 'orgContact', 'access', 'transport', 'notes', 'description', 'dressCode'].forEach(k => { e[k] = g(k); });
   e.speaks = g('speaks') === 'si';
-  e.docs = (e.docs || []).filter(d => !['briefing', 'invitation', 'agenda', 'speech'].includes(d.kind));
+  e.docs = adjuntosEnEdicion.slice();   // los archivos adjuntos gestionados arriba
   ['briefing', 'invitation', 'agenda', 'speech'].forEach(kind => {
     const name = g('doc_' + kind);
     if (name) e.docs.push({ kind, name, url: '#', updatedAt: before && before.briefing && kind === 'briefing' ? new Date().toISOString() : null });
@@ -1771,13 +1863,21 @@ function saveEditor(id){
     if (!before.briefing && hasDoc(e, 'briefing')) logChange(e, 'Se ha añadido el briefing.');
     else if (before.briefing && hasDoc(e, 'briefing')) { /* posible actualización silenciosa */ }
   }
+  // Los adjuntos que se hayan retirado se borran también del servidor
+  if (prev && remote.enabled){
+    const siguen = new Set(adjuntosEnEdicion.map(d => d.fileId));
+    (antesDocs || []).forEach((d) => {
+      if (d.fileId && !siguen.has(d.fileId))
+        fetch('/api/files/' + encodeURIComponent(d.fileId), { method: 'DELETE', headers: authHeaders() }).catch(() => {});
+    });
+  }
   if (!prev) events.push(e);
   saveData(); closeModal(); renderAll();
   toast(prev ? 'Evento actualizado.' : 'Evento creado.', 'ok');
 }
 function seedBlank(){
   return { id: '', title: '', organizer: 'Barcelona Global', date: todayISO(), start: '', end: '', arrival: '',
-    location: '', address: '', mapLink: '', modality: 'presencial', description: '', link: '',
+    location: '', address: '', mapLink: '', modality: 'presencial', description: '', link: '', dressCode: '',
     type: 'propi', priority: 'mitjana', status: 'valorar', attends: 'pendent',
     speaks: false, speechType: '', speechDuration: '', speechLang: 'Catalán', keyMessage: '', contentOwner: '',
     owner: '', companion: '', orgContact: '', access: '', transport: '', notes: '', coverage: [],
@@ -2075,6 +2175,8 @@ async function init(){
     const open = t.closest('[data-open]');
     const edit = t.closest('[data-edit]');
     const docBtn = t.closest('[data-doc]');
+    const fileBtn = t.closest('[data-file]');
+    const quitaAdj = t.closest('[data-quita-adj]');
     const act = t.closest('[data-act]');
     const save = t.closest('[data-save]');
     const ics = t.closest('[data-ics]');
@@ -2084,6 +2186,8 @@ async function init(){
     if (close){ popModal(); return; }
     if (del){ doAction('delete', del.dataset.del); return; }
     if (save){ saveEditor(save.dataset.save || null); return; }
+    if (quitaAdj){ adjuntosEnEdicion.splice(Number(quitaAdj.dataset.quitaAdj), 1); pintarAdjuntos(); return; }
+    if (fileBtn){ const i = fileBtn.dataset.file.indexOf('|'); abrirAdjunto(fileBtn.dataset.file.slice(0, i), fileBtn.dataset.file.slice(i + 1)); return; }
     if (docBtn){ const [id, kind] = docBtn.dataset.doc.split('|'); openDoc(id, kind); return; }
     if (act){ const [op, id] = act.dataset.act.split('|'); doAction(op, id); return; }
     if (ics){ const e = byId(ics.dataset.ics); if (e) downloadICS([e], 'evento.ics'); return; }

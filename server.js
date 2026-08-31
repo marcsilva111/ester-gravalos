@@ -39,6 +39,9 @@
      GET  /api/ping     (sin autenticación)        → { ok }
      PUT  /api/events   (solo rol comms)          → { version }
      POST /api/import   (solo rol comms)          → { version, ... }
+     POST /api/files    (solo rol comms)          → { id, name, size }
+     GET  /api/files/:id                          → el archivo
+     DELETE /api/files/:id (solo rol comms)       → { ok }
    ===================================================== */
 
 const http = require('http');
@@ -274,6 +277,74 @@ async function sbSave(){
     throw new Error('Supabase respondió ' + r.status + (r.body && r.body.message ? ': ' + r.body.message : ''));
 }
 
+/* ---------- Archivos adjuntos ----------
+   Los adjuntos se guardan como archivos sueltos junto a la agenda, no
+   dentro de ella: así el JSON de eventos no engorda y cada documento
+   se puede servir por separado. */
+const ADJ_DIR = 'data/adjuntos/';
+const MAX_ADJUNTO = 4 * 1024 * 1024;   // 4 MB por archivo
+const TIPOS = {
+  pdf:'application/pdf', doc:'application/msword',
+  docx:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  ppt:'application/vnd.ms-powerpoint',
+  pptx:'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+  xls:'application/vnd.ms-excel',
+  xlsx:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  png:'image/png', jpg:'image/jpeg', jpeg:'image/jpeg', gif:'image/gif',
+  webp:'image/webp', txt:'text/plain; charset=utf-8', md:'text/markdown; charset=utf-8',
+  csv:'text/csv; charset=utf-8', ics:'text/calendar; charset=utf-8',
+};
+const extDe = (nombre) => String(nombre || '').toLowerCase().split('.').pop();
+const tipoDe = (id) => TIPOS[extDe(id)] || 'application/octet-stream';
+
+async function adjuntoGuardar(id, buffer){
+  if (usingSupabase()){
+    const r = await sbRequest('POST', '/rest/v1/adjuntos',
+      [{ id, contenido: buffer.toString('base64') }],
+      { 'Prefer': 'resolution=merge-duplicates,return=minimal' });
+    if (![200,201,204].includes(r.status)) throw new Error('Supabase respondió ' + r.status);
+    return;
+  }
+  if (usingGitHub()){
+    const r = await ghRequest('PUT', '/repos/' + GH.repo + '/contents/' + ADJ_DIR + id,
+      { message: 'Adjuntar ' + id, content: buffer.toString('base64'), branch: GH.branch });
+    if (![200,201].includes(r.status)) throw new Error('GitHub respondió ' + r.status);
+    return;
+  }
+  const dir = path.join(DATA_DIR, 'adjuntos');
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(path.join(dir, id), buffer);
+}
+async function adjuntoLeer(id){
+  if (usingSupabase()){
+    const r = await sbRequest('GET', '/rest/v1/adjuntos?id=eq.' + encodeURIComponent(id) + '&select=contenido');
+    const fila = Array.isArray(r.body) ? r.body[0] : null;
+    if (!fila) return null;
+    return Buffer.from(fila.contenido, 'base64');
+  }
+  if (usingGitHub()){
+    const r = await ghRequest('GET', '/repos/' + GH.repo + '/contents/' + ADJ_DIR + id + '?ref=' + GH.branch);
+    if (r.status !== 200 || !r.body || !r.body.content) return null;
+    return Buffer.from(r.body.content, 'base64');
+  }
+  const f = path.join(DATA_DIR, 'adjuntos', id);
+  return fs.existsSync(f) ? fs.readFileSync(f) : null;
+}
+async function adjuntoBorrar(id){
+  try {
+    if (usingSupabase()){ await sbRequest('DELETE', '/rest/v1/adjuntos?id=eq.' + encodeURIComponent(id)); return; }
+    if (usingGitHub()){
+      const cur = await ghRequest('GET', '/repos/' + GH.repo + '/contents/' + ADJ_DIR + id + '?ref=' + GH.branch);
+      if (cur.status === 200 && cur.body)
+        await ghRequest('DELETE', '/repos/' + GH.repo + '/contents/' + ADJ_DIR + id,
+          { message: 'Retirar ' + id, sha: cur.body.sha, branch: GH.branch });
+      return;
+    }
+    const f = path.join(DATA_DIR, 'adjuntos', id);
+    if (fs.existsSync(f)) fs.unlinkSync(f);
+  } catch (e) { console.error('No se pudo borrar el adjunto:', e.message); }
+}
+
 /* ---------- Almacenamiento en disco ---------- */
 function diskLoad(){
   try {
@@ -390,6 +461,38 @@ function handleAPI(req, res, pathname){
 
   if (pathname === '/api/events' && req.method === 'GET')
     return sendJSON(res, 200, { version: store.version, events: store.events, role, outlook: outlookEstado() });
+
+  // Descarga de un adjunto: cualquiera de los dos roles puede abrirlo.
+  const mAdj = pathname.match(/^\/api\/files\/([A-Za-z0-9._-]{1,80})$/);
+  if (mAdj && req.method === 'GET'){
+    return adjuntoLeer(mAdj[1]).then((buf) => {
+      if (!buf) return sendJSON(res, 404, { error: 'El archivo ya no está disponible' });
+      res.writeHead(200, { 'Content-Type': tipoDe(mAdj[1]), 'Cache-Control': 'private, max-age=300' });
+      res.end(buf);
+    }).catch(() => sendJSON(res, 500, { error: 'No se pudo recuperar el archivo' }));
+  }
+  if (mAdj && req.method === 'DELETE'){
+    if (role !== 'comms') return sendJSON(res, 403, { error: 'Solo Comunicación puede retirar archivos' });
+    return adjuntoBorrar(mAdj[1]).then(() => sendJSON(res, 200, { ok: true }));
+  }
+  if (pathname === '/api/files' && req.method === 'POST'){
+    if (role !== 'comms') return sendJSON(res, 403, { error: 'Solo Comunicación puede adjuntar archivos' });
+    return readBody(req, res, (data) => {
+      const nombre = String(data.name || '').trim();
+      const ext = extDe(nombre);
+      if (!nombre || !TIPOS[ext])
+        return sendJSON(res, 400, { error: 'Formato no admitido. Usa PDF, Word, PowerPoint, Excel, imagen o texto.' });
+      let buf;
+      try { buf = Buffer.from(String(data.data || ''), 'base64'); } catch (e) { buf = null; }
+      if (!buf || !buf.length) return sendJSON(res, 400, { error: 'El archivo llegó vacío' });
+      if (buf.length > MAX_ADJUNTO)
+        return sendJSON(res, 413, { error: 'El archivo pesa demasiado. El máximo es 4 MB.' });
+      const id = crypto.randomBytes(8).toString('hex') + '.' + ext;
+      adjuntoGuardar(id, buf)
+        .then(() => sendJSON(res, 200, { id, name: nombre, size: buf.length }))
+        .catch((e) => sendJSON(res, 500, { error: 'No se pudo guardar el archivo: ' + e.message }));
+    });
+  }
 
   if (pathname === '/api/import' && req.method === 'POST'){
     if (role !== 'comms') return sendJSON(res, 403, { error: 'Solo Comunicación puede sincronizar' });
