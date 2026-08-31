@@ -1,5 +1,5 @@
 {
-  "version": 5,
+  "version": 6,
   "events": [
     {
       "id": "ev-001",
@@ -1622,7 +1622,7 @@
       "sourceKey": "040000008200E00074C5B7101A82E00800000000C5F127775139DD01000000000000000010000000BEF8E38E08FE4D4F8817A59FDF688E62",
       "sourceUid": "040000008200E00074C5B7101A82E00800000000C5F127775139DD01000000000000000010000000BEF8E38E08FE4D4F8817A59FDF688E62",
       "origin": "outlook",
-      "title": "Scale-up miomitor",
+      "title": "Scale-up monitor",
       "organizer": "",
       "date": "2026-09-01",
       "start": "09:30",
