@@ -4,7 +4,24 @@ Prototipo de dashboard para gestionar la agenda institucional del presidente de 
 
 ## Cómo ejecutarlo
 
-**Modo compartido (recomendado)** — los datos viven en una base común y todos los usuarios (directora de Comunicación, presidente…) ven lo mismo y se actualizan solos:
+La misma página funciona de tres formas, y se adapta sola a cada una.
+
+### 1. Online, sin instalar nada (versión publicada)
+
+Publicada en claude.ai: <https://claude.ai/code/artifact/f8acea68-e7c9-4fd9-b1a4-84c392256191>
+
+Los eventos viven en una base compartida en tiempo real: lo que guarda Comunicación aparece al instante en la pantalla del presidente. Los permisos los da el propio enlace al compartirlo:
+
+| Se comparte como | Quién | Qué puede hacer |
+|---|---|---|
+| Puede editar | Dirección de Comunicación | Gestión completa de la agenda |
+| Puede ver | Presidencia | Consulta de su agenda; la aplicación oculta la gestión y el servidor rechaza cualquier cambio |
+
+Funciona en el móvil desde el navegador y se puede añadir a la pantalla de inicio como una app. Para regenerar esta versión tras editar `index.html`: `node build-artifact.js`.
+
+### 2. En vuestro propio servidor
+
+Los datos viven en una base común y todos los usuarios (directora de Comunicación, presidente…) ven lo mismo y se actualizan solos:
 
 ```bash
 node server.js
@@ -12,7 +29,7 @@ node server.js
 
 Abre `http://localhost:3000` (o la dirección del servidor donde lo despliegues: Render, Railway, un VPS…). No requiere `npm install`: el servidor no tiene dependencias. Los datos se guardan en `data/events.json`. La cabecera muestra el estado de conexión («Base compartida» / «Sin conexión»); si el servidor no responde, los cambios se conservan localmente y se reenvían al recuperar la conexión.
 
-### Acceso con clave
+#### Acceso con clave (solo en esta modalidad)
 
 En modo compartido la aplicación pide una clave de acceso. Hay dos, cada una con su rol:
 
@@ -29,7 +46,9 @@ COMMS_PASSWORD='clave-comunicacion' PRESIDENT_PASSWORD='clave-presidencia' node 
 
 Las sesiones se guardan en `data/sessions.json` y sobreviven a reinicios del servidor. El botón «Salir» de la cabecera cierra la sesión.
 
-**Modo local** — abre `index.html` con doble clic en cualquier navegador, sin instalación. Los cambios se guardan solo en ese navegador (`localStorage`).
+### 3. Como archivo suelto
+
+Abre `index.html` con doble clic en cualquier navegador, sin instalación. Los cambios se guardan solo en ese navegador (`localStorage`).
 
 ## Dos experiencias sobre una misma base de eventos
 
@@ -44,7 +63,7 @@ Las sesiones se guardan en `data/sessions.json` y sobreviven a reinicios del ser
 - Detección de incidencias: solapamientos, confirmados sin sincronizar, intervenciones sin briefing, eventos sin ubicación y cambios cerca de la fecha.
 - Acciones con confirmación para operaciones delicadas (cancelar, delegar, retirar del calendario, archivar).
 - Exportación a **ICS** (agenda completa o evento individual).
-- Persistencia en `localStorage` (botón «Datos demo» para restaurar los datos de ejemplo).
+- Persistencia automática según la modalidad: base compartida en la versión online, `data/events.json` en el servidor propio o `localStorage` en el archivo suelto.
 
 ## Datos de demostración
 
