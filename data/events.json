@@ -1,5 +1,5 @@
 {
-  "version": 6,
+  "version": 7,
   "events": [
     {
       "id": "ev-001",
@@ -1880,6 +1880,50 @@
       "notes": "",
       "coverage": [],
       "docs": [],
+      "changes": [],
+      "archived": false
+    },
+    {
+      "id": "ev-mthhaubs-x9f14",
+      "title": ".",
+      "organizer": "Barcelona Global",
+      "date": "2026-08-31",
+      "start": "",
+      "end": "",
+      "arrival": "",
+      "location": "",
+      "address": "",
+      "mapLink": "",
+      "modality": "presencial",
+      "description": "",
+      "link": "",
+      "dressCode": "",
+      "type": "propi",
+      "priority": "mitjana",
+      "status": "valorar",
+      "attends": "pendent",
+      "speaks": false,
+      "speechType": "",
+      "speechDuration": "",
+      "speechLang": "Catalán",
+      "keyMessage": "",
+      "contentOwner": "",
+      "owner": "Ester Gravalos",
+      "companion": "",
+      "orgContact": "",
+      "access": "",
+      "transport": "",
+      "notes": "",
+      "coverage": [],
+      "docs": [
+        {
+          "kind": "file",
+          "name": "b2-first-apuntes-completos.md.pdf",
+          "fileId": "0811cde62eabe008.pdf",
+          "size": 144415,
+          "url": ""
+        }
+      ],
       "changes": [],
       "archived": false
     }
