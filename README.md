@@ -81,6 +81,26 @@ Las sesiones van firmadas, no se guardan en ningún archivo y siguen siendo vál
 
 Si no defines las claves, el servidor **genera dos al azar y las muestra en el registro de arranque** (cambian en cada reinicio): así el servicio nunca queda accesible con una contraseña conocida, pero tampoco es utilizable de verdad hasta que las definas.
 
+### Conectar el calendario de Outlook (opcional)
+
+La agenda puede leer sola un calendario de Outlook y volcar en ella los eventos, sin pedir nada a informática: se suscribe al enlace que genera Outlook al **publicar** un calendario. Es de solo lectura, no escribe nada en Outlook.
+
+**En Outlook (web):** *Configuración → Calendario → Calendarios compartidos → Publicar un calendario*. Elige el calendario, permiso **Puede ver todos los detalles**, y **Publicar**. Copia el enlace **ICS** (no el HTML).
+
+**En Render:** añade la variable `OUTLOOK_ICS_URL` con ese enlace. Opcionalmente `OUTLOOK_SYNC_MINUTES` (cada cuánto se lee, por defecto 15, mínimo 5), `AGENDA_TZ` (por defecto `Europe/Madrid`) y `OUTLOOK_MONTHS` (meses que se importan, por defecto 12).
+
+**Cómo se comporta**
+
+- Outlook manda en el **título, la fecha, el horario y el lugar**: se actualizan solos.
+- La agenda manda en **todo lo demás**. La asistencia, la intervención, el briefing, el acompañante y el responsable que rellene Comunicación no se sobrescriben nunca.
+- Los eventos nuevos entran como **Por valorar** y con la asistencia **Pendiente**, para que Comunicación los triage; aparecen en «Pendientes de decisión».
+- Los cambios de fecha, hora o lugar generan un **aviso** en la ficha y en la agenda del presidente.
+- Si un evento desaparece de Outlook **no se borra**: se marca con un aviso, porque puede llevar trabajo hecho.
+- Los eventos creados a mano en la agenda no se tocan jamás.
+- Se admiten series periódicas (diarias, semanales con días concretos, mensuales y anuales, con `COUNT`, `UNTIL`, `INTERVAL` y excepciones). Las modificaciones sueltas de una repetición concreta no se importan.
+
+**El retardo, que conviene conocer.** El servidor relee el calendario cada 15 minutos, y Comunicación puede forzarlo con el botón **Sincronizar Outlook**. Pero el propio enlace publicado por Microsoft se actualiza con su propio retraso —de unos minutos a algunas horas— y eso no depende de esta herramienta. Para reflejo inmediato haría falta la API de Microsoft Graph, que exige registrar una aplicación en Azure y permisos del administrador.
+
 ### Otras formas de abrirlo
 
 - **En un ordenador vuestro:** `COMMS_PASSWORD='...' PRESIDENT_PASSWORD='...' node server.js` y abrir `http://localhost:3000`. Sin las variables de GitHub, los datos se guardan en `data/events.json` (o donde indique `DATA_DIR`).

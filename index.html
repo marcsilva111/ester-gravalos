@@ -130,6 +130,9 @@ a{color:var(--blue)}
 .chip-prio-alta{background:var(--red-bg);color:var(--red)}
 .chip-prio-mitjana{background:var(--amber-bg);color:var(--amber)}
 .chip-prio-baixa{background:var(--gray-bg);color:#4c566d}
+.chip-outlook{background:#e4edfb;color:#1a4f9c}
+.sync-info{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:7px;margin-left:auto}
+.sync-info.err{color:var(--red);font-weight:600}
 .dot-warn{color:var(--amber);font-size:14px}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
 .chip-sync-syncing{animation:pulse 1s infinite}
@@ -507,8 +510,10 @@ td select.mini:hover{border-color:var(--line);background:#fff}
         <span>🔍</span>
         <input id="f-q" type="search" placeholder="Buscar evento, organizador, lugar o responsable…">
       </div>
+      <button class="btn" id="btn-import" title="Leer ahora el calendario de Outlook">↻ Sincronizar Outlook</button>
       <button class="btn btn-primary" id="btn-new"><span class="ico">＋</span> Nuevo evento</button>
     </div>
+    <div id="outlook-info" class="sync-info hidden"></div>
     <div class="filters-row">
       <label>Desde <input type="date" id="f-from"></label>
       <label>Hasta <input type="date" id="f-to"></label>
@@ -1015,6 +1020,7 @@ async function initData(){
         const data = await r.json();
         remote.enabled = true; remote.online = true;
         if (data.role) auth.role = data.role;
+        if (data.outlook) remote.outlook = data.outlook;
         if (data && Array.isArray(data.events)){
           events = data.events;
           remote.version = data.version || 0;
@@ -1238,6 +1244,7 @@ function eventCard(ev, opts){
     tags.push('<span class="chip chip-interviene">🎤 ' + esc(ev.speechType || 'Interviene') +
       (ev.speechDuration && ev.speechDuration !== '—' ? ' · ' + esc(ev.speechDuration) : '') + '</span>');
   if (opts.showType) tags.push(chipType(ev));
+  if (opts.showType && ev.origin === 'outlook') tags.push('<span class="chip chip-outlook">Outlook</span>');
   return '<div class="ecard' + (ev.status === 'cancelat' || ev.status === 'rebutjat' ? ' dim' : '') + '" data-open="' + ev.id + '">' +
     '<div class="ecard-date">' +
       '<div class="d">' + dt.getDate() + '</div>' +
@@ -1467,7 +1474,32 @@ function filteredEvents(){
     return true;
   }).sort((a, b) => evStart(a) - evStart(b));
 }
+function renderOutlookInfo(){
+  const box = $('#outlook-info');
+  const btn = $('#btn-import');
+  const o = remote.outlook;
+  if (!box || !btn) return;
+  if (!o || !o.configurado){ box.classList.add('hidden'); btn.classList.add('hidden'); return; }
+  btn.classList.remove('hidden');
+  box.classList.remove('hidden');
+  const u = o.ultima;
+  if (!u){ box.className = 'sync-info'; box.textContent = 'Calendario de Outlook conectado. Se lee cada ' + o.minutos + ' minutos.'; return; }
+  if (!u.ok){
+    box.className = 'sync-info err';
+    box.textContent = '⚠️ No se pudo leer el calendario de Outlook (' + u.error + '). Último intento: ' + fmtRelative(u.ts) + '.';
+    return;
+  }
+  const r = u.resumen || {};
+  box.className = 'sync-info';
+  box.textContent = 'Outlook: ' + u.leidos + ' eventos leídos ' + fmtRelative(u.ts) +
+    (r.nuevos ? ' · ' + r.nuevos + ' nuevos' : '') +
+    (r.actualizados ? ' · ' + r.actualizados + ' actualizados' : '') +
+    (r.desaparecidos ? ' · ' + r.desaparecidos + ' ya no están' : '') +
+    '. Se lee cada ' + o.minutos + ' minutos.';
+}
+
 function renderComms(){
+  renderOutlookInfo();
   const incs = computeIncidents();
   $('#inc-count').textContent = incs.length;
   $('#inc-count').style.display = incs.length ? '' : 'none';
@@ -1494,7 +1526,8 @@ function renderTable(){
         '<span class="evt-t" data-open="' + e.id + '">' + esc(e.title) + '</span>' +
         (hasOverlap(e) && isUpcoming(e) ? ' <span class="dot-warn" title="Solapado">⏱</span>' : '') +
         (recentChanges(e, 7).length ? ' <span class="dot-warn" title="Cambios recientes">⚠️</span>' : '') +
-        '<br><small style="color:var(--muted)">' + esc(TYPES[e.type].label) + (e.organizer && e.organizer !== 'Barcelona Global' ? ' · ' + esc(e.organizer) : '') + '</small></td>' +
+        '<br><small style="color:var(--muted)">' + esc(TYPES[e.type].label) + (e.organizer && e.organizer !== 'Barcelona Global' ? ' · ' + esc(e.organizer) : '') + '</small>' +
+        (e.origin === 'outlook' ? ' <span class="chip chip-outlook" title="Este evento viene del calendario de Outlook">Outlook</span>' : '') + '</td>' +
       '<td><select class="mini" data-quick="status" data-id="' + e.id + '">' +
         Object.keys(STATUSES).map(k => '<option value="' + k + '"' + (e.status === k ? ' selected' : '') + '>' + STATUSES[k] + '</option>').join('') + '</select></td>' +
       '<td><select class="mini" data-quick="attends" data-id="' + e.id + '">' +
@@ -1546,6 +1579,7 @@ function openDetail(id){
     (changes.length ? '<div class="dsec"><h4>Avisos y cambios recientes</h4><div class="changes-list">' +
       changes.map(c => '<div class="alert">⚠️ <span>' + esc(c.message) + '</span><span class="when">' + esc(fmtRelative(c.ts)) + '</span></div>').join('') +
     '</div></div>' : '') +
+    (isComms && e.origin === 'outlook' ? '<div class="alert info" style="margin-bottom:14px">📅 <span>Este evento llega del calendario de Outlook. La fecha, el horario, el título y el lugar se actualizan solos desde ahí; el resto lo gestionáis vosotros.</span></div>' : '') +
     '<div class="dsec"><h4>Información básica</h4><div class="dgrid">' +
       dit('Fecha', fmtDateLong(e.date)) +
       dit('Horario', fmtTimeRange(e)) +
@@ -1983,6 +2017,30 @@ async function init(){
   $$('#view-comms [data-ctab]').forEach(b => b.addEventListener('click', () => { state.commsTab = b.dataset.ctab; renderAll(); }));
 
   $('#btn-new').addEventListener('click', () => openEditor(null));
+  $('#btn-import').addEventListener('click', async () => {
+    const btn = $('#btn-import');
+    btn.disabled = true; btn.textContent = '↻ Leyendo Outlook…';
+    try {
+      const r = await fetch('/api/import', { method: 'POST', headers: authHeaders() });
+      if (r.status === 401){ sessionExpired(); return; }
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.error || 'error');
+      remote.outlook = { configurado: true, minutos: data.minutos, ultima: data.ultima };
+      const u = data.ultima || {};
+      if (!u.ok) toast('No se pudo leer el calendario: ' + (u.error || ''), 'err');
+      else {
+        const res = u.resumen || {};
+        const total = (res.nuevos || 0) + (res.actualizados || 0) + (res.desaparecidos || 0);
+        toast(total ? 'Outlook: ' + (res.nuevos || 0) + ' nuevos, ' + (res.actualizados || 0) + ' actualizados.' : 'Outlook: sin novedades.', 'ok');
+      }
+      // Recoger los eventos actualizados del servidor
+      const rr = await fetch('/api/events', { cache: 'no-store', headers: authHeaders() });
+      const ev = await rr.json();
+      if (Array.isArray(ev.events)){ events = ev.events; remote.version = ev.version; saveLocal(); }
+      renderAll();
+    } catch (e) { toast('No se pudo sincronizar con Outlook.', 'err'); }
+    btn.disabled = false; btn.textContent = '↻ Sincronizar Outlook';
+  });
   $('#btn-reset').addEventListener('click', () => confirmDialog('¿Restaurar los datos de demostración? Se perderán los cambios guardados en este navegador.', () => {
     resetData(); renderAll(); toast('Datos de demostración restaurados.', 'ok');
   }));

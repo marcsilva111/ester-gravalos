@@ -25,6 +25,12 @@
          GITHUB_BRANCH  rama de datos (por defecto agenda-datos)
          GITHUB_PATH    archivo (por defecto data/events.json)
 
+   Calendario de Outlook (opcional, solo lectura):
+     OUTLOOK_ICS_URL        enlace .ics del calendario publicado
+     OUTLOOK_SYNC_MINUTES   cada cuánto se lee (por defecto 15)
+     AGENDA_TZ              zona horaria (por defecto Europe/Madrid)
+     OUTLOOK_MONTHS         meses hacia delante que se importan (12)
+
    API:
      POST /api/login    { password }              → { token, role }
      POST /api/logout   { token }                 → { ok }
@@ -32,6 +38,7 @@
      GET  /api/version  (Authorization: Bearer)   → { version }
      GET  /api/ping     (sin autenticación)        → { ok }
      PUT  /api/events   (solo rol comms)          → { version }
+     POST /api/import   (solo rol comms)          → { version, ... }
    ===================================================== */
 
 const http = require('http');
@@ -39,6 +46,7 @@ const https = require('https');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const outlook = require('./outlook');
 
 const PORT = process.env.PORT || 3000;
 const ROOT = __dirname;
@@ -85,6 +93,44 @@ const SB = {
   row: process.env.SUPABASE_ROW || 'principal',
 };
 const usingSupabase = () => !!(SB.url && SB.key);
+
+// Lectura automática del calendario de Outlook (enlace .ics publicado)
+const ICS = {
+  url: process.env.OUTLOOK_ICS_URL || '',
+  minutes: Math.max(5, Number(process.env.OUTLOOK_SYNC_MINUTES || 15)),
+  tz: process.env.AGENDA_TZ || 'Europe/Madrid',
+  months: Math.max(1, Number(process.env.OUTLOOK_MONTHS || 12)),
+  last: null,        // { ts, ok, resumen | error }
+  running: false,
+};
+const usingOutlook = () => !!ICS.url;
+
+async function importarDeOutlook(){
+  if (!usingOutlook() || ICS.running) return ICS.last;
+  ICS.running = true;
+  try {
+    const texto = await outlook.fetchICS(ICS.url);
+    const hoy = new Date();
+    const desde = new Date(hoy.getTime() - 30 * 864e5);      // un mes atrás, por si se retocan eventos pasados
+    const hasta = new Date(hoy.getFullYear(), hoy.getMonth() + ICS.months, hoy.getDate());
+    const partes = (d) => ({ y: d.getFullYear(), m: d.getMonth() + 1, d: d.getDate(), hh: 0, mm: 0 });
+    const ocurrencias = outlook.expandEvents(outlook.parseICS(texto),
+      { tz: ICS.tz, from: partes(desde), to: partes(hasta) });
+    if (!Array.isArray(store.events)) store.events = [];
+    const resumen = outlook.mergeIntoAgenda(store.events, ocurrencias);
+    const huboCambios = resumen.nuevos || resumen.actualizados || resumen.desaparecidos || resumen.cancelados;
+    if (huboCambios){ store.version += 1; scheduleSave(); }
+    ICS.last = { ts: new Date().toISOString(), ok: true, resumen, leidos: ocurrencias.length };
+    console.log('Outlook: ' + ocurrencias.length + ' eventos leídos · ' +
+      resumen.nuevos + ' nuevos, ' + resumen.actualizados + ' actualizados, ' +
+      resumen.desaparecidos + ' ya no están.');
+  } catch (e) {
+    ICS.last = { ts: new Date().toISOString(), ok: false, error: e.message };
+    console.error('Outlook: no se pudo leer el calendario:', e.message);
+  }
+  ICS.running = false;
+  return ICS.last;
+}
 
 let store = { version: 0, events: null };
 let flushTimer = null;
@@ -289,6 +335,11 @@ async function flush(){
   if (pendingFlush){ clearTimeout(flushTimer); flushTimer = setTimeout(flush, 2000); }
 }
 
+function outlookEstado(){
+  if (!usingOutlook()) return { configurado: false };
+  return { configurado: true, minutos: ICS.minutes, ultima: ICS.last };
+}
+
 /* ---------- HTTP ---------- */
 const MIME = {
   '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8',
@@ -338,7 +389,13 @@ function handleAPI(req, res, pathname){
     return sendJSON(res, 200, { version: store.version });
 
   if (pathname === '/api/events' && req.method === 'GET')
-    return sendJSON(res, 200, { version: store.version, events: store.events, role });
+    return sendJSON(res, 200, { version: store.version, events: store.events, role, outlook: outlookEstado() });
+
+  if (pathname === '/api/import' && req.method === 'POST'){
+    if (role !== 'comms') return sendJSON(res, 403, { error: 'Solo Comunicación puede sincronizar' });
+    if (!usingOutlook()) return sendJSON(res, 400, { error: 'No hay ningún calendario de Outlook configurado' });
+    return importarDeOutlook().then(() => sendJSON(res, 200, Object.assign({ version: store.version }, outlookEstado())));
+  }
 
   if (pathname === '/api/events' && req.method === 'PUT'){
     if (role !== 'comms') return sendJSON(res, 403, { error: 'El acceso de Presidencia es solo de consulta' });
@@ -379,6 +436,11 @@ loadStore().then(() => {
       AVISOS.forEach((a) => console.log(a));
       console.log('  Estas claves cambian en cada reinicio. Defínelas en el panel del servicio.');
       console.log('');
+    }
+    if (usingOutlook()){
+      console.log('Calendario de Outlook: se leerá cada ' + ICS.minutes + ' minutos (zona ' + ICS.tz + ').');
+      importarDeOutlook();
+      setInterval(importarDeOutlook, ICS.minutes * 60000);
     }
     if (!usingGitHub() && !usingSupabase())
       console.log('ATENCIÓN: la agenda se guarda en el disco del servidor. En un alojamiento\n' +
