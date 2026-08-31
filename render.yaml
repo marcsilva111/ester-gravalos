@@ -5,6 +5,7 @@ services:
   - type: web
     name: agenda-barcelona-global
     runtime: node
+    branch: claude/barcelona-global-agenda-dashboard-c204e0
     plan: free
     buildCommand: echo "Sin dependencias que instalar"
     startCommand: node server.js
