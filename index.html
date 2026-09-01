@@ -256,6 +256,8 @@ tr.row.interno .evt-t{color:#123a78}
 .cal-nav{display:flex;gap:4px}
 .cal-nav .btn{padding:6px 11px}
 .seg{display:flex;background:#fff;border:1px solid var(--line);border-radius:9px;padding:2.5px;gap:2px}
+.seg-ambito{flex:none}
+.seg-ambito button[data-ambito="interno"].active{background:#3a63b0}
 .seg button{padding:5.5px 13px;border-radius:7px;font-weight:600;font-size:12.5px;color:var(--muted)}
 .seg button.active{background:var(--blue);color:#fff}
 .cal-filters{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto}
@@ -528,6 +530,11 @@ td .evt-t:hover{color:var(--blue)}
   </nav>
   <main class="container">
     <div class="toolbar">
+      <div class="seg seg-ambito hidden" id="seg-ambito" role="group" aria-label="Qué calendario se muestra">
+        <button data-ambito="todo" class="active">Todo</button>
+        <button data-ambito="pres">Presidente</button>
+        <button data-ambito="interno">Interno BG</button>
+      </div>
       <div class="search">
         <span>🔍</span>
         <input id="f-q" type="search" placeholder="Buscar por evento, organizador o lugar…">
@@ -1196,8 +1203,8 @@ const state = {
   role: 'president',            // president | comms
   presTab: 'home',              // home | calendar
   commsTab: 'table',            // table | cards | calendar | incidents
-  cal: { date: new Date(), mode: 'month', onlyPres: false, onlySpeaks: false },
-  filters: { q: '' },
+  cal: { date: new Date(), mode: 'month', onlySpeaks: false },
+  filters: { q: '', ambito: 'todo' },   // todo | pres | interno
 };
 
 /* ---------- Fragmentos reutilizables ---------- */
@@ -1225,7 +1232,8 @@ function eventCard(ev, opts){
   // lo confirmado y con asistencia es la norma y no necesita chip.
   const tags = [];
   if (ev.internal){
-    tags.push('<span class="chip chip-interno" title="Acto interno de Barcelona Global: el presidente no lo ve">Interno BG</span>');
+    if (state.filters.ambito !== 'interno')
+      tags.push('<span class="chip chip-interno" title="Acto interno de Barcelona Global: el presidente no lo ve">Interno BG</span>');
   } else {
     if (!opts.simple){
       if (ev.attends === 'pendent') tags.push('<span class="chip chip-pendiente-p">Asistencia pendiente</span>');
@@ -1329,7 +1337,7 @@ function calVisibleEvents(scope){
   let list = events.slice();
   if (scope === 'pres') list = list.filter(presVisible);
   else {
-    if (state.cal.onlyPres) list = list.filter(e => !e.internal && e.attends !== 'no');
+    list = list.filter(pasaAmbito);
     if (state.cal.onlySpeaks) list = list.filter(e => !e.internal && e.attends !== 'no' && e.speaks);
   }
   return list.sort((a, b) => evStart(a) - evStart(b));
@@ -1361,7 +1369,6 @@ function renderCalendar(rootId, scope){
       '</div>' +
       (scope === 'comms' ?
         '<div class="cal-filters">' +
-          '<button class="fchip ' + (c.onlyPres ? 'active' : '') + '" data-calf="onlyPres">Solo presidente</button>' +
           '<button class="fchip ' + (c.onlySpeaks ? 'active' : '') + '" data-calf="onlySpeaks">🎤 Interviene</button>' +
         '</div>' : '') +
     '</div>' +
@@ -1449,12 +1456,23 @@ function renderAgendaList(list){
 /* =====================================================
    DASHBOARD DE COMUNICACIÓN
    ===================================================== */
+/* Qué calendario se está mirando: el de todos, el del presidente o el
+   interno de Barcelona Global. Vale para la tabla, el calendario y los
+   pasados, de modo que las tres pestañas enseñen siempre lo mismo. */
+function pasaAmbito(ev){
+  const a = state.filters.ambito;
+  if (a === 'pres') return !ev.internal;
+  if (a === 'interno') return !!ev.internal;
+  return true;
+}
+function hayInternos(){ return events.some(e => e.internal); }
 function filteredEvents(opts){
   const f = state.filters;
   const q = f.q.trim().toLowerCase();
   const past = !!(opts && opts.past);
   return events.filter(e => {
     if (isUpcoming(e) === past) return false;
+    if (!pasaAmbito(e)) return false;
     if (q && !([e.title, e.organizer, e.location, e.address].join(' ')).toLowerCase().includes(q)) return false;
     return true;
   }).sort((a, b) => evStart(a) - evStart(b));
@@ -1489,8 +1507,20 @@ function renderOutlookInfo(){
     '. Se lee cada ' + o.minutos + ' minutos.' + soloMarcados;
 }
 
+/* El selector de calendario solo tiene sentido cuando hay actos internos:
+   mientras no los haya, no ocupa sitio. Si desaparecen todos, se vuelve
+   a «Todo» para no dejar la pantalla vacía sin explicación. */
+function renderAmbito(){
+  const seg = $('#seg-ambito');
+  if (!seg) return;
+  const hay = hayInternos();
+  if (!hay && state.filters.ambito !== 'todo') state.filters.ambito = 'todo';
+  seg.classList.toggle('hidden', !hay);
+  $$('button', seg).forEach(b => b.classList.toggle('active', b.dataset.ambito === state.filters.ambito));
+}
 function renderComms(){
   renderOutlookInfo();
+  renderAmbito();
   const incs = computeIncidents();
   $('#inc-count').textContent = incs.length;
   $('#inc-count').style.display = incs.length ? '' : 'none';
@@ -1540,7 +1570,9 @@ function renderTable(){
         (enPasados ? (enPasados === 1
           ? ' Hay uno ya celebrado que sí: <button class="lnk" data-ctab-ir="past">verlo en «Pasados»</button>.'
           : ' Hay ' + enPasados + ' ya celebrados que sí: <button class="lnk" data-ctab-ir="past">verlos en «Pasados»</button>.') : '')
-      : 'No hay eventos próximos.' + (enPasados ? ' Los ya celebrados están en «Pasados».' : '');
+      : (state.filters.ambito === 'interno' ? 'No hay actos internos próximos.'
+         : state.filters.ambito === 'pres' ? 'No hay actos del presidente próximos.'
+         : 'No hay eventos próximos.') + (enPasados ? ' Los ya celebrados están en «Pasados».' : '');
     html += '<tr><td colspan="3" style="text-align:center;color:var(--faint);padding:26px">' + aviso + '</td></tr>';
   }
   list.forEach(e => {
@@ -1551,7 +1583,7 @@ function renderTable(){
         (hasOverlap(e) && isUpcoming(e) ? ' <span class="dot-warn" title="Solapado">⏱</span>' : '') +
         (recentChanges(e, 7).length ? ' <span class="dot-warn" title="Cambios recientes">⚠️</span>' : '') +
         '<br><small style="color:var(--muted)">' + esc(TYPES[e.type].label) + (e.organizer && e.organizer !== 'Barcelona Global' ? ' · ' + esc(e.organizer) : '') + '</small>' +
-        (e.internal ? ' <span class="chip chip-interno" title="Acto interno de Barcelona Global: el presidente no lo ve">Interno BG</span>' : '') +
+        (e.internal && state.filters.ambito !== 'interno' ? ' <span class="chip chip-interno" title="Acto interno de Barcelona Global: el presidente no lo ve">Interno BG</span>' : '') +
         (e.origin === 'outlook' && !e.missingFromSource ? ' <span class="chip chip-outlook" title="Este evento viene del calendario de Outlook">Outlook</span>' : '') +
         (e.missingFromSource ? ' <span class="chip chip-status-cancelat" style="text-decoration:none" title="Ya no llega del calendario de Outlook">Ya no está en Outlook</span>' : '') + '</td>' +
       '<td class="c-acciones"><div class="row-actions">' +
@@ -2119,6 +2151,7 @@ async function init(){
   $('#rs-comms').addEventListener('click', () => { state.role = 'comms'; renderAll(); });
   $$('#view-president [data-ptab]').forEach(b => b.addEventListener('click', () => { state.presTab = b.dataset.ptab; renderAll(); }));
   $$('#view-comms [data-ctab]').forEach(b => b.addEventListener('click', () => { state.commsTab = b.dataset.ctab; renderAll(); }));
+  $$('#seg-ambito button').forEach(b => b.addEventListener('click', () => { state.filters.ambito = b.dataset.ambito; renderAll(); }));
 
   $('#btn-new').addEventListener('click', () => openEditor(null));
   $('#btn-import').addEventListener('click', async () => {
