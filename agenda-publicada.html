@@ -1514,15 +1514,10 @@ function openDetail(id){
   const changes = (e.changes || []).slice(0, 5);
   const mapHref = e.mapLink || (e.address ? 'https://maps.google.com/?q=' + encodeURIComponent(e.address) : '');
 
-
   const body =
-    '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">' +
-      chipType(e) + chipsParticipation(e, !isComms) +
-    '</div>' +
     (changes.length ? '<div class="dsec"><h4>Avisos y cambios recientes</h4><div class="changes-list">' +
       changes.map(c => '<div class="alert">⚠️ <span>' + esc(c.message) + '</span><span class="when">' + esc(fmtRelative(c.ts)) + '</span></div>').join('') +
     '</div></div>' : '') +
-    (isComms && e.origin === 'outlook' ? '<div class="alert info" style="margin-bottom:14px">📅 <span>Este evento llega del calendario de Outlook. La fecha, el horario, el título y el lugar se actualizan solos desde ahí; el resto lo gestionáis vosotros.</span></div>' : '') +
     '<div class="dsec"><h4>Información básica</h4><div class="dgrid">' +
       dit('Fecha', fmtDateLong(e.date)) +
       dit('Horario', fmtTimeRange(e)) +
@@ -1535,7 +1530,6 @@ function openDetail(id){
     '</div>' +
     '</div>' +
     '<div class="dsec"><h4>Participación del presidente</h4><div class="dgrid">' +
-      (isComms ? dit('Asiste', { si: 'Sí', no: 'No', pendent: 'Pendiente' }[e.attends]) : '') +
       dit('Interviene', e.attends !== 'no' && e.speaks ? 'Sí' : 'No') +
       (e.speaks && e.attends !== 'no' ? (
         dit('Tipo de intervención', e.speechType || '—') +
