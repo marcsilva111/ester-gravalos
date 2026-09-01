@@ -120,6 +120,11 @@ a{color:var(--blue)}
 .chip-prio-mitjana{background:var(--amber-bg);color:var(--amber)}
 .chip-prio-baixa{background:var(--gray-bg);color:#4c566d}
 .chip-outlook{background:#e4edfb;color:#1a4f9c}
+.chip-interno{background:#dbe6fb;color:#123a78;border:1px solid #b9cdf2}
+/* Los actos internos de Barcelona Global se distinguen por su azul */
+tr.row.interno .evt-t{color:#123a78}
+.cal-ev.interno,.cal-wev.interno{background:#dbe6fb!important;color:#123a78!important;border-left-color:#3a63b0!important}
+.ecard.interno{border-left:3px solid #3a63b0}
 .sync-info{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:7px;margin-left:auto}
 .sync-info.err{color:var(--red);font-weight:600}
 .dot-warn{color:var(--amber);font-size:14px}
@@ -248,11 +253,11 @@ a{color:var(--blue)}
 }
 .fchip.active{border-color:var(--blue);color:var(--blue);background:var(--blue-soft)}
 .cal-grid{
-  display:grid;grid-template-columns:repeat(7,1fr);background:var(--line);gap:1px;border:1px solid var(--line);
+  display:grid;grid-template-columns:repeat(7,minmax(0,1fr));background:var(--line);gap:1px;border:1px solid var(--line);
   border-radius:12px;overflow:hidden;box-shadow:var(--shadow);
 }
 .cal-dow{background:#f0f2f8;padding:8px 6px;text-align:center;font-size:11.5px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--muted)}
-.cal-cell{background:#fff;min-height:104px;padding:6px;position:relative}
+.cal-cell{background:#fff;min-height:104px;padding:6px;position:relative;min-width:0;overflow:hidden}
 .cal-cell.out{background:#fafbfd}
 .cal-cell .dn{font-size:12px;font-weight:700;color:var(--muted);margin-bottom:4px}
 .cal-cell.out .dn{color:#c2c7d6}
@@ -260,14 +265,14 @@ a{color:var(--blue)}
   background:var(--blue);color:#fff;width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;
 }
 .cal-ev{
-  display:block;width:100%;text-align:left;font-size:11.5px;font-weight:600;padding:3px 6px;border-radius:6px;margin-bottom:3px;
+  display:block;width:100%;max-width:100%;text-align:left;font-size:11.5px;font-weight:600;padding:3px 6px;border-radius:6px;margin-bottom:3px;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border-left:3px solid transparent;color:var(--ink);
 }
 .cal-ev:hover{filter:brightness(.95)}
 .cal-ev.pres{border-left-color:var(--blue);box-shadow:inset 0 0 0 1px rgba(30,45,190,.25)}
 .cal-ev .w{color:var(--amber)}
-.cal-week{display:grid;grid-template-columns:repeat(7,1fr);gap:10px}
-.cal-wday{background:#fff;border:1px solid var(--line);border-radius:11px;min-height:150px;padding:9px}
+.cal-week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:10px}
+.cal-wday{background:#fff;border:1px solid var(--line);border-radius:11px;min-height:150px;padding:9px;min-width:0}
 .cal-wday.today{border-color:var(--blue);box-shadow:0 0 0 1px var(--blue)}
 .cal-wday-h{font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:8px}
 .cal-wday.today .cal-wday-h{color:var(--blue)}
@@ -275,7 +280,7 @@ a{color:var(--blue)}
   display:block;width:100%;text-align:left;border-radius:8px;padding:6px 8px;margin-bottom:6px;font-size:12px;border-left:3px solid transparent;color:var(--ink);
 }
 .cal-wev.pres{border-left-color:var(--blue)}
-.cal-wev b{display:block;font-size:12.5px}
+.cal-wev b{display:block;font-size:12.5px;overflow:hidden;text-overflow:ellipsis}
 .cal-wev .tm{font-weight:700;font-size:11px;opacity:.75}
 .cal-agenda{display:grid;gap:8px}
 .cal-agenda-day{font-size:12.5px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:var(--blue-dark);margin:12px 2px 2px}
@@ -428,6 +433,8 @@ td .evt-t:hover{color:var(--blue)}
   .hero h2{font-size:21px}
   .hero-actions .btn{flex:1;justify-content:center}
   .tabs{padding:0 8px}
+  .tabs button{padding:11px 9px;font-size:13px}
+  .tabs .count{margin-left:4px}
   .cal-grid{display:none}
   .cal-grid-mobilenote{display:block!important}
   .role-switch button{padding:7px 11px;font-size:12.5px}
@@ -502,6 +509,7 @@ td .evt-t:hover{color:var(--blue)}
     <button data-ctab="table" class="active">Tabla</button>
     <button data-ctab="calendar">Calendario</button>
     <button data-ctab="incidents">Incidencias <span class="count" id="inc-count">0</span></button>
+    <button data-ctab="past">Pasados</button>
   </nav>
   <main class="container">
     <div class="toolbar">
@@ -516,6 +524,7 @@ td .evt-t:hover{color:var(--blue)}
     <section id="c-table"><div class="table-wrap"><table id="tbl"></table></div></section>
     <section id="c-calendar" class="hidden"><div id="c-cal-root"></div></section>
     <section id="c-incidents" class="hidden"><div class="inc-list" id="inc-root"></div></section>
+    <section id="c-past" class="hidden"><div id="past-root"></div></section>
   </main>
 </div>
 
@@ -1117,7 +1126,7 @@ function isActive(ev){ return !ev.missingFromSource; }
 function presVisible(ev){
   // Llega a su agenda salvo que Comunicación lo descarte o el acto haya
   // dejado de venir del calendario de Outlook.
-  return ev.attends !== 'no' && !ev.missingFromSource;
+  return !ev.internal && ev.attends !== 'no' && !ev.missingFromSource;
 }
 function hasDoc(ev, kind){ return (ev.docs || []).some(d => d.kind === kind); }
 function recentChanges(ev, days){
@@ -1148,13 +1157,13 @@ function logChange(ev, message){
 function computeIncidents(){
   const incs = [];
   const active = events.filter(e => isActive(e) && isUpcoming(e));
-  const presEvents = active.filter(e => e.attends !== 'no');
+  const presEvents = active.filter(e => !e.internal && e.attends !== 'no');
   findOverlaps(presEvents).forEach(([a, b]) => {
     incs.push({ sev: 'high', ico: '⏱', title: 'Eventos solapados en la agenda del presidente',
       text: '«' + a.title + '» (' + fmtTimeRange(a) + ') coincide con «' + b.title + '» (' + fmtTimeRange(b) + ') el ' + fmtDateShort(a.date) + '.', evId: a.id });
   });
   active.forEach(e => {
-    if (e.attends === 'si' && e.speaks && !(e.docs || []).some(d => d.fileId))
+    if (!e.internal && e.attends === 'si' && e.speaks && !(e.docs || []).some(d => d.fileId))
       incs.push({ sev: 'mid', ico: '📄', title: 'Intervención sin briefing',
         text: 'El presidente interviene en «' + e.title + '» (' + fmtDateShort(e.date) + ') y todavía no se ha adjuntado ningún documento.', evId: e.id });
     if (e.attends !== 'no' && !e.location && !e.address)
@@ -1200,16 +1209,20 @@ function eventCard(ev, opts){
   // En modo "simple" (agenda del presidente) solo se etiqueta lo excepcional:
   // lo confirmado y con asistencia es la norma y no necesita chip.
   const tags = [];
-  if (!opts.simple){
-    if (ev.attends === 'pendent') tags.push('<span class="chip chip-pendiente-p">Asistencia pendiente</span>');
-    else if (ev.attends === 'si') tags.push('<span class="chip chip-asiste">Asiste</span>');
+  if (ev.internal){
+    tags.push('<span class="chip chip-interno" title="Acto interno de Barcelona Global: el presidente no lo ve">Interno BG</span>');
+  } else {
+    if (!opts.simple){
+      if (ev.attends === 'pendent') tags.push('<span class="chip chip-pendiente-p">Asistencia pendiente</span>');
+      else if (ev.attends === 'si') tags.push('<span class="chip chip-asiste">Asiste</span>');
+    }
+    if (ev.attends !== 'no' && ev.speaks)
+      tags.push('<span class="chip chip-interviene">🎤 ' + esc(ev.speechType || 'Interviene') +
+        (ev.speechDuration && ev.speechDuration !== '—' ? ' · ' + esc(ev.speechDuration) : '') + '</span>');
   }
-  if (ev.attends !== 'no' && ev.speaks)
-    tags.push('<span class="chip chip-interviene">🎤 ' + esc(ev.speechType || 'Interviene') +
-      (ev.speechDuration && ev.speechDuration !== '—' ? ' · ' + esc(ev.speechDuration) : '') + '</span>');
   if (opts.showType) tags.push(chipType(ev));
   if (opts.showType && ev.origin === 'outlook') tags.push('<span class="chip chip-outlook">Outlook</span>');
-  return '<div class="ecard' + (ev.missingFromSource ? ' dim' : '') + '" data-open="' + ev.id + '">' +
+  return '<div class="ecard' + (ev.internal ? ' interno' : '') + (ev.missingFromSource ? ' dim' : '') + '" data-open="' + ev.id + '">' +
     '<div class="ecard-date">' +
       '<div class="d">' + dt.getDate() + '</div>' +
       '<div class="m">' + MONTHS_S[dt.getMonth()] + '</div>' +
@@ -1301,8 +1314,8 @@ function calVisibleEvents(scope){
   let list = events.slice();
   if (scope === 'pres') list = list.filter(presVisible);
   else {
-    if (state.cal.onlyPres) list = list.filter(e => e.attends !== 'no');
-    if (state.cal.onlySpeaks) list = list.filter(e => e.attends !== 'no' && e.speaks);
+    if (state.cal.onlyPres) list = list.filter(e => !e.internal && e.attends !== 'no');
+    if (state.cal.onlySpeaks) list = list.filter(e => !e.internal && e.attends !== 'no' && e.speaks);
   }
   return list.sort((a, b) => evStart(a) - evStart(b));
 }
@@ -1366,7 +1379,7 @@ function mondayOf(d){
 }
 function calEvChip(ev, cls){
   const warn = (hasOverlap(ev) && isUpcoming(ev) ? ' <span class="w">⏱</span>' : '') + (recentChanges(ev, 7).length ? ' <span class="w">⚠️</span>' : '');
-  return '<button class="' + cls + (ev.attends !== 'no' ? ' pres' : '') + '" style="' + typeColorVars(ev) + '" data-open="' + ev.id + '" title="' + esc(ev.title) + '">' +
+  return '<button class="' + cls + (ev.internal ? ' interno' : ev.attends !== 'no' ? ' pres' : '') + '" style="' + typeColorVars(ev) + '" data-open="' + ev.id + '" title="' + esc(ev.title) + '">' +
     (cls === 'cal-wev' ? '<span class="tm">' + esc(ev.start || '') + '</span><b>' + esc(ev.title) + warn + '</b>' + (ev.speaks && ev.attends !== 'no' ? '🎤 interviene' : '') :
       (ev.start ? esc(ev.start) + ' ' : '') + esc(ev.title) + (ev.speaks && ev.attends !== 'no' ? ' 🎤' : '') + warn) +
   '</button>';
@@ -1421,10 +1434,12 @@ function renderAgendaList(list){
 /* =====================================================
    DASHBOARD DE COMUNICACIÓN
    ===================================================== */
-function filteredEvents(){
+function filteredEvents(opts){
   const f = state.filters;
   const q = f.q.trim().toLowerCase();
+  const past = !!(opts && opts.past);
   return events.filter(e => {
+    if (isUpcoming(e) === past) return false;
     if (q && !(e.title + ' ' + e.organizer + ' ' + e.location + ' ' + e.owner).toLowerCase().includes(q)) return false;
     return true;
   }).sort((a, b) => evStart(a) - evStart(b));
@@ -1438,7 +1453,10 @@ function renderOutlookInfo(){
   btn.classList.remove('hidden');
   box.classList.remove('hidden');
   const u = o.ultima;
-  const soloMarcados = o.marca ? ' Solo se importan los eventos marcados con «' + o.marca + '» en Outlook.' : '';
+  const soloMarcados = o.marca
+    ? ' Solo se importan los eventos marcados con «' + o.marca + '» en Outlook' +
+      (o.interno ? ', y los marcados con «' + o.interno + '» entran como actos internos de Barcelona Global' : '') + '.'
+    : '';
   if (!u){ box.className = 'sync-info'; box.textContent = 'Calendario de Outlook conectado. Se lee cada ' + o.minutos + ' minutos.' + soloMarcados; return; }
   if (!u.ok){
     box.className = 'sync-info err';
@@ -1447,7 +1465,9 @@ function renderOutlookInfo(){
   }
   const r = u.resumen || {};
   box.className = 'sync-info';
-  box.textContent = 'Outlook: ' + u.leidos + (u.marca && u.enCalendario ? ' de ' + u.enCalendario : '') + ' eventos leídos ' + fmtRelative(u.ts) +
+  const int = u.interno;
+  box.textContent = 'Outlook: ' + u.leidos + (u.marca && u.enCalendario ? ' de ' + u.enCalendario : '') + ' eventos leídos ' +
+    (int ? '(y ' + int.leidos + (int.marca && int.enCalendario ? ' de ' + int.enCalendario : '') + ' internos) ' : '') + fmtRelative(u.ts) +
     (r.nuevos ? ' · ' + r.nuevos + ' nuevos' : '') +
     (r.actualizados ? ' · ' + r.actualizados + ' actualizados' : '') +
     (r.desaparecidos ? ' · ' + r.desaparecidos + ' ya no están' : '') +
@@ -1463,24 +1483,50 @@ function renderComms(){
   $('#c-table').classList.toggle('hidden', tab !== 'table');
   $('#c-calendar').classList.toggle('hidden', tab !== 'calendar');
   $('#c-incidents').classList.toggle('hidden', tab !== 'incidents');
+  $('#c-past').classList.toggle('hidden', tab !== 'past');
   if (tab === 'table') renderTable();
   else if (tab === 'calendar') renderCalendar('c-cal-root', 'comms');
+  else if (tab === 'past') renderPast();
   else renderIncidents(incs);
+}
+/* Eventos ya celebrados: todos, los del presidente y los internos, del más
+   reciente al más antiguo y agrupados por mes. Respeta el buscador. */
+function renderPast(){
+  const list = filteredEvents({ past: true }).reverse();
+  if (!list.length){
+    $('#past-root').innerHTML = '<div class="block-empty">' +
+      (state.filters.q.trim() ? 'Ningún evento pasado coincide con la búsqueda.' : 'Todavía no hay eventos celebrados.') + '</div>';
+    return;
+  }
+  let html = '<div class="cal-agenda">', lastMonth = '';
+  list.forEach(e => {
+    const m = e.date.slice(0, 7);
+    if (m !== lastMonth){
+      lastMonth = m;
+      const d = parseDT(e.date, '00:00');
+      const mes = MONTHS[d.getMonth()];
+      html += '<div class="cal-agenda-day">' + mes.charAt(0).toUpperCase() + mes.slice(1) + ' de ' + d.getFullYear() + '</div>';
+    }
+    html += eventCard(e, { showType: true });
+  });
+  $('#past-root').innerHTML = html + '</div>';
 }
 function renderTable(){
   const list = filteredEvents();
   let html = '<thead><tr>' +
     ['Fecha', 'Evento', ''].map(h => '<th>' + h + '</th>').join('') +
     '</tr></thead><tbody>';
-  if (!list.length) html += '<tr><td colspan="3" style="text-align:center;color:var(--faint);padding:26px">No hay eventos que coincidan con los filtros.</td></tr>';
+  if (!list.length) html += '<tr><td colspan="3" style="text-align:center;color:var(--faint);padding:26px">' +
+    (state.filters.q.trim() ? 'Ningún evento próximo coincide con la búsqueda. Los ya celebrados están en «Pasados».' : 'No hay eventos próximos. Los ya celebrados están en «Pasados».') + '</td></tr>';
   list.forEach(e => {
-    html += '<tr class="row">' +
+    html += '<tr class="row' + (e.internal ? ' interno' : '') + '">' +
       '<td class="c-fecha" style="white-space:nowrap"><b>' + esc(fmtDateShort(e.date)) + '</b><br><small style="color:var(--muted)">' + esc(ev2time(e)) + '</small></td>' +
       '<td class="c-evento">' +
         '<span class="evt-t" data-open="' + e.id + '">' + esc(e.title) + '</span>' +
         (hasOverlap(e) && isUpcoming(e) ? ' <span class="dot-warn" title="Solapado">⏱</span>' : '') +
         (recentChanges(e, 7).length ? ' <span class="dot-warn" title="Cambios recientes">⚠️</span>' : '') +
         '<br><small style="color:var(--muted)">' + esc(TYPES[e.type].label) + (e.organizer && e.organizer !== 'Barcelona Global' ? ' · ' + esc(e.organizer) : '') + '</small>' +
+        (e.internal ? ' <span class="chip chip-interno" title="Acto interno de Barcelona Global: el presidente no lo ve">Interno BG</span>' : '') +
         (e.origin === 'outlook' && !e.missingFromSource ? ' <span class="chip chip-outlook" title="Este evento viene del calendario de Outlook">Outlook</span>' : '') +
         (e.missingFromSource ? ' <span class="chip chip-status-cancelat" style="text-decoration:none" title="Ya no llega del calendario de Outlook">Ya no está en Outlook</span>' : '') + '</td>' +
       '<td class="c-acciones"><div class="row-actions">' +
@@ -1529,7 +1575,7 @@ function openDetail(id){
       (e.dressCode ? dit('Código de vestimenta', e.dressCode) : '') +
     '</div>' +
     '</div>' +
-    '<div class="dsec"><h4>Participación del presidente</h4><div class="dgrid">' +
+    (e.internal ? '' : '<div class="dsec"><h4>Participación del presidente</h4><div class="dgrid">' +
       dit('Interviene', e.attends !== 'no' && e.speaks ? 'Sí' : 'No') +
       (e.speaks && e.attends !== 'no' ? (
         dit('Tipo de intervención', e.speechType || '—') +
@@ -1537,7 +1583,7 @@ function openDetail(id){
         dit('Idioma', e.speechLang || '—') +
         ''
       ) : '') +
-    '</div></div>' +
+    '</div></div>') +
     '<div class="dsec"><h4>Archivos adjuntos</h4>' +
       ((e.docs || []).length ? e.docs.map((d, i) =>
         '<div class="doc-row">' + (d.fileId ? '📎' : '📄') + ' <span><b>' + esc(docLabels[d.kind] || d.kind) + '</b> · ' + esc(d.name) +
@@ -1642,6 +1688,8 @@ function openEditor(id){
       fld('Hora inicio', '<input type="time" name="start" value="' + v('start') + '">') +
       fld('Hora fin', '<input type="time" name="end" value="' + v('end') + '">') +
       fld('Hora recomendada de llegada', '<input type="time" name="arrival" value="' + v('arrival') + '">') +
+      fld('Visibilidad', '<select name="internal" id="f-visibilidad">' +
+        sel([['', 'Agenda del presidente'], ['si', 'Interno de Barcelona Global']], e && e.internal ? 'si' : '') + '</select>') +
       fld('Modalidad', '<select name="modality">' + sel([['presencial', 'Presencial'], ['virtual', 'Virtual'], ['hibrida', 'Híbrida']], e ? e.modality : 'presencial') + '</select>') +
       fld('Código de vestimenta', '<input name="dressCode" list="lista-vestimenta" value="' + v('dressCode') + '" placeholder="Traje oscuro, business casual…">' +
         '<datalist id="lista-vestimenta">' +
@@ -1651,7 +1699,7 @@ function openEditor(id){
       fld('Dirección', '<input name="address" value="' + v('address') + '">') +
       fld('Enlace de ubicación (mapa)', '<input name="mapLink" value="' + v('mapLink') + '">') +
     '</div></fieldset>' +
-    '<fieldset class="fset"><legend>Participación del presidente</legend>' +
+    '<fieldset class="fset" id="fset-participacion"' + (e && e.internal ? ' style="display:none"' : '') + '><legend>Participación del presidente</legend>' +
       '<div class="fgrid">' +
       fld('Interviene', '<select name="speaks">' + sel([['no', 'No'], ['si', 'Sí']], e && e.speaks ? 'si' : 'no') + '</select>') +
       fld('Tipo de intervención', '<input name="speechType" value="' + v('speechType') + '" placeholder="Discurso, mesa redonda, bienvenida…">') +
@@ -1670,6 +1718,16 @@ function openEditor(id){
   showModal(html);
   adjuntosEnEdicion = (e && e.docs ? e.docs.filter(d => d.fileId) : []).slice();
   pintarAdjuntos();
+  // Un acto interno no llega al presidente: su participación no aplica.
+  const selVis = $('#f-visibilidad');
+  if (selVis){
+    const aplicaVis = () => {
+      const fs = $('#fset-participacion');
+      if (fs) fs.style.display = selVis.value === 'si' ? 'none' : '';
+    };
+    selVis.addEventListener('change', aplicaVis);
+    aplicaVis();
+  }
 }
 
 /* ---------- Adjuntos en el formulario ---------- */
@@ -1741,7 +1799,8 @@ function saveEditor(id){
   ['title', 'organizer', 'type', 'date', 'start', 'end', 'arrival', 'modality', 'location', 'address', 'mapLink',
    'speechType', 'speechDuration', 'speechLang',
    'dressCode'].forEach(k => { e[k] = g(k); });
-  e.speaks = g('speaks') === 'si';
+  e.internal = g('internal') === 'si';
+  e.speaks = e.internal ? false : g('speaks') === 'si';
   e.docs = adjuntosEnEdicion.slice();   // los archivos adjuntos gestionados arriba
   ['briefing', 'invitation', 'agenda', 'speech'].forEach(kind => {
     const name = g('doc_' + kind);

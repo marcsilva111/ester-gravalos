@@ -89,6 +89,8 @@ La agenda puede leer sola un calendario de Outlook y volcar en ella los eventos,
 
 **En Render:** añade la variable `OUTLOOK_ICS_URL` con ese enlace. Opcionalmente `OUTLOOK_MARCA` (ver más abajo), `OUTLOOK_SYNC_MINUTES` (cada cuánto se lee, por defecto 15, mínimo 5), `AGENDA_TZ` (por defecto `Europe/Madrid`) y `OUTLOOK_MONTHS` (meses que se importan, por defecto 12).
 
+> El enlace publicado es secreto aunque sea público: quien lo tenga ve el calendario entero. Trátalo como una contraseña y guárdalo solo en las variables de Render.
+
 **Importar solo lo marcado (recomendado)**
 
 Define la variable `OUTLOOK_MARCA` con un símbolo, por ejemplo `*`. A partir de ahí **solo entran en la agenda los eventos cuyo título lleve esa marca**; todo lo demás —reuniones internas, asuntos personales, bloqueos de tiempo— se ignora por completo.
@@ -103,12 +105,23 @@ Si más adelante quita la marca a un evento ya importado, este **no se borra**: 
 
 - Outlook manda en el **título, la fecha, el horario y el lugar**: se actualizan solos.
 - La agenda manda en **todo lo demás**. La asistencia, la intervención, el briefing, el acompañante y el responsable que rellene Comunicación no se sobrescriben nunca.
-- Los eventos nuevos entran como **Por valorar** y con la asistencia **Pendiente**, para que Comunicación los triage; aparecen en «Pendientes de decisión».
+- Los eventos nuevos entran ya como actos a los que el presidente asiste: si están marcados en Outlook, es que va.
 - Los cambios de fecha, hora o lugar generan un **aviso** en la ficha y en la agenda del presidente.
 - Si un evento desaparece de Outlook **no se borra**: se marca con un aviso, porque puede llevar trabajo hecho.
 - Los eventos creados a mano en la agenda no se tocan jamás.
 - Con `OUTLOOK_MARCA` definida, solo llegan los eventos marcados y el panel de Comunicación indica cuántos se han importado del total.
 - Se admiten series periódicas (diarias, semanales con días concretos, mensuales y anuales, con `COUNT`, `UNTIL`, `INTERVAL` y excepciones). Las modificaciones sueltas de una repetición concreta no se importan.
+
+### El calendario interno de Barcelona Global
+
+Además de la agenda del presidente, Comunicación puede llevar en la misma herramienta el calendario general de la casa: jornadas, formaciones, comités, actos de socios. Son actos que el presidente **no** ve.
+
+- Se marcan en Outlook con **almohadilla** (`#`) en lugar de asterisco. La variable es `OUTLOOK_MARCA_INTERNA` (por defecto `#`).
+- Si están en el mismo calendario publicado, no hay que hacer nada más. Si están en otro calendario distinto, publica también ese y define `OUTLOOK_ICS_URL_INTERNO` con su enlace.
+- Cada marca manda en su calendario: un `*` dentro del calendario interno se ignora, y una `#` dentro del calendario del presidente también.
+- En el panel de Comunicación aparecen en **azul**, con la etiqueta «Interno BG», tanto en la tabla como en el calendario y en la pestaña de pasados. Se editan igual que cualquier otro acto, salvo la parte de participación del presidente, que no aplica.
+- El desplegable **Visibilidad** de la ficha permite pasar un acto de la agenda del presidente al calendario interno y al revés, sin tocar Outlook.
+- No cuentan para las incidencias de la agenda del presidente (solapamientos, intervenciones sin briefing).
 
 **El retardo, que conviene conocer.** El servidor relee el calendario cada 15 minutos, y Comunicación puede forzarlo con el botón **Sincronizar Outlook**. Pero el propio enlace publicado por Microsoft se actualiza con su propio retraso —de unos minutos a algunas horas— y eso no depende de esta herramienta. Para reflejo inmediato haría falta la API de Microsoft Graph, que exige registrar una aplicación en Azure y permisos del administrador.
 
@@ -120,16 +133,16 @@ Si más adelante quita la marca a un evento ya importado, este **no se borra**: 
 
 ## Dos experiencias sobre una misma base de eventos
 
-- **Agenda del Presidente** — vista de consulta: próximo compromiso con cuenta atrás, próximos 7 días, próximos eventos confirmados y pendientes de decisión. Optimizada para móvil.
-- **Dashboard de Comunicación** — vista de gestión completa: tabla con edición rápida, tarjetas, calendario (mes / semana / agenda), buscador, filtros, creación y edición de eventos, e incidencias.
+- **Agenda del Presidente** — vista de consulta: próximo compromiso con cuenta atrás, próximos días y calendario. Solo ve los actos a los que asiste; nunca los internos. Optimizada para móvil.
+- **Dashboard de Comunicación** — vista de gestión completa: tabla, calendario (mes / semana / agenda), incidencias, eventos pasados, buscador, y creación y edición de eventos.
 
 ## Funcionalidades
 
-- Control **«Presidente asiste»**: al activarlo el evento aparece en la agenda del presidente y se habilitan los campos de su participación (intervención, tipo, duración, idioma, mensaje principal).
-- Estados de evento: por valorar, pendiente de confirmación, confirmado, rechazado, delegado, cancelado, finalizado.
+- **Dos calendarios en una sola herramienta**: los actos del presidente y el calendario interno de Barcelona Global, distinguidos por color y separables con el desplegable «Visibilidad».
+- **Pestaña «Pasados»**: todos los actos ya celebrados —los del presidente y los internos—, agrupados por mes y del más reciente al más antiguo. La tabla queda así centrada en lo que viene; el buscador funciona en las dos.
 - Avisos de cambios recientes (ubicación, horario, intervención, briefing, acompañante, cancelación).
 - Detección de incidencias: solapamientos, intervenciones sin briefing, eventos sin ubicación y cambios importantes cerca de la fecha.
-- Acciones con confirmación para operaciones delicadas (cancelar, delegar, archivar, eliminar).
+- Confirmación previa en las operaciones que no tienen vuelta atrás (eliminar).
 - **Código de vestimenta** por evento, visible en el próximo compromiso del presidente.
 - **Archivos adjuntos** que sube Comunicación y abre el presidente.
 - Exportación a **ICS** (agenda completa o evento individual).

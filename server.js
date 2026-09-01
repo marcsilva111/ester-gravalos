@@ -33,6 +33,11 @@
      OUTLOOK_MARCA          si se define (p. ej. *), solo se importan los
                             eventos cuyo título la lleve; la marca se
                             retira del título al guardarlos
+     OUTLOOK_MARCA_INTERNA  marca del calendario interno de Barcelona
+                            Global (por defecto #). Esos actos solo se ven
+                            en Comunicación, nunca en la agenda del
+                            presidente
+     OUTLOOK_ICS_URL_INTERNO  si el calendario interno es otro distinto
 
    API:
      POST /api/login    { password }              → { token, role }
@@ -113,29 +118,59 @@ const ICS = {
 };
 const usingOutlook = () => !!ICS.url;
 
+// Segundo calendario: los actos internos de Barcelona Global, que no ve
+// el presidente. Si no se indica una dirección propia se usa la misma,
+// distinguiendo los eventos por su marca.
+const limpiaMarca = (v) => String(v || '').trim().replace(/^["']|["']$/g, '');
+const ICS_INT = {
+  url: process.env.OUTLOOK_ICS_URL_INTERNO || '',
+  marca: limpiaMarca(process.env.OUTLOOK_MARCA_INTERNA),
+};
+const usingInterno = () => !!(ICS_INT.url || ICS_INT.marca);
+const urlInterna = () => ICS_INT.url || ICS.url;
+const marcaInterna = () => ICS_INT.marca || '#';
+
 async function importarDeOutlook(){
   if (!usingOutlook() || ICS.running) return ICS.last;
   ICS.running = true;
   try {
-    const texto = await outlook.fetchICS(ICS.url);
     const hoy = new Date();
     const desde = new Date(hoy.getTime() - 30 * 864e5);      // un mes atrás, por si se retocan eventos pasados
     const hasta = new Date(hoy.getFullYear(), hoy.getMonth() + ICS.months, hoy.getDate());
     const partes = (d) => ({ y: d.getFullYear(), m: d.getMonth() + 1, d: d.getDate(), hh: 0, mm: 0 });
-    const todos = outlook.parseICS(texto);
-    // Si se ha fijado una marca, solo entran los eventos que la llevan.
-    const elegidos = outlook.soloMarcados(todos, ICS.marca);
-    const ocurrencias = outlook.expandEvents(elegidos,
-      { tz: ICS.tz, from: partes(desde), to: partes(hasta) });
     if (!Array.isArray(store.events)) store.events = [];
-    const resumen = outlook.mergeIntoAgenda(store.events, ocurrencias, { marca: ICS.marca });
-    const huboCambios = resumen.nuevos || resumen.actualizados || resumen.desaparecidos || resumen.cancelados;
+    const ventana = { tz: ICS.tz, from: partes(desde), to: partes(hasta) };
+
+    // Calendario del presidente
+    const texto = await outlook.fetchICS(ICS.url);
+    const todos = outlook.parseICS(texto);
+    const ocurrencias = outlook.expandEvents(outlook.soloMarcados(todos, ICS.marca), ventana);
+    const resumen = outlook.mergeIntoAgenda(store.events, ocurrencias, { marca: ICS.marca, interno: false });
+
+    // Calendario interno de Barcelona Global, si está configurado
+    let resumenInt = null, leidosInt = 0, enCalInt = 0;
+    if (usingInterno()){
+      const textoInt = urlInterna() === ICS.url ? texto : await outlook.fetchICS(urlInterna());
+      const todosInt = urlInterna() === ICS.url ? todos : outlook.parseICS(textoInt);
+      enCalInt = todosInt.length;
+      const occInt = outlook.expandEvents(outlook.soloMarcados(todosInt, marcaInterna()), ventana);
+      leidosInt = occInt.length;
+      resumenInt = outlook.mergeIntoAgenda(store.events, occInt, { marca: marcaInterna(), interno: true });
+    }
+
+    const suma = (a, b) => !b ? a : { nuevos: a.nuevos + b.nuevos, actualizados: a.actualizados + b.actualizados,
+      desaparecidos: a.desaparecidos + b.desaparecidos, cancelados: a.cancelados + b.cancelados };
+    const total = suma(resumen, resumenInt);
+    const huboCambios = total.nuevos || total.actualizados || total.desaparecidos || total.cancelados;
     if (huboCambios){ store.version += 1; scheduleSave(); }
-    ICS.last = { ts: new Date().toISOString(), ok: true, resumen, leidos: ocurrencias.length, enCalendario: todos.length, marca: ICS.marca };
-    console.log('Outlook: ' + ocurrencias.length + ' eventos importados' +
-      (ICS.marca ? ' de ' + todos.length + ' (solo los marcados con «' + ICS.marca + '»)' : '') + ' · ' +
-      resumen.nuevos + ' nuevos, ' + resumen.actualizados + ' actualizados, ' +
-      resumen.desaparecidos + ' ya no están.');
+    ICS.last = { ts: new Date().toISOString(), ok: true, resumen: total,
+      leidos: ocurrencias.length, enCalendario: todos.length, marca: ICS.marca,
+      interno: usingInterno() ? { leidos: leidosInt, enCalendario: enCalInt, marca: marcaInterna() } : null };
+    console.log('Outlook: ' + ocurrencias.length + ' actos del presidente' +
+      (ICS.marca ? ' de ' + todos.length + ' («' + ICS.marca + '»)' : '') +
+      (usingInterno() ? ' · ' + leidosInt + ' internos de ' + enCalInt + ' («' + marcaInterna() + '»)' : '') +
+      ' · ' + total.nuevos + ' nuevos, ' + total.actualizados + ' actualizados, ' +
+      total.desaparecidos + ' ya no están.');
   } catch (e) {
     ICS.last = { ts: new Date().toISOString(), ok: false, error: e.message };
     console.error('Outlook: no se pudo leer el calendario:', e.message);
@@ -417,7 +452,7 @@ async function flush(){
 
 function outlookEstado(){
   if (!usingOutlook()) return { configurado: false };
-  return { configurado: true, minutos: ICS.minutes, marca: ICS.marca, ultima: ICS.last };
+  return { configurado: true, minutos: ICS.minutes, marca: ICS.marca, interno: usingInterno() ? marcaInterna() : null, ultima: ICS.last };
 }
 
 /* ---------- HTTP ---------- */

@@ -259,9 +259,12 @@ const aviso = (ev, mensaje) => {
 };
 
 function mergeIntoAgenda(agenda, occurrences, opts){
+  const interno = !!(opts && opts.interno);
   const resumen = { nuevos: 0, actualizados: 0, desaparecidos: 0, cancelados: 0 };
+  // Solo se comparan los eventos del mismo calendario: los del otro no
+  // deben darse por desaparecidos.
   const porClave = new Map();
-  agenda.forEach((e) => { if (e.sourceKey) porClave.set(e.sourceKey, e); });
+  agenda.forEach((e) => { if (e.sourceKey && !!e.internal === interno) porClave.set(e.sourceKey, e); });
   const vistos = new Set();
 
   occurrences.forEach((o) => {
@@ -271,7 +274,7 @@ function mergeIntoAgenda(agenda, occurrences, opts){
     if (!existente){
       agenda.push({
         id: idFor(o.key),
-        sourceKey: o.key, sourceUid: o.uid, origin: 'outlook',
+        sourceKey: o.key, sourceUid: o.uid, origin: 'outlook', internal: interno,
         title: o.title,
         organizer: o.organizer || '',
         date: o.date, start: o.start, end: o.end, arrival: '',

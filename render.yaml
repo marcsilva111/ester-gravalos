@@ -25,3 +25,9 @@ services:
   # dos variables en el panel de Render (tienen prioridad sobre GitHub):
   #   SUPABASE_URL  https://<proyecto>.supabase.co
   #   SUPABASE_KEY  la clave service_role del proyecto
+  #
+  # Para leer solo el calendario de Outlook, define:
+  #   OUTLOOK_ICS_URL          el enlace ICS del calendario publicado
+  #   OUTLOOK_MARCA            marca de los actos del presidente (por ejemplo *)
+  #   OUTLOOK_MARCA_INTERNA    marca del calendario interno de BG (por defecto #)
+  #   OUTLOOK_ICS_URL_INTERNO  solo si el calendario interno es otro distinto
