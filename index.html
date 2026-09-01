@@ -1660,9 +1660,9 @@ function openDetail(id){
         ? '<button class="btn btn-primary" data-file="' + esc(e.docs.find(d => d.fileId).fileId) + '|' + esc(e.docs.find(d => d.fileId).name) + '">📎 Abrir documentación</button>'
         : briefing ? '<button class="btn btn-primary" data-doc="' + e.id + '|briefing">📄 Abrir briefing</button>' : '') +
       (mapHref ? '<a class="btn" target="_blank" rel="noopener" href="' + esc(mapHref) + '">🗺 Abrir ubicación</a>' : '') +
-      (e.attends === 'pendent' && canEdit() ? '<button class="btn" data-act="attend-yes|' + e.id + '">✓ Confirmar asistencia</button>' +
-        '<button class="btn" data-act="attend-no|' + e.id + '">✗ No asistiré</button>' : '') +
-      '<button class="btn" data-ics="' + e.id + '">⤓ Añadir a mi calendario (ICS)</button>';
+      '';
+    // Si el acto no lleva documentación ni ubicación, no se deja una barra vacía.
+    if (!foot.trim()) foot = '<button class="btn" data-close>Cerrar</button>';
   }
 
   showModal('<div class="modal-h"><h3>' + esc(e.title) + '</h3><button class="modal-close" data-close>×</button></div>' +
