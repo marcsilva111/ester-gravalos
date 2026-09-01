@@ -156,17 +156,6 @@ tr.row.interno .evt-t{color:#123a78}
 }
 
 /* ---------- Menú desplegable (acciones secundarias) ---------- */
-.menu{position:relative}
-.menu-list{
-  position:absolute;right:0;top:calc(100% + 6px);background:#fff;border:1px solid var(--line);
-  border-radius:11px;box-shadow:var(--shadow);display:none;min-width:210px;z-index:55;padding:5px;
-}
-.menu.open .menu-list{display:block}
-.menu-list button{
-  display:block;width:100%;text-align:left;padding:8px 12px;border-radius:8px;font-size:13px;font-weight:600;color:var(--ink);
-}
-.menu-list button:hover{background:var(--blue-soft)}
-
 /* ---------- Punto de prioridad ---------- */
 .pdot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:1px}
 .pdot-alta{background:var(--red)}
@@ -471,19 +460,7 @@ td .evt-t:hover{color:var(--blue)}
   </div>
   <div class="topbar-actions">
     <span id="conn-badge" class="chip chip-sync-none" title="">●</span>
-    <div class="menu" id="more-menu">
-      <button class="btn btn-sm" id="btn-more" title="Más opciones">⋯</button>
-      <div class="menu-list">
-        <button id="btn-export-ics">⤓ Exportar a calendario (ICS)</button>
-        <button id="btn-backup">⇩ Guardar copia de datos</button>
-        <button id="btn-restore">⇪ Restaurar copia</button>
-        <button id="btn-reset">↺ Restaurar datos demo</button>
-        <button id="btn-limpiar-demo">🧹 Vaciar eventos de demostración</button>
-        <button id="btn-limpiar-outlook">🧹 Retirar los que ya no están en Outlook</button>
-      </div>
-    </div>
     <button class="btn btn-sm hidden" id="btn-logout" title="Cerrar la sesión">Salir</button>
-    <input type="file" id="file-restore" accept="application/json,.json" class="hidden">
   </div>
   <div class="role-switch" role="tablist" aria-label="Cambiar de vista">
     <button id="rs-president" class="active">Presidente</button>
@@ -918,19 +895,6 @@ function applyRole(){
   const presOnly = isReadOnly();
   if (presOnly) state.role = 'president';
   const sw = $('.role-switch'); if (sw) sw.classList.toggle('hidden', presOnly);
-  // El presidente no tiene menú de opciones: su pantalla es solo de consulta.
-  const mm = $('#more-menu'); if (mm) mm.classList.toggle('hidden', presOnly);
-  ['#btn-backup', '#btn-restore', '#btn-reset', '#btn-limpiar-demo', '#btn-limpiar-outlook'].forEach((sel) => {
-    const b = $(sel); if (b) b.classList.toggle('hidden', presOnly);
-  });
-  // Con la agenda en marcha, «restaurar la demostración» sería destructivo:
-  // en su lugar se ofrece vaciar los ejemplos que quedan.
-  const enServicio = remote.enabled || cloud.ready;
-  const reset = $('#btn-reset'); if (reset && !presOnly) reset.classList.toggle('hidden', enServicio);
-  const limpiar = $('#btn-limpiar-demo');
-  if (limpiar && !presOnly) limpiar.classList.toggle('hidden', !enServicio || !events.some(esDemo));
-  const limpiarOl = $('#btn-limpiar-outlook');
-  if (limpiarOl && !presOnly) limpiarOl.classList.toggle('hidden', !events.some(esRetirado));
   const lo = $('#btn-logout'); if (lo) lo.classList.toggle('hidden', !(remote.enabled && auth.token));
 }
 function showLogin(msg){
@@ -1889,41 +1853,6 @@ function saveEditor(id){
   saveData(); closeModal(); renderAll();
   toast(prev ? 'Evento actualizado.' : 'Evento creado.', 'ok');
 }
-const esDemo = (e) => e.demo === true || /^ev-0\d{2}$/.test(e.id || '');
-function limpiarDemo(){
-  const cuantos = events.filter(esDemo).length;
-  if (!cuantos){ toast('No quedan eventos de demostración.', 'ok'); return; }
-  confirmDialog('¿Vaciar los ' + cuantos + ' eventos de demostración? Los que hayáis creado vosotros y los que llegan de Outlook no se tocan.', () => {
-    events = events.filter((e) => !esDemo(e));
-    saveData(); renderAll();
-    toast(cuantos + ' eventos de demostración eliminados.', 'ok');
-  });
-}
-
-// Eventos que llegaron de Outlook y ya no llegan: o los han borrado
-// allí, o les han quitado la marca.
-const esRetirado = (e) => e.origin === 'outlook' && e.missingFromSource === true;
-function limpiarRetirados(){
-  const lista = events.filter(esRetirado);
-  if (!lista.length){ toast('No hay eventos retirados de Outlook.', 'ok'); return; }
-  // Se avisa aparte de los que llevan trabajo hecho, para no perderlo sin querer.
-  const conTrabajo = lista.filter(e => e.attends === 'si' || (e.docs || []).length || e.speaks);
-  const aviso = '¿Retirar de la agenda los ' + lista.length + ' eventos que ya no llegan de Outlook?' +
-    (conTrabajo.length
-      ? ' Atención: ' + (conTrabajo.length === 1 ? 'uno de ellos tiene' : conTrabajo.length + ' de ellos tienen') + ' asistencia confirmada, intervención o documentación adjunta, y se perderá' + (conTrabajo.length === 1 ? '' : 'n') + ': ' +
-        conTrabajo.slice(0, 3).map(e => '«' + e.title + '»').join(', ') + (conTrabajo.length > 3 ? '…' : '') + '.'
-      : ' Ninguno tiene trabajo asociado.');
-  confirmDialog(aviso, () => {
-    if (remote.enabled) lista.forEach((e) => (e.docs || []).forEach((d) => {
-      if (d.fileId) fetch('/api/files/' + encodeURIComponent(d.fileId), { method: 'DELETE', headers: authHeaders() }).catch(() => {});
-    }));
-    const ids = new Set(lista.map(e => e.id));
-    events = events.filter(e => !ids.has(e.id));
-    saveData(); renderAll();
-    toast(lista.length + ' eventos retirados de la agenda.', 'ok');
-  });
-}
-
 function seedBlank(){
   return { id: '', title: '', organizer: 'Barcelona Global', date: todayISO(), start: '', end: '', arrival: '',
     location: '', address: '', mapLink: '', modality: 'presencial', description: '', link: '', dressCode: '',
@@ -1953,80 +1882,6 @@ function doAction(act, id){
         finish('Evento eliminado definitivamente.');
       }); break;
   }
-}
-
-/* =====================================================
-   EXPORTACIÓN ICS
-   ===================================================== */
-function icsEscape(s){ return String(s || '').replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n'); }
-function icsDate(dateStr, timeStr){
-  return dateStr.replace(/-/g, '') + 'T' + (timeStr || '09:00').replace(':', '') + '00';
-}
-function buildICS(list){
-  const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Barcelona Global//Agenda Institucional//ES', 'CALSCALE:GREGORIAN'];
-  list.forEach(e => {
-    lines.push('BEGIN:VEVENT',
-      'UID:' + e.id + '@barcelonaglobal.org',
-      'DTSTAMP:' + new Date().toISOString().replace(/[-:]/g, '').slice(0, 15) + 'Z',
-      'DTSTART:' + icsDate(e.date, e.start),
-      'DTEND:' + icsDate(e.date, e.end || e.start),
-      'SUMMARY:' + icsEscape(e.title),
-      'LOCATION:' + icsEscape((e.location ? e.location + (e.address ? ', ' + e.address : '') : e.address)),
-      'DESCRIPTION:' + icsEscape((e.organizer ? 'Organiza: ' + e.organizer + '. ' : '') +
-        (e.speaks ? 'Interviene: ' + (e.speechType || 'sí') + '. ' : '')),
-      'END:VEVENT');
-  });
-  lines.push('END:VCALENDAR');
-  return lines.join('\r\n');
-}
-/* Guarda un archivo. En la página publicada la descarga pasa por el
-   visor; en un navegador normal se descarga directamente. */
-async function saveFile(filename, text, mime){
-  if (window.claude && typeof window.claude.use === 'function'){
-    let dl = null;
-    try { dl = await window.claude.use('downloads'); } catch (e) { dl = null; }
-    if (dl){
-      try { await dl.save({ filename, data: text }); return 'saved'; }
-      catch (e) {
-        const code = e && e.code;
-        if (code === 'declined') return 'declined';
-        if (code === 'rejected_extension' || code === 'extension_not_enabled') return 'unsupported';
-        if (code === 'rate_limited') return 'busy';
-        return 'error';
-      }
-    }
-  }
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([text], { type: mime || 'text/plain;charset=utf-8' }));
-  a.download = filename;
-  document.body.appendChild(a); a.click();
-  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 400);
-  return 'saved';
-}
-async function downloadICS(list, filename){
-  if (!list.length){ toast('No hay eventos para exportar.', 'err'); return; }
-  const text = buildICS(list);
-  const res = await saveFile(filename || 'agenda-barcelona-global.ics', text, 'text/calendar;charset=utf-8');
-  if (res === 'saved') toast('Archivo ICS exportado (' + list.length + ' evento' + (list.length === 1 ? '' : 's') + ').', 'ok');
-  else if (res === 'declined') { /* la persona ha cancelado */ }
-  else if (res === 'busy') toast('Ya hay una descarga esperando confirmación.', 'err');
-  else if (res === 'unsupported') showICSText(text, list.length);
-  else toast('No se ha podido exportar el archivo.', 'err');
-}
-/* Aquí no se pueden descargar archivos .ics: se muestra el contenido
-   para copiarlo y pegarlo en un archivo o en el calendario. */
-function showICSText(text, n){
-  showModal('<div class="modal-h"><h3>Agenda en formato ICS</h3><button class="modal-close" data-close>×</button></div>' +
-    '<div class="modal-b">' +
-      '<p style="font-size:13.5px;color:var(--muted);margin-bottom:10px">Este visor no permite descargar archivos de calendario. Copia el texto y guárdalo como un archivo <b>.ics</b>, o ábrelo desde la versión instalada en vuestro servidor.</p>' +
-      '<textarea id="ics-text" readonly style="width:100%;height:210px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11.5px;border:1px solid var(--line);border-radius:10px;padding:10px">' + esc(text) + '</textarea>' +
-    '</div>' +
-    '<div class="modal-f"><button class="btn" data-close>Cerrar</button><button class="btn btn-primary" id="ics-copy">Copiar los ' + n + ' eventos</button></div>');
-  $('#ics-copy').addEventListener('click', async () => {
-    const ta = $('#ics-text');
-    try { await navigator.clipboard.writeText(ta.value); toast('Copiado al portapapeles.', 'ok'); }
-    catch (e) { ta.select(); toast('Selecciona y copia el texto.', 'err'); }
-  });
 }
 
 /* =====================================================
@@ -2110,41 +1965,11 @@ async function init(){
   initCloud();   // se conecta a la base compartida en cuanto esté disponible
   if (!storageOK && !remote.enabled && !(window.claude && window.claude.use)) $('#storage-banner').classList.remove('hidden');
 
-  // Menú de opciones secundarias y cierre de sesión
-  $('#btn-more').addEventListener('click', (ev) => { ev.stopPropagation(); $('#more-menu').classList.toggle('open'); });
-  document.addEventListener('click', () => { const m = $('#more-menu'); if (m) m.classList.remove('open'); });
   $('#btn-logout').addEventListener('click', async () => {
     try { await fetch('/api/logout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token: auth.token }) }); } catch (e) {}
     auth = { token: null, role: null };
     saveAuth();
     location.reload();
-  });
-
-  // Copia de seguridad / restauración (JSON) para mover los datos entre navegadores
-  $('#btn-backup').addEventListener('click', async () => {
-    const res = await saveFile('agenda-barcelona-global-datos.json', JSON.stringify(events, null, 2), 'application/json');
-    if (res === 'saved') toast('Copia de seguridad guardada.', 'ok');
-    else if (res !== 'declined') toast('No se ha podido guardar la copia.', 'err');
-  });
-  $('#btn-restore').addEventListener('click', () => $('#file-restore').click());
-  $('#btn-limpiar-demo').addEventListener('click', limpiarDemo);
-  $('#btn-limpiar-outlook').addEventListener('click', limpiarRetirados);
-  $('#file-restore').addEventListener('change', (ev) => {
-    const file = ev.target.files[0];
-    ev.target.value = '';
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      try {
-        const data = JSON.parse(reader.result);
-        if (!Array.isArray(data) || (data.length && (!data[0].id || !data[0].title))) throw new Error('formato');
-        confirmDialog('¿Sustituir los datos actuales por la copia «' + file.name + '» (' + data.length + ' eventos)?', () => {
-          events = data; saveData(); renderAll();
-          toast('Copia restaurada (' + data.length + ' eventos).', 'ok');
-        });
-      } catch (e) { toast('El archivo no es una copia válida de la agenda.', 'err'); }
-    };
-    reader.readAsText(file);
   });
 
   $('#rs-president').addEventListener('click', () => { state.role = 'president'; renderAll(); });
@@ -2178,16 +2003,6 @@ async function init(){
     } catch (e) { toast('No se pudo sincronizar con Outlook.', 'err'); }
     btn.disabled = false; btn.textContent = '↻ Sincronizar Outlook';
   });
-  $('#btn-reset').addEventListener('click', () => confirmDialog('¿Restaurar los datos de demostración? Se perderán los cambios guardados en este navegador.', () => {
-    resetData(); renderAll(); toast('Datos de demostración restaurados.', 'ok');
-  }));
-  $('#btn-export-ics').addEventListener('click', () => {
-    const list = state.role === 'president'
-      ? events.filter(e => presVisible(e) && isUpcoming(e))
-      : filteredEvents();
-    downloadICS(list, state.role === 'president' ? 'agenda-presidente.ics' : 'agenda-barcelona-global.ics');
-  });
-
   // Filtros del dashboard de Comunicación
   const F = state.filters;
   $('#f-q').addEventListener('input', (e) => { F.q = e.target.value; renderComms(); });
@@ -2202,7 +2017,6 @@ async function init(){
     const quitaAdj = t.closest('[data-quita-adj]');
     const act = t.closest('[data-act]');
     const save = t.closest('[data-save]');
-    const ics = t.closest('[data-ics]');
     const close = t.closest('[data-close]');
     const irTab = t.closest('[data-ctab-ir]');
     if (irTab){ state.commsTab = irTab.dataset.ctabIr; renderAll(); return; }
@@ -2214,7 +2028,6 @@ async function init(){
     if (fileBtn){ const i = fileBtn.dataset.file.indexOf('|'); abrirAdjunto(fileBtn.dataset.file.slice(0, i), fileBtn.dataset.file.slice(i + 1)); return; }
     if (docBtn){ const [id, kind] = docBtn.dataset.doc.split('|'); openDoc(id, kind); return; }
     if (act){ const [op, id] = act.dataset.act.split('|'); doAction(op, id); return; }
-    if (ics){ const e = byId(ics.dataset.ics); if (e) downloadICS([e], 'evento.ics'); return; }
     if (edit){ openEditor(edit.dataset.edit); return; }
     if (open){ openDetail(open.dataset.open); return; }
   });

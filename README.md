@@ -99,7 +99,7 @@ La directora escribe en Outlook `* Recepció al Consolat` y ese acto llega; escr
 
 Si más adelante quita la marca a un evento ya importado, este **no se borra**: se señala en la tabla con la etiqueta «Ya no está en Outlook» y conserva el briefing y las decisiones que llevara. Sin esta variable se importa todo, como antes.
 
-**Al activar la marca por primera vez**, los eventos que ya estuvieran importados y no la lleven quedarán señalados así. Para retirarlos todos de una vez está la opción **«🧹 Retirar los que ya no están en Outlook»** del menú ⋯, que avisa antes de cuántos hay y de cuáles llevan trabajo asociado.
+**Al activar la marca por primera vez**, los eventos que ya estuvieran importados y no la lleven quedarán señalados así. Se retiran uno a uno con la papelera de su fila.
 
 **Cómo se comporta**
 
@@ -146,7 +146,6 @@ Además de la agenda del presidente, Comunicación puede llevar en la misma herr
 - Confirmación previa en las operaciones que no tienen vuelta atrás (eliminar).
 - **Código de vestimenta** por evento, visible en el próximo compromiso del presidente.
 - **Archivos adjuntos** que sube Comunicación y abre el presidente.
-- Exportación a **ICS** (agenda completa o evento individual).
 - Persistencia automática según la modalidad: GitHub en el despliegue gratuito, `data/events.json` en un servidor propio o el navegador en el archivo suelto.
 
 ## Archivos adjuntos
