@@ -30,6 +30,9 @@
      OUTLOOK_SYNC_MINUTES   cada cuánto se lee (por defecto 15)
      AGENDA_TZ              zona horaria (por defecto Europe/Madrid)
      OUTLOOK_MONTHS         meses hacia delante que se importan (12)
+     OUTLOOK_MARCA          si se define (p. ej. *), solo se importan los
+                            eventos cuyo título la lleve; la marca se
+                            retira del título al guardarlos
 
    API:
      POST /api/login    { password }              → { token, role }
@@ -103,6 +106,7 @@ const ICS = {
   minutes: Math.max(5, Number(process.env.OUTLOOK_SYNC_MINUTES || 15)),
   tz: process.env.AGENDA_TZ || 'Europe/Madrid',
   months: Math.max(1, Number(process.env.OUTLOOK_MONTHS || 12)),
+  marca: process.env.OUTLOOK_MARCA || '',   // vacío = se importa todo
   last: null,        // { ts, ok, resumen | error }
   running: false,
 };
@@ -117,14 +121,18 @@ async function importarDeOutlook(){
     const desde = new Date(hoy.getTime() - 30 * 864e5);      // un mes atrás, por si se retocan eventos pasados
     const hasta = new Date(hoy.getFullYear(), hoy.getMonth() + ICS.months, hoy.getDate());
     const partes = (d) => ({ y: d.getFullYear(), m: d.getMonth() + 1, d: d.getDate(), hh: 0, mm: 0 });
-    const ocurrencias = outlook.expandEvents(outlook.parseICS(texto),
+    const todos = outlook.parseICS(texto);
+    // Si se ha fijado una marca, solo entran los eventos que la llevan.
+    const elegidos = outlook.soloMarcados(todos, ICS.marca);
+    const ocurrencias = outlook.expandEvents(elegidos,
       { tz: ICS.tz, from: partes(desde), to: partes(hasta) });
     if (!Array.isArray(store.events)) store.events = [];
-    const resumen = outlook.mergeIntoAgenda(store.events, ocurrencias);
+    const resumen = outlook.mergeIntoAgenda(store.events, ocurrencias, { marca: ICS.marca });
     const huboCambios = resumen.nuevos || resumen.actualizados || resumen.desaparecidos || resumen.cancelados;
     if (huboCambios){ store.version += 1; scheduleSave(); }
-    ICS.last = { ts: new Date().toISOString(), ok: true, resumen, leidos: ocurrencias.length };
-    console.log('Outlook: ' + ocurrencias.length + ' eventos leídos · ' +
+    ICS.last = { ts: new Date().toISOString(), ok: true, resumen, leidos: ocurrencias.length, enCalendario: todos.length, marca: ICS.marca };
+    console.log('Outlook: ' + ocurrencias.length + ' eventos importados' +
+      (ICS.marca ? ' de ' + todos.length + ' (solo los marcados con «' + ICS.marca + '»)' : '') + ' · ' +
       resumen.nuevos + ' nuevos, ' + resumen.actualizados + ' actualizados, ' +
       resumen.desaparecidos + ' ya no están.');
   } catch (e) {
@@ -408,7 +416,7 @@ async function flush(){
 
 function outlookEstado(){
   if (!usingOutlook()) return { configurado: false };
-  return { configurado: true, minutos: ICS.minutes, ultima: ICS.last };
+  return { configurado: true, minutos: ICS.minutes, marca: ICS.marca, ultima: ICS.last };
 }
 
 /* ---------- HTTP ---------- */

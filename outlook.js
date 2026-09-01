@@ -100,6 +100,22 @@ function parseICS(text){
   return events;
 }
 
+/* ---------- Filtro por marca en el título ----------
+   Permite que solo lleguen a la agenda los eventos que alguien haya
+   marcado a propósito en Outlook (por ejemplo, con un asterisco). La
+   marca es una instrucción, no parte del nombre: se retira del título
+   antes de guardar el evento. */
+function soloMarcados(events, marca){
+  if (!marca) return events;
+  const limpia = (t) => String(t || '')
+    .split(marca).join(' ')          // quita todas las apariciones
+    .replace(/\s+/g, ' ')
+    .trim();
+  return events
+    .filter((ev) => String(ev.summary || '').includes(marca))
+    .map((ev) => Object.assign({}, ev, { summary: limpia(ev.summary) || 'Sin título' }));
+}
+
 /* ---------- Zona horaria ---------- */
 // Convierte un instante UTC al reloj de pared de la zona indicada.
 function wallClockIn(dateUTC, tz){
@@ -242,7 +258,7 @@ const aviso = (ev, mensaje) => {
   ev.changes = ev.changes.slice(0, 20);
 };
 
-function mergeIntoAgenda(agenda, occurrences){
+function mergeIntoAgenda(agenda, occurrences, opts){
   const resumen = { nuevos: 0, actualizados: 0, desaparecidos: 0, cancelados: 0 };
   const porClave = new Map();
   agenda.forEach((e) => { if (e.sourceKey) porClave.set(e.sourceKey, e); });
@@ -303,11 +319,13 @@ function mergeIntoAgenda(agenda, occurrences){
   porClave.forEach((ev, clave) => {
     if (vistos.has(clave) || ev.missingFromSource) return;
     ev.missingFromSource = true;
-    aviso(ev, 'Este evento ya no aparece en el calendario de Outlook.');
+    aviso(ev, (opts && opts.marca)
+      ? 'Este evento ya no lleva la marca «' + opts.marca + '» en Outlook, o se ha eliminado del calendario.'
+      : 'Este evento ya no aparece en el calendario de Outlook.');
     resumen.desaparecidos++;
   });
 
   return resumen;
 }
 
-module.exports = { fetchICS, parseICS, expandEvents, mergeIntoAgenda, wallClockIn };
+module.exports = { fetchICS, parseICS, soloMarcados, expandEvents, mergeIntoAgenda, wallClockIn };

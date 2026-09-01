@@ -1492,7 +1492,8 @@ function renderOutlookInfo(){
   btn.classList.remove('hidden');
   box.classList.remove('hidden');
   const u = o.ultima;
-  if (!u){ box.className = 'sync-info'; box.textContent = 'Calendario de Outlook conectado. Se lee cada ' + o.minutos + ' minutos.'; return; }
+  const soloMarcados = o.marca ? ' Solo se importan los eventos marcados con «' + o.marca + '» en Outlook.' : '';
+  if (!u){ box.className = 'sync-info'; box.textContent = 'Calendario de Outlook conectado. Se lee cada ' + o.minutos + ' minutos.' + soloMarcados; return; }
   if (!u.ok){
     box.className = 'sync-info err';
     box.textContent = '⚠️ No se pudo leer el calendario de Outlook (' + u.error + '). Último intento: ' + fmtRelative(u.ts) + '.';
@@ -1500,11 +1501,11 @@ function renderOutlookInfo(){
   }
   const r = u.resumen || {};
   box.className = 'sync-info';
-  box.textContent = 'Outlook: ' + u.leidos + ' eventos leídos ' + fmtRelative(u.ts) +
+  box.textContent = 'Outlook: ' + u.leidos + (u.marca && u.enCalendario ? ' de ' + u.enCalendario : '') + ' eventos leídos ' + fmtRelative(u.ts) +
     (r.nuevos ? ' · ' + r.nuevos + ' nuevos' : '') +
     (r.actualizados ? ' · ' + r.actualizados + ' actualizados' : '') +
     (r.desaparecidos ? ' · ' + r.desaparecidos + ' ya no están' : '') +
-    '. Se lee cada ' + o.minutos + ' minutos.';
+    '. Se lee cada ' + o.minutos + ' minutos.' + soloMarcados;
 }
 
 function renderComms(){
