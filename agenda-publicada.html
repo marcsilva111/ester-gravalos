@@ -474,6 +474,7 @@ td select.mini:hover{border-color:var(--line);background:#fff}
         <button id="btn-restore">⇪ Restaurar copia</button>
         <button id="btn-reset">↺ Restaurar datos demo</button>
         <button id="btn-limpiar-demo">🧹 Vaciar eventos de demostración</button>
+        <button id="btn-limpiar-outlook">🧹 Retirar los que ya no están en Outlook</button>
       </div>
     </div>
     <button class="btn btn-sm hidden" id="btn-logout" title="Cerrar la sesión">Salir</button>
@@ -945,7 +946,7 @@ function applyRole(){
   const sw = $('.role-switch'); if (sw) sw.classList.toggle('hidden', presOnly);
   // El presidente conserva el menú para poder exportar; se le ocultan
   // solo las opciones de gestión.
-  ['#btn-backup', '#btn-restore', '#btn-reset', '#btn-limpiar-demo'].forEach((sel) => {
+  ['#btn-backup', '#btn-restore', '#btn-reset', '#btn-limpiar-demo', '#btn-limpiar-outlook'].forEach((sel) => {
     const b = $(sel); if (b) b.classList.toggle('hidden', presOnly);
   });
   // Con la agenda en marcha, «restaurar la demostración» sería destructivo:
@@ -954,6 +955,8 @@ function applyRole(){
   const reset = $('#btn-reset'); if (reset && !presOnly) reset.classList.toggle('hidden', enServicio);
   const limpiar = $('#btn-limpiar-demo');
   if (limpiar && !presOnly) limpiar.classList.toggle('hidden', !enServicio || !events.some(esDemo));
+  const limpiarOl = $('#btn-limpiar-outlook');
+  if (limpiarOl && !presOnly) limpiarOl.classList.toggle('hidden', !events.some(esRetirado));
   const lo = $('#btn-logout'); if (lo) lo.classList.toggle('hidden', !(remote.enabled && auth.token));
 }
 function showLogin(msg){
@@ -1535,7 +1538,8 @@ function renderTable(){
         (hasOverlap(e) && isUpcoming(e) ? ' <span class="dot-warn" title="Solapado">⏱</span>' : '') +
         (recentChanges(e, 7).length ? ' <span class="dot-warn" title="Cambios recientes">⚠️</span>' : '') +
         '<br><small style="color:var(--muted)">' + esc(TYPES[e.type].label) + (e.organizer && e.organizer !== 'Barcelona Global' ? ' · ' + esc(e.organizer) : '') + '</small>' +
-        (e.origin === 'outlook' ? ' <span class="chip chip-outlook" title="Este evento viene del calendario de Outlook">Outlook</span>' : '') + '</td>' +
+        (e.origin === 'outlook' && !e.missingFromSource ? ' <span class="chip chip-outlook" title="Este evento viene del calendario de Outlook">Outlook</span>' : '') +
+        (e.missingFromSource ? ' <span class="chip chip-status-cancelat" style="text-decoration:none" title="Ya no llega del calendario de Outlook">Ya no está en Outlook</span>' : '') + '</td>' +
       '<td class="c-estado"><select class="mini" data-quick="status" data-id="' + e.id + '">' +
         Object.keys(STATUSES).map(k => '<option value="' + k + '"' + (e.status === k ? ' selected' : '') + '>' + STATUSES[k] + '</option>').join('') + '</select></td>' +
       '<td class="c-part"><select class="mini" data-quick="attends" data-id="' + e.id + '">' +
@@ -1887,6 +1891,30 @@ function limpiarDemo(){
   });
 }
 
+// Eventos que llegaron de Outlook y ya no llegan: o los han borrado
+// allí, o les han quitado la marca.
+const esRetirado = (e) => e.origin === 'outlook' && e.missingFromSource === true;
+function limpiarRetirados(){
+  const lista = events.filter(esRetirado);
+  if (!lista.length){ toast('No hay eventos retirados de Outlook.', 'ok'); return; }
+  // Se avisa aparte de los que llevan trabajo hecho, para no perderlo sin querer.
+  const conTrabajo = lista.filter(e => e.attends === 'si' || (e.docs || []).length || e.speaks);
+  const aviso = '¿Retirar de la agenda los ' + lista.length + ' eventos que ya no llegan de Outlook?' +
+    (conTrabajo.length
+      ? ' Atención: ' + (conTrabajo.length === 1 ? 'uno de ellos tiene' : conTrabajo.length + ' de ellos tienen') + ' asistencia confirmada, intervención o documentación adjunta, y se perderá' + (conTrabajo.length === 1 ? '' : 'n') + ': ' +
+        conTrabajo.slice(0, 3).map(e => '«' + e.title + '»').join(', ') + (conTrabajo.length > 3 ? '…' : '') + '.'
+      : ' Ninguno tiene trabajo asociado.');
+  confirmDialog(aviso, () => {
+    if (remote.enabled) lista.forEach((e) => (e.docs || []).forEach((d) => {
+      if (d.fileId) fetch('/api/files/' + encodeURIComponent(d.fileId), { method: 'DELETE', headers: authHeaders() }).catch(() => {});
+    }));
+    const ids = new Set(lista.map(e => e.id));
+    events = events.filter(e => !ids.has(e.id));
+    saveData(); renderAll();
+    toast(lista.length + ' eventos retirados de la agenda.', 'ok');
+  });
+}
+
 function seedBlank(){
   return { id: '', title: '', organizer: 'Barcelona Global', date: todayISO(), start: '', end: '', arrival: '',
     location: '', address: '', mapLink: '', modality: 'presencial', description: '', link: '', dressCode: '',
@@ -2114,6 +2142,7 @@ async function init(){
   });
   $('#btn-restore').addEventListener('click', () => $('#file-restore').click());
   $('#btn-limpiar-demo').addEventListener('click', limpiarDemo);
+  $('#btn-limpiar-outlook').addEventListener('click', limpiarRetirados);
   $('#file-restore').addEventListener('change', (ev) => {
     const file = ev.target.files[0];
     ev.target.value = '';

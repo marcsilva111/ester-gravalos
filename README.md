@@ -95,7 +95,9 @@ Define la variable `OUTLOOK_MARCA` con un símbolo, por ejemplo `*`. A partir de
 
 La directora escribe en Outlook `* Recepció al Consolat` y ese acto llega; escribe `Reunió d'equip` y no llega. **La marca se retira del título** al guardarlo: en la agenda aparece «Recepció al Consolat», limpio. Da igual dónde se ponga el asterisco: al principio, al final o pegado al texto.
 
-Si más adelante quita la marca a un evento ya importado, este **no se borra**: se señala con el aviso «ya no lleva la marca «*» en Outlook», conservando el briefing y las decisiones que llevara. Sin esta variable se importa todo, como antes.
+Si más adelante quita la marca a un evento ya importado, este **no se borra**: se señala en la tabla con la etiqueta «Ya no está en Outlook» y conserva el briefing y las decisiones que llevara. Sin esta variable se importa todo, como antes.
+
+**Al activar la marca por primera vez**, los eventos que ya estuvieran importados y no la lleven quedarán señalados así. Para retirarlos todos de una vez está la opción **«🧹 Retirar los que ya no están en Outlook»** del menú ⋯, que avisa antes de cuántos hay y de cuáles llevan trabajo asociado.
 
 **Cómo se comporta**
 
