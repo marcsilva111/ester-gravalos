@@ -1,5 +1,5 @@
 {
-  "version": 18,
+  "version": 19,
   "events": [
     {
       "id": "ol-d38b1df43c87",
@@ -42,6 +42,44 @@
           "message": "La ubicación ha cambiado en Outlook: Jardins Palau de Pedralbes."
         }
       ],
+      "archived": false
+    },
+    {
+      "id": "ol-1fd4479394bc",
+      "sourceKey": "040000008200E00074C5B7101A82E0080000000099FE751DF139DD01000000000000000010000000BE238C3D75424E4DB36D5D0AA348A706",
+      "sourceUid": "040000008200E00074C5B7101A82E0080000000099FE751DF139DD01000000000000000010000000BE238C3D75424E4DB36D5D0AA348A706",
+      "origin": "outlook",
+      "title": "BG - Lunch G8",
+      "organizer": "",
+      "date": "2026-09-07",
+      "start": "13:30",
+      "end": "16:00",
+      "arrival": "",
+      "location": "",
+      "address": "",
+      "mapLink": "",
+      "modality": "presencial",
+      "description": "",
+      "link": "",
+      "type": "extern",
+      "priority": "mitjana",
+      "status": "valorar",
+      "attends": "pendent",
+      "speaks": false,
+      "speechType": "",
+      "speechDuration": "",
+      "speechLang": "Catalán",
+      "keyMessage": "",
+      "contentOwner": "",
+      "owner": "",
+      "companion": "",
+      "orgContact": "",
+      "access": "",
+      "transport": "",
+      "notes": "",
+      "coverage": [],
+      "docs": [],
+      "changes": [],
       "archived": false
     }
   ]
