@@ -439,6 +439,7 @@ td .evt-t:hover{color:var(--blue)}
   .cal-grid-mobilenote{display:block!important}
   .role-switch button{padding:7px 11px;font-size:12.5px}
 }
+.lnk{color:var(--blue);font-weight:600;text-decoration:underline;text-underline-offset:2px}
 .cal-grid-mobilenote{display:none;color:var(--muted);font-size:13px;background:#fff;border:1px dashed var(--line);border-radius:10px;padding:12px;text-align:center}
 </style>
 <header class="topbar">
@@ -515,7 +516,7 @@ td .evt-t:hover{color:var(--blue)}
     <div class="toolbar">
       <div class="search">
         <span>🔍</span>
-        <input id="f-q" type="search" placeholder="Buscar evento, organizador, lugar o responsable…">
+        <input id="f-q" type="search" placeholder="Buscar por evento, organizador o lugar…">
       </div>
       <button class="btn hidden" id="btn-import" title="Leer ahora el calendario de Outlook">↻ Sincronizar Outlook</button>
       <button class="btn btn-primary" id="btn-new"><span class="ico">＋</span> Nuevo evento</button>
@@ -1440,7 +1441,7 @@ function filteredEvents(opts){
   const past = !!(opts && opts.past);
   return events.filter(e => {
     if (isUpcoming(e) === past) return false;
-    if (q && !(e.title + ' ' + e.organizer + ' ' + e.location + ' ' + e.owner).toLowerCase().includes(q)) return false;
+    if (q && !([e.title, e.organizer, e.location, e.address].join(' ')).toLowerCase().includes(q)) return false;
     return true;
   }).sort((a, b) => evStart(a) - evStart(b));
 }
@@ -1516,8 +1517,18 @@ function renderTable(){
   let html = '<thead><tr>' +
     ['Fecha', 'Evento', ''].map(h => '<th>' + h + '</th>').join('') +
     '</tr></thead><tbody>';
-  if (!list.length) html += '<tr><td colspan="3" style="text-align:center;color:var(--faint);padding:26px">' +
-    (state.filters.q.trim() ? 'Ningún evento próximo coincide con la búsqueda. Los ya celebrados están en «Pasados».' : 'No hay eventos próximos. Los ya celebrados están en «Pasados».') + '</td></tr>';
+  if (!list.length){
+    // Si lo que busca está entre los actos ya celebrados hay que decírselo:
+    // de lo contrario parecería que el evento no existe en la agenda.
+    const enPasados = filteredEvents({ past: true }).length;
+    const aviso = state.filters.q.trim()
+      ? 'Ningún evento próximo coincide con la búsqueda.' +
+        (enPasados ? (enPasados === 1
+          ? ' Hay uno ya celebrado que sí: <button class="lnk" data-ctab-ir="past">verlo en «Pasados»</button>.'
+          : ' Hay ' + enPasados + ' ya celebrados que sí: <button class="lnk" data-ctab-ir="past">verlos en «Pasados»</button>.') : '')
+      : 'No hay eventos próximos.' + (enPasados ? ' Los ya celebrados están en «Pasados».' : '');
+    html += '<tr><td colspan="3" style="text-align:center;color:var(--faint);padding:26px">' + aviso + '</td></tr>';
+  }
   list.forEach(e => {
     html += '<tr class="row' + (e.internal ? ' interno' : '') + '">' +
       '<td class="c-fecha" style="white-space:nowrap"><b>' + esc(fmtDateShort(e.date)) + '</b><br><small style="color:var(--muted)">' + esc(ev2time(e)) + '</small></td>' +
@@ -1794,7 +1805,8 @@ function saveEditor(id){
   const e = prev || Object.assign(seedBlank(), { id: uid() });
 
   const antesDocs = prev ? (prev.docs || []).slice() : null;
-  const before = prev ? { date: prev.date, start: prev.start, end: prev.end, location: prev.location, speaks: prev.speaks, companion: prev.companion, status: prev.status, briefing: hasDoc(prev, 'briefing') } : null;
+  const before = prev ? { date: prev.date, start: prev.start, end: prev.end, location: prev.location,
+    speaks: prev.speaks, companion: prev.companion, internal: !!prev.internal, briefing: hasDoc(prev, 'briefing') } : null;
 
   ['title', 'organizer', 'type', 'date', 'start', 'end', 'arrival', 'modality', 'location', 'address', 'mapLink',
    'speechType', 'speechDuration', 'speechLang',
@@ -1808,6 +1820,8 @@ function saveEditor(id){
   });
 
   if (before){
+    if (!before.internal && e.internal) logChange(e, 'El acto pasa al calendario interno: deja de verse en la agenda del presidente.');
+    if (before.internal && !e.internal) logChange(e, 'El acto pasa a la agenda del presidente.');
     if (before.date !== e.date) logChange(e, 'La fecha ha cambiado: ahora es el ' + fmtDateShort(e.date) + '.');
     if (before.start !== e.start || before.end !== e.end) logChange(e, 'El horario se ha modificado: ' + fmtTimeRange(e) + '.');
     if (before.location !== e.location) logChange(e, 'La ubicación ha cambiado: ' + (e.location || 'por confirmar') + '.');
@@ -2143,6 +2157,8 @@ async function init(){
     const save = t.closest('[data-save]');
     const ics = t.closest('[data-ics]');
     const close = t.closest('[data-close]');
+    const irTab = t.closest('[data-ctab-ir]');
+    if (irTab){ state.commsTab = irTab.dataset.ctabIr; renderAll(); return; }
     const del = t.closest('[data-del]');
     if (close){ popModal(); return; }
     if (del){ doAction('delete', del.dataset.del); return; }
