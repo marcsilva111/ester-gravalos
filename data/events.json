@@ -1,4 +1,43 @@
 {
-  "version": 15,
-  "events": []
+  "version": 16,
+  "events": [
+    {
+      "id": "ol-d38b1df43c87",
+      "sourceKey": "040000008200E00074C5B7101A82E00800000000DB6BE77DF039DD01000000000000000010000000788DB8966AAA4E419D80E7ECA0ED6DB6",
+      "sourceUid": "040000008200E00074C5B7101A82E00800000000DB6BE77DF039DD01000000000000000010000000788DB8966AAA4E419D80E7ECA0ED6DB6",
+      "origin": "outlook",
+      "title": "BG XIII Hola Barcelona! Cocktail",
+      "organizer": "",
+      "date": "2026-09-09",
+      "start": "17:30",
+      "end": "22:00",
+      "arrival": "",
+      "location": "",
+      "address": "",
+      "mapLink": "",
+      "modality": "presencial",
+      "description": "",
+      "link": "",
+      "type": "extern",
+      "priority": "mitjana",
+      "status": "valorar",
+      "attends": "pendent",
+      "speaks": false,
+      "speechType": "",
+      "speechDuration": "",
+      "speechLang": "Catalán",
+      "keyMessage": "",
+      "contentOwner": "",
+      "owner": "",
+      "companion": "",
+      "orgContact": "",
+      "access": "",
+      "transport": "",
+      "notes": "",
+      "coverage": [],
+      "docs": [],
+      "changes": [],
+      "archived": false
+    }
+  ]
 }
