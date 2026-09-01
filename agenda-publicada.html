@@ -293,8 +293,6 @@ a{color:var(--blue)}
 .toolbar select,.toolbar input[type=date]{
   border:1px solid var(--line);border-radius:9px;padding:7.5px 10px;background:#fff;font-size:13px;color:var(--ink)
 }
-.filters-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
-.filters-row label{font-size:12px;color:var(--muted);font-weight:600}
 
 /* ---------- Table ---------- */
 .table-wrap{background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);overflow-x:auto}
@@ -433,9 +431,6 @@ td select.mini:hover{border-color:var(--line);background:#fff}
   .toolbar{gap:8px}
   .toolbar .search{order:1;width:100%;flex:none}
   .toolbar #btn-new,.toolbar #btn-import{order:2;flex:1;justify-content:center}
-  .filters-row{gap:8px 10px}
-  .filters-row select{flex:1 1 140px}
-  .filters-row label,.filters-row #f-clear{flex:0 0 auto}
   .topbar{padding:9px 12px;gap:10px}
   .brand-sub{display:none}
   .container{padding:14px 12px 70px}
@@ -528,17 +523,6 @@ td select.mini:hover{border-color:var(--line);background:#fff}
       <button class="btn btn-primary" id="btn-new"><span class="ico">＋</span> Nuevo evento</button>
     </div>
     <div id="outlook-info" class="sync-info hidden"></div>
-    <div class="filters-row">
-      <select id="f-pres">
-        <option value="">Presidente: todos</option>
-        <option value="si">Asiste</option>
-        <option value="pendent">Pendiente</option>
-        <option value="no">No asiste</option>
-        <option value="interviene">Interviene</option>
-      </select>
-      <button class="btn btn-sm btn-ghost" id="f-clear">Limpiar filtros</button>
-    </div>
-
     <section id="c-table"><div class="table-wrap"><table id="tbl"></table></div></section>
     <section id="c-calendar" class="hidden"><div id="c-cal-root"></div></section>
     <section id="c-incidents" class="hidden"><div class="inc-list" id="inc-root"></div></section>
@@ -1199,7 +1183,7 @@ const state = {
   presTab: 'home',              // home | calendar
   commsTab: 'table',            // table | cards | calendar | incidents
   cal: { date: new Date(), mode: 'month', onlyPres: false, onlySpeaks: false },
-  filters: { q: '', pres: '' },
+  filters: { q: '' },
 };
 
 /* ---------- Fragmentos reutilizables ---------- */
@@ -1452,8 +1436,6 @@ function filteredEvents(){
   const q = f.q.trim().toLowerCase();
   return events.filter(e => {
     if (q && !(e.title + ' ' + e.organizer + ' ' + e.location + ' ' + e.owner).toLowerCase().includes(q)) return false;
-    if (f.pres === 'interviene'){ if (!(e.speaks && e.attends !== 'no')) return false; }
-    else if (f.pres && e.attends !== f.pres) return false;
     return true;
   }).sort((a, b) => evStart(a) - evStart(b));
 }
@@ -2114,13 +2096,6 @@ async function init(){
   // Filtros del dashboard de Comunicación
   const F = state.filters;
   $('#f-q').addEventListener('input', (e) => { F.q = e.target.value; renderComms(); });
-  $('#f-pres').addEventListener('change', (e) => { F.pres = e.target.value; renderComms(); });
-  $('#f-clear').addEventListener('click', () => {
-    Object.assign(F, { q: '', pres: '' });
-    $('#f-q').value = '';
-    $('#f-pres').value = '';
-    renderComms();
-  });
 
   // Delegación global de clics (fichas, acciones, documentos, sync…)
   document.addEventListener('click', (ev) => {
