@@ -507,10 +507,6 @@ td select.mini:hover{border-color:var(--line);background:#fff}
           <div class="block-h"><h3>Próximos eventos</h3><span class="n" id="n-upcoming"></span></div>
           <div class="block-body" id="list-upcoming"></div>
         </div>
-        <div class="block">
-          <div class="block-h"><h3>Pendientes de decisión</h3><span class="n" id="n-pending"></span></div>
-          <div class="block-body" id="list-pending"></div>
-        </div>
       </div>
     </section>
     <section id="p-calendar" class="hidden">
@@ -944,8 +940,8 @@ function applyRole(){
   const presOnly = isReadOnly();
   if (presOnly) state.role = 'president';
   const sw = $('.role-switch'); if (sw) sw.classList.toggle('hidden', presOnly);
-  // El presidente conserva el menú para poder exportar; se le ocultan
-  // solo las opciones de gestión.
+  // El presidente no tiene menú de opciones: su pantalla es solo de consulta.
+  const mm = $('#more-menu'); if (mm) mm.classList.toggle('hidden', presOnly);
   ['#btn-backup', '#btn-restore', '#btn-reset', '#btn-limpiar-demo', '#btn-limpiar-outlook'].forEach((sel) => {
     const b = $(sel); if (b) b.classList.toggle('hidden', presOnly);
   });
@@ -1286,13 +1282,13 @@ function renderPresident(){
   const now = new Date();
   const in7 = new Date(now.getTime() + 7 * 864e5);
 
-  const week = list.filter(e => isUpcoming(e) && evStart(e) <= in7 && e.attends === 'si');
-  const upcoming = list.filter(e => isUpcoming(e) && evStart(e) > in7 && e.attends === 'si' && e.status === 'confirmat');
-  const pending = list.filter(e => isUpcoming(e) && (e.attends === 'pendent' || e.status === 'pendent' || e.status === 'valorar'));
+  // Todo lo que llega a su agenda son actos a los que va: se reparten
+  // por cercanía, sin dejar ninguno fuera.
+  const week = list.filter(e => isUpcoming(e) && evStart(e) <= in7);
+  const upcoming = list.filter(e => isUpcoming(e) && evStart(e) > in7);
 
   fillList('list-week', 'n-week', week, 'Sin compromisos esta semana.');
-  fillList('list-upcoming', 'n-upcoming', upcoming.slice(0, 8), 'Sin eventos confirmados a la vista.');
-  fillList('list-pending', 'n-pending', pending, 'No hay decisiones pendientes.');
+  fillList('list-upcoming', 'n-upcoming', upcoming.slice(0, 10), 'Sin próximos compromisos.');
 }
 function fillList(bodyId, nId, list, emptyMsg){
   $('#' + nId).textContent = list.length || '';
@@ -1302,7 +1298,7 @@ function fillList(bodyId, nId, list, emptyMsg){
 let heroTimer = null;
 function renderHero(){
   const root = $('#p-hero');
-  const next = events.filter(e => presVisible(e) && e.attends === 'si' && isUpcoming(e))
+  const next = events.filter(e => presVisible(e) && isUpcoming(e))
     .sort((a, b) => evStart(a) - evStart(b))[0];
   if (!next){
     root.innerHTML = '<div class="hero"><div class="hero-label">Próximo compromiso</div><p class="hero-empty">No hay compromisos confirmados en la agenda.</p></div>';
@@ -2196,7 +2192,7 @@ async function init(){
   }));
   $('#btn-export-ics').addEventListener('click', () => {
     const list = state.role === 'president'
-      ? events.filter(e => presVisible(e) && e.attends === 'si' && isUpcoming(e))
+      ? events.filter(e => presVisible(e) && isUpcoming(e))
       : filteredEvents().filter(e => e.status !== 'cancelat');
     downloadICS(list, state.role === 'president' ? 'agenda-presidente.ics' : 'agenda-barcelona-global.ics');
   });
