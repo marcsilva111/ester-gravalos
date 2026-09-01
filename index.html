@@ -317,8 +317,6 @@ tr:last-child td{border-bottom:none}
 tr.row:hover td{background:#fafbff}
 td .evt-t{font-weight:700;cursor:pointer}
 td .evt-t:hover{color:var(--blue)}
-td select.mini{border:1px solid transparent;background:transparent;border-radius:7px;padding:3px 4px;font-size:12.5px;max-width:150px}
-td select.mini:hover{border-color:var(--line);background:#fff}
 .row-actions{display:flex;gap:4px;justify-content:flex-end}
 .iconbtn{
   width:29px;height:29px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;font-size:14px;color:var(--muted);
@@ -416,14 +414,6 @@ td select.mini:hover{border-color:var(--line);background:#fff}
   .c-fecha small::before{content:" · "}
   .c-evento{margin-bottom:10px}
   .c-evento .evt-t{font-size:15px}
-  .c-estado,.c-part{display:inline-block;width:49%;vertical-align:top}
-  .c-estado::before,.c-part::before{
-    display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:.6px;
-    color:var(--faint);font-weight:800;margin-bottom:2px;
-  }
-  .c-estado::before{content:"Estado"}
-  .c-part::before{content:"Participación"}
-  td select.mini{border-color:var(--line);background:#fff;width:100%;max-width:none;padding:7px 6px}
   .c-acciones{margin-top:12px;border-top:1px solid var(--line);padding-top:9px}
   .row-actions{justify-content:space-around}
   .iconbtn{width:40px;height:40px;font-size:17px}
@@ -1494,9 +1484,9 @@ function renderComms(){
 function renderTable(){
   const list = filteredEvents();
   let html = '<thead><tr>' +
-    ['Fecha', 'Evento', 'Participación', ''].map(h => '<th>' + h + '</th>').join('') +
+    ['Fecha', 'Evento', ''].map(h => '<th>' + h + '</th>').join('') +
     '</tr></thead><tbody>';
-  if (!list.length) html += '<tr><td colspan="4" style="text-align:center;color:var(--faint);padding:26px">No hay eventos que coincidan con los filtros.</td></tr>';
+  if (!list.length) html += '<tr><td colspan="3" style="text-align:center;color:var(--faint);padding:26px">No hay eventos que coincidan con los filtros.</td></tr>';
   list.forEach(e => {
     html += '<tr class="row">' +
       '<td class="c-fecha" style="white-space:nowrap"><b>' + esc(fmtDateShort(e.date)) + '</b><br><small style="color:var(--muted)">' + esc(ev2time(e)) + '</small></td>' +
@@ -1507,9 +1497,6 @@ function renderTable(){
         '<br><small style="color:var(--muted)">' + esc(TYPES[e.type].label) + (e.organizer && e.organizer !== 'Barcelona Global' ? ' · ' + esc(e.organizer) : '') + '</small>' +
         (e.origin === 'outlook' && !e.missingFromSource ? ' <span class="chip chip-outlook" title="Este evento viene del calendario de Outlook">Outlook</span>' : '') +
         (e.missingFromSource ? ' <span class="chip chip-status-cancelat" style="text-decoration:none" title="Ya no llega del calendario de Outlook">Ya no está en Outlook</span>' : '') + '</td>' +
-      '<td class="c-part"><select class="mini" data-quick="attends" data-id="' + e.id + '">' +
-        [['si', 'Asiste'], ['pendent', 'Pendiente'], ['no', 'No asiste']].map(x => '<option value="' + x[0] + '"' + (e.attends === x[0] ? ' selected' : '') + '>' + x[1] + '</option>').join('') + '</select>' +
-        (e.attends !== 'no' && e.speaks ? '<br><span class="chip chip-interviene">🎤 Interviene</span>' : '') + '</td>' +
       '<td class="c-acciones"><div class="row-actions">' +
         '<button class="iconbtn" title="Editar" data-edit="' + e.id + '">✏️</button>' +
         '<button class="iconbtn" title="Ficha" data-open="' + e.id + '">👁</button>' +
@@ -1857,12 +1844,6 @@ function doAction(act, id){
     case 'attend-yes':
       e.attends = 'si';
       finish('Asistencia confirmada.'); break;
-    case 'attend-no':
-      confirmDialog('¿Marcar que el presidente no asistirá a «' + e.title + '»?', () => {
-        e.attends = 'no';
-        logChange(e, 'El presidente no asistirá a este evento.');
-        finish('Marcado como no asiste.');
-      }); break;
     case 'delete':
       confirmDialog('¿Eliminar definitivamente «' + e.title + '»? Esta acción no se puede deshacer: el evento desaparecerá de la base y de la agenda del presidente.', () => {
         // Sus archivos adjuntos se retiran también, para no dejarlos huérfanos
@@ -2134,19 +2115,6 @@ async function init(){
     if (ics){ const e = byId(ics.dataset.ics); if (e) downloadICS([e], 'evento.ics'); return; }
     if (edit){ openEditor(edit.dataset.edit); return; }
     if (open){ openDetail(open.dataset.open); return; }
-  });
-
-  // Edición rápida en la tabla
-  document.addEventListener('change', (ev) => {
-    const q = ev.target.closest('[data-quick]');
-    if (!q) return;
-    const e = byId(q.dataset.id); if (!e) return;
-    const field = q.dataset.quick, val = q.value;
-    if (field === 'attends'){
-      if (val === 'no'){ q.value = e.attends; doAction('attend-no', e.id); return; }
-      e.attends = val;
-    }
-    saveData(); renderComms();
   });
 
   document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape') popModal(); });
