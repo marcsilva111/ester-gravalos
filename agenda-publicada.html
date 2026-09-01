@@ -378,10 +378,6 @@ td select.mini:hover{border-color:var(--line);background:#fff}
 .fld textarea{resize:vertical;min-height:56px}
 .fset{border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:14px}
 .fset legend{font-size:12px;font-weight:800;color:var(--blue-dark);text-transform:uppercase;letter-spacing:.8px;padding:0 6px}
-.switch-row{display:flex;align-items:center;gap:10px;padding:9px 12px;border:1.5px solid var(--line);border-radius:10px;background:#fafbfe}
-.switch-row.on{border-color:var(--blue);background:var(--blue-soft)}
-.switch-row b{font-size:13.5px}
-.switch-row small{color:var(--muted);display:block;font-size:11.5px}
 
 /* ---------- Toast ---------- */
 #toasts{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:90;display:grid;gap:8px;width:min(420px,92vw)}
@@ -533,16 +529,6 @@ td select.mini:hover{border-color:var(--line);background:#fff}
     </div>
     <div id="outlook-info" class="sync-info hidden"></div>
     <div class="filters-row">
-      <select id="f-status">
-        <option value="">Estado: todos</option>
-        <option value="valorar">Por valorar</option>
-        <option value="pendent">Pendiente de confirmación</option>
-        <option value="confirmat">Confirmado</option>
-        <option value="rebutjat">Rechazado</option>
-        <option value="delegat">Delegado</option>
-        <option value="cancelat">Cancelado</option>
-        <option value="finalitzat">Finalizado</option>
-      </select>
       <select id="f-pres">
         <option value="">Presidente: todos</option>
         <option value="si">Asiste</option>
@@ -550,9 +536,6 @@ td select.mini:hover{border-color:var(--line);background:#fff}
         <option value="no">No asiste</option>
         <option value="interviene">Interviene</option>
       </select>
-      <label style="display:inline-flex;align-items:center;gap:5px">
-        <input type="checkbox" id="f-archived"> Ver archivados
-      </label>
       <button class="btn btn-sm btn-ghost" id="f-clear">Limpiar filtros</button>
     </div>
 
@@ -584,16 +567,6 @@ const TYPES = {
   collab:  { label: 'Colaboraciones' },
   chapter: { label: 'Chapter Young' },
 };
-const STATUSES = {
-  valorar:    'Por valorar',
-  pendent:    'Pendiente de confirmación',
-  confirmat:  'Confirmado',
-  rebutjat:   'Rechazado',
-  delegat:    'Delegado',
-  cancelat:   'Cancelado',
-  finalitzat: 'Finalizado',
-};
-const PRIORITIES = { alta: 'Alta', mitjana: 'Media', baixa: 'Baja' };
 const MONTHS = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 const MONTHS_S = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
 const DOWS = ['lunes','martes','miércoles','jueves','viernes','sábado','domingo'];
@@ -1166,10 +1139,11 @@ function fmtRelative(iso){
   return d === 1 ? 'ayer' : 'hace ' + d + ' días';
 }
 function isUpcoming(ev){ return evEnd(ev) >= new Date(); }
-function isActive(ev){ return !ev.archived && ev.status !== 'cancelat' && ev.status !== 'rebutjat'; }
+function isActive(ev){ return !ev.missingFromSource; }
 function presVisible(ev){
-  // Aparece en la agenda del presidente cuando Comunicación marca que asiste (o está pendiente).
-  return !ev.archived && ev.status !== 'cancelat' && ev.status !== 'rebutjat' && ev.status !== 'delegat' && ev.attends !== 'no';
+  // Llega a su agenda salvo que Comunicación lo descarte o el acto haya
+  // dejado de venir del calendario de Outlook.
+  return ev.attends !== 'no' && !ev.missingFromSource;
 }
 function hasDoc(ev, kind){ return (ev.docs || []).some(d => d.kind === kind); }
 function recentChanges(ev, days){
@@ -1206,9 +1180,9 @@ function computeIncidents(){
       text: '«' + a.title + '» (' + fmtTimeRange(a) + ') coincide con «' + b.title + '» (' + fmtTimeRange(b) + ') el ' + fmtDateShort(a.date) + '.', evId: a.id });
   });
   active.forEach(e => {
-    if (e.attends === 'si' && e.speaks && !hasDoc(e, 'briefing'))
+    if (e.attends === 'si' && e.speaks && !(e.docs || []).some(d => d.fileId))
       incs.push({ sev: 'mid', ico: '📄', title: 'Intervención sin briefing',
-        text: 'El presidente interviene en «' + e.title + '» (' + fmtDateShort(e.date) + ') y todavía no hay briefing adjunto.', evId: e.id });
+        text: 'El presidente interviene en «' + e.title + '» (' + fmtDateShort(e.date) + ') y todavía no se ha adjuntado ningún documento.', evId: e.id });
     if (e.attends !== 'no' && !e.location && !e.address)
       incs.push({ sev: 'mid', ico: '📍', title: 'Evento sin ubicación',
         text: '«' + e.title + '» (' + fmtDateShort(e.date) + ') no tiene ubicación definida.', evId: e.id });
@@ -1225,13 +1199,11 @@ const state = {
   presTab: 'home',              // home | calendar
   commsTab: 'table',            // table | cards | calendar | incidents
   cal: { date: new Date(), mode: 'month', onlyPres: false, onlySpeaks: false },
-  filters: { q: '', status: '', pres: '', archived: false },
+  filters: { q: '', pres: '' },
 };
 
 /* ---------- Fragmentos reutilizables ---------- */
-function chipStatus(ev){ return '<span class="chip chip-status-' + ev.status + '">' + esc(STATUSES[ev.status]) + '</span>'; }
 function chipType(ev){ return '<span class="chip chip-type chip-' + ev.type + '">' + esc(TYPES[ev.type].label) + '</span>'; }
-function chipPrio(ev){ return '<span class="chip chip-prio-' + ev.priority + '">' + esc(PRIORITIES[ev.priority]) + '</span>'; }
 function chipsParticipation(ev){
   let h = '';
   if (ev.attends === 'si') h += '<span class="chip chip-asiste">Asiste</span>';
@@ -1250,7 +1222,6 @@ function eventCard(ev, opts){
   // En modo "simple" (agenda del presidente) solo se etiqueta lo excepcional:
   // lo confirmado y con asistencia es la norma y no necesita chip.
   const tags = [];
-  if (!(opts.simple && ev.status === 'confirmat')) tags.push(chipStatus(ev));
   if (ev.attends === 'pendent') tags.push('<span class="chip chip-pendiente-p">Asistencia pendiente</span>');
   else if (ev.attends === 'si' && !opts.simple) tags.push('<span class="chip chip-asiste">Asiste</span>');
   if (ev.attends !== 'no' && ev.speaks)
@@ -1258,7 +1229,7 @@ function eventCard(ev, opts){
       (ev.speechDuration && ev.speechDuration !== '—' ? ' · ' + esc(ev.speechDuration) : '') + '</span>');
   if (opts.showType) tags.push(chipType(ev));
   if (opts.showType && ev.origin === 'outlook') tags.push('<span class="chip chip-outlook">Outlook</span>');
-  return '<div class="ecard' + (ev.status === 'cancelat' || ev.status === 'rebutjat' ? ' dim' : '') + '" data-open="' + ev.id + '">' +
+  return '<div class="ecard' + (ev.missingFromSource ? ' dim' : '') + '" data-open="' + ev.id + '">' +
     '<div class="ecard-date">' +
       '<div class="d">' + dt.getDate() + '</div>' +
       '<div class="m">' + MONTHS_S[dt.getMonth()] + '</div>' +
@@ -1347,7 +1318,7 @@ function renderHero(){
    CALENDARIO (compartido)
    ===================================================== */
 function calVisibleEvents(scope){
-  let list = events.filter(e => !e.archived);
+  let list = events.slice();
   if (scope === 'pres') list = list.filter(presVisible);
   else {
     if (state.cal.onlyPres) list = list.filter(e => e.attends !== 'no');
@@ -1474,9 +1445,7 @@ function filteredEvents(){
   const f = state.filters;
   const q = f.q.trim().toLowerCase();
   return events.filter(e => {
-    if (e.archived && !f.archived) return false;
     if (q && !(e.title + ' ' + e.organizer + ' ' + e.location + ' ' + e.owner).toLowerCase().includes(q)) return false;
-    if (f.status && e.status !== f.status) return false;
     if (f.pres === 'interviene'){ if (!(e.speaks && e.attends !== 'no')) return false; }
     else if (f.pres && e.attends !== f.pres) return false;
     return true;
@@ -1523,28 +1492,25 @@ function renderComms(){
 function renderTable(){
   const list = filteredEvents();
   let html = '<thead><tr>' +
-    ['Fecha', 'Evento', 'Estado', 'Participación', ''].map(h => '<th>' + h + '</th>').join('') +
+    ['Fecha', 'Evento', 'Participación', ''].map(h => '<th>' + h + '</th>').join('') +
     '</tr></thead><tbody>';
-  if (!list.length) html += '<tr><td colspan="5" style="text-align:center;color:var(--faint);padding:26px">No hay eventos que coincidan con los filtros.</td></tr>';
+  if (!list.length) html += '<tr><td colspan="4" style="text-align:center;color:var(--faint);padding:26px">No hay eventos que coincidan con los filtros.</td></tr>';
   list.forEach(e => {
     html += '<tr class="row">' +
       '<td class="c-fecha" style="white-space:nowrap"><b>' + esc(fmtDateShort(e.date)) + '</b><br><small style="color:var(--muted)">' + esc(ev2time(e)) + '</small></td>' +
-      '<td class="c-evento"><span class="pdot pdot-' + e.priority + '" title="Prioridad ' + esc(PRIORITIES[e.priority].toLowerCase()) + '"></span>' +
+      '<td class="c-evento">' +
         '<span class="evt-t" data-open="' + e.id + '">' + esc(e.title) + '</span>' +
         (hasOverlap(e) && isUpcoming(e) ? ' <span class="dot-warn" title="Solapado">⏱</span>' : '') +
         (recentChanges(e, 7).length ? ' <span class="dot-warn" title="Cambios recientes">⚠️</span>' : '') +
         '<br><small style="color:var(--muted)">' + esc(TYPES[e.type].label) + (e.organizer && e.organizer !== 'Barcelona Global' ? ' · ' + esc(e.organizer) : '') + '</small>' +
         (e.origin === 'outlook' && !e.missingFromSource ? ' <span class="chip chip-outlook" title="Este evento viene del calendario de Outlook">Outlook</span>' : '') +
         (e.missingFromSource ? ' <span class="chip chip-status-cancelat" style="text-decoration:none" title="Ya no llega del calendario de Outlook">Ya no está en Outlook</span>' : '') + '</td>' +
-      '<td class="c-estado"><select class="mini" data-quick="status" data-id="' + e.id + '">' +
-        Object.keys(STATUSES).map(k => '<option value="' + k + '"' + (e.status === k ? ' selected' : '') + '>' + STATUSES[k] + '</option>').join('') + '</select></td>' +
       '<td class="c-part"><select class="mini" data-quick="attends" data-id="' + e.id + '">' +
         [['si', 'Asiste'], ['pendent', 'Pendiente'], ['no', 'No asiste']].map(x => '<option value="' + x[0] + '"' + (e.attends === x[0] ? ' selected' : '') + '>' + x[1] + '</option>').join('') + '</select>' +
         (e.attends !== 'no' && e.speaks ? '<br><span class="chip chip-interviene">🎤 Interviene</span>' : '') + '</td>' +
       '<td class="c-acciones"><div class="row-actions">' +
         '<button class="iconbtn" title="Editar" data-edit="' + e.id + '">✏️</button>' +
         '<button class="iconbtn" title="Ficha" data-open="' + e.id + '">👁</button>' +
-        '<button class="iconbtn danger" title="Archivar" data-archive="' + e.id + '">🗄</button>' +
         '<button class="iconbtn danger" title="Eliminar definitivamente" data-del="' + e.id + '">🗑</button>' +
       '</div></td>' +
     '</tr>';
@@ -1576,7 +1542,7 @@ function openDetail(id){
 
   const body =
     '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">' +
-      chipStatus(e) + chipType(e) + chipPrio(e) + chipsParticipation(e) +
+      chipType(e) + chipsParticipation(e) +
     '</div>' +
     (changes.length ? '<div class="dsec"><h4>Avisos y cambios recientes</h4><div class="changes-list">' +
       changes.map(c => '<div class="alert">⚠️ <span>' + esc(c.message) + '</span><span class="when">' + esc(fmtRelative(c.ts)) + '</span></div>').join('') +
@@ -1591,9 +1557,7 @@ function openDetail(id){
       (e.address ? dit('Dirección', e.address) : '') +
       dit('Modalidad', { presencial: 'Presencial', virtual: 'Virtual', hibrida: 'Híbrida' }[e.modality] || e.modality) +
       (e.dressCode ? dit('Código de vestimenta', e.dressCode) : '') +
-      (e.link ? '<div class="dit"><span class="k">Enlace oficial</span><a class="v" href="' + esc(e.link) + '" target="_blank" rel="noopener">Abrir enlace</a></div>' : '') +
     '</div>' +
-    (e.description ? '<p style="margin-top:10px;font-size:13.5px;color:var(--muted)">' + esc(e.description) + '</p>' : '') +
     '</div>' +
     '<div class="dsec"><h4>Participación del presidente</h4><div class="dgrid">' +
       dit('Asiste', { si: 'Sí', no: 'No', pendent: 'Pendiente' }[e.attends]) +
@@ -1602,20 +1566,10 @@ function openDetail(id){
         dit('Tipo de intervención', e.speechType || '—') +
         dit('Duración', e.speechDuration || '—') +
         dit('Idioma', e.speechLang || '—') +
-        (e.keyMessage ? dit('Mensaje principal', e.keyMessage) : '') +
-        (e.contentOwner ? dit('Prepara el contenido', e.contentOwner) : '')
+        ''
       ) : '') +
     '</div></div>' +
-    '<div class="dsec"><h4>Información operativa</h4><div class="dgrid">' +
-      (e.companion ? dit('Acompaña al presidente', e.companion) : '') +
-      (isComms ? dit('Responsable interno', e.owner || '—') : '') +
-      (isComms && e.orgContact ? dit('Contacto del organizador', e.orgContact) : '') +
-      (e.access ? dit('Acceso', e.access) : '') +
-      (e.transport ? dit('Transporte / parking', e.transport) : '') +
-      (e.notes ? dit('Observaciones', e.notes) : '') +
-      (!e.companion && !e.access && !e.transport && !e.notes && !isComms ? '<div class="dit" style="color:var(--faint)">Sin indicaciones adicionales.</div>' : '') +
-    '</div></div>' +
-    '<div class="dsec"><h4>Documentación</h4>' +
+    '<div class="dsec"><h4>Archivos adjuntos</h4>' +
       ((e.docs || []).length ? e.docs.map((d, i) =>
         '<div class="doc-row">' + (d.fileId ? '📎' : '📄') + ' <span><b>' + esc(docLabels[d.kind] || d.kind) + '</b> · ' + esc(d.name) +
         (d.size ? ' <small style="color:var(--muted)">' + esc(pesoLegible(d.size)) + '</small>' : '') +
@@ -1633,13 +1587,9 @@ function openDetail(id){
   if (isComms){
     foot =
       (e.attends !== 'si' ? '<button class="btn" data-act="attend-yes|' + e.id + '">✓ Confirmar asistencia</button>' : '') +
-      (e.attends !== 'no' ? '<button class="btn" data-act="attend-no|' + e.id + '">✗ No asistirá</button>' : '') +
-      (e.status !== 'delegat' ? '<button class="btn" data-act="delegate|' + e.id + '">Delegar</button>' : '') +
       '<button class="btn" data-edit="' + e.id + '">✏️ Editar</button>' +
-      (e.status !== 'cancelat' ? '<button class="btn btn-danger" data-act="cancel|' + e.id + '">Cancelar evento</button>' : '') +
-      '<button class="btn" data-act="archive|' + e.id + '">🗄 Archivar</button>' +
-      '<button class="btn btn-danger" data-act="delete|' + e.id + '">🗑 Eliminar</button>' +
-      '<button class="btn" data-ics="' + e.id + '">⤓ ICS</button>';
+      '<button class="btn btn-danger" data-act="delete|' + e.id + '">🗑 Eliminar</button>';
+
   } else {
     foot =
       ((e.docs || []).find(d => d.fileId)
@@ -1731,42 +1681,18 @@ function openEditor(id){
       fld('Lugar', '<input name="location" value="' + v('location') + '">') +
       fld('Dirección', '<input name="address" value="' + v('address') + '">') +
       fld('Enlace de ubicación (mapa)', '<input name="mapLink" value="' + v('mapLink') + '">') +
-      fld('Enlace oficial', '<input name="link" value="' + v('link') + '">') +
-      fld('Estado', '<select name="status">' + sel(Object.keys(STATUSES).map(k => [k, STATUSES[k]]), e ? e.status : 'valorar') + '</select>') +
-      fld('Prioridad', '<select name="priority">' + sel(Object.keys(PRIORITIES).map(k => [k, PRIORITIES[k]]), e ? e.priority : 'mitjana') + '</select>') +
-      fld('Descripción breve', '<textarea name="description">' + v('description') + '</textarea>', true) +
     '</div></fieldset>' +
     '<fieldset class="fset"><legend>Participación del presidente</legend>' +
-      '<div class="switch-row' + (e && e.attends === 'si' ? ' on' : '') + '" style="margin-bottom:10px">' +
-        '<div style="flex:1"><b>Presidente asiste</b><small>Al activarlo, el evento aparece en la agenda del presidente y se habilitan los campos de su participación.</small></div>' +
-        '<select name="attends">' + sel([['pendent', 'Pendiente'], ['si', 'Sí'], ['no', 'No']], e ? e.attends : 'pendent') + '</select>' +
-      '</div>' +
       '<div class="fgrid">' +
       fld('Interviene', '<select name="speaks">' + sel([['no', 'No'], ['si', 'Sí']], e && e.speaks ? 'si' : 'no') + '</select>') +
       fld('Tipo de intervención', '<input name="speechType" value="' + v('speechType') + '" placeholder="Discurso, mesa redonda, bienvenida…">') +
       fld('Duración', '<input name="speechDuration" value="' + v('speechDuration') + '" placeholder="10 min">') +
       fld('Idioma', '<input name="speechLang" value="' + v('speechLang', 'Catalán') + '">') +
-      fld('Mensaje principal', '<textarea name="keyMessage">' + v('keyMessage') + '</textarea>', true) +
-      fld('Responsable de preparar el contenido', '<input name="contentOwner" value="' + v('contentOwner') + '">', true) +
-    '</div></fieldset>' +
-    '<fieldset class="fset"><legend>Información operativa</legend><div class="fgrid">' +
-      fld('Responsable interno', '<input name="owner" value="' + v('owner', 'Ester Gravalos') + '">') +
-      fld('Acompaña al presidente', '<input name="companion" value="' + v('companion') + '">') +
-      fld('Contacto del organizador', '<input name="orgContact" value="' + v('orgContact') + '">') +
-      fld('Indicaciones de acceso', '<input name="access" value="' + v('access') + '">') +
-      fld('Transporte / parking', '<input name="transport" value="' + v('transport') + '">') +
-      fld('Observaciones', '<textarea name="notes">' + v('notes') + '</textarea>', true) +
     '</div></fieldset>' +
     '<fieldset class="fset"><legend>Archivos adjuntos para el presidente</legend>' +
       '<div id="adjuntos-lista"></div>' +
       '<div id="adjuntos-zona"></div>' +
     '</fieldset>' +
-    '<fieldset class="fset"><legend>Documentación (nombre del archivo o enlace)</legend><div class="fgrid">' +
-      fld('Briefing', '<input name="doc_briefing" value="' + docVal('briefing') + '" placeholder="Briefing del evento">') +
-      fld('Invitación', '<input name="doc_invitation" value="' + docVal('invitation') + '">') +
-      fld('Agenda / escaleta', '<input name="doc_agenda" value="' + docVal('agenda') + '">') +
-      fld('Discurso · talking points', '<input name="doc_speech" value="' + docVal('speech') + '">') +
-    '</div></fieldset>' +
     '</form></div>' +
     '<div class="modal-f">' +
       '<button class="btn" data-close>Cancelar</button>' +
@@ -1843,9 +1769,9 @@ function saveEditor(id){
   const antesDocs = prev ? (prev.docs || []).slice() : null;
   const before = prev ? { date: prev.date, start: prev.start, end: prev.end, location: prev.location, speaks: prev.speaks, companion: prev.companion, status: prev.status, briefing: hasDoc(prev, 'briefing') } : null;
 
-  ['title', 'organizer', 'type', 'date', 'start', 'end', 'arrival', 'modality', 'location', 'address', 'mapLink', 'link',
-   'status', 'priority', 'attends', 'speechType', 'speechDuration', 'speechLang', 'keyMessage', 'contentOwner',
-   'owner', 'companion', 'orgContact', 'access', 'transport', 'notes', 'description', 'dressCode'].forEach(k => { e[k] = g(k); });
+  ['title', 'organizer', 'type', 'date', 'start', 'end', 'arrival', 'modality', 'location', 'address', 'mapLink',
+   'speechType', 'speechDuration', 'speechLang',
+   'dressCode'].forEach(k => { e[k] = g(k); });
   e.speaks = g('speaks') === 'si';
   e.docs = adjuntosEnEdicion.slice();   // los archivos adjuntos gestionados arriba
   ['briefing', 'invitation', 'agenda', 'speech'].forEach(kind => {
@@ -1860,7 +1786,6 @@ function saveEditor(id){
     if (!before.speaks && e.speaks) logChange(e, 'Se ha añadido una intervención: ' + (e.speechType || 'por definir') + '.');
     if (before.speaks && !e.speaks) logChange(e, 'Se ha retirado la intervención prevista.');
     if (before.companion !== e.companion && e.companion) logChange(e, 'Cambia la persona que acompaña: ' + e.companion + '.');
-    if (before.status !== e.status && e.status === 'cancelat') logChange(e, 'El evento ha sido cancelado.');
     if (!before.briefing && hasDoc(e, 'briefing')) logChange(e, 'Se ha añadido el briefing.');
     else if (before.briefing && hasDoc(e, 'briefing')) { /* posible actualización silenciosa */ }
   }
@@ -1914,7 +1839,7 @@ function limpiarRetirados(){
 function seedBlank(){
   return { id: '', title: '', organizer: 'Barcelona Global', date: todayISO(), start: '', end: '', arrival: '',
     location: '', address: '', mapLink: '', modality: 'presencial', description: '', link: '', dressCode: '',
-    type: 'propi', priority: 'mitjana', status: 'valorar', attends: 'pendent',
+    type: 'propi', attends: 'si',
     speaks: false, speechType: '', speechDuration: '', speechLang: 'Catalán', keyMessage: '', contentOwner: '',
     owner: '', companion: '', orgContact: '', access: '', transport: '', notes: '', coverage: [],
     docs: [], changes: [], archived: false };
@@ -1928,29 +1853,13 @@ function doAction(act, id){
   const finish = (msg) => { saveData(); closeModal(); renderAll(); if (msg) toast(msg, 'ok'); };
   switch (act){
     case 'attend-yes':
-      e.attends = 'si'; if (e.status === 'valorar' || e.status === 'pendent') e.status = 'confirmat';
+      e.attends = 'si';
       finish('Asistencia confirmada.'); break;
     case 'attend-no':
       confirmDialog('¿Marcar que el presidente no asistirá a «' + e.title + '»?', () => {
-        e.attends = 'no'; if (e.status === 'confirmat') e.status = 'rebutjat';
+        e.attends = 'no';
         logChange(e, 'El presidente no asistirá a este evento.');
         finish('Marcado como no asiste.');
-      }); break;
-    case 'delegate':
-      confirmDialog('¿Delegar la asistencia a «' + e.title + '» en otra persona?', () => {
-        e.status = 'delegat'; e.attends = 'no';
-        logChange(e, 'Asistencia delegada.');
-        finish('Evento delegado.');
-      }); break;
-    case 'cancel':
-      confirmDialog('¿Cancelar el evento «' + e.title + '»? Se retirará también del calendario del presidente.', () => {
-        e.status = 'cancelat';
-        logChange(e, 'El evento ha sido cancelado.');
-        finish('Evento cancelado.');
-      }); break;
-    case 'archive':
-      confirmDialog('¿Archivar «' + e.title + '»? Dejará de mostrarse en las vistas habituales.', () => {
-        e.archived = true; finish('Evento archivado.');
       }); break;
     case 'delete':
       confirmDialog('¿Eliminar definitivamente «' + e.title + '»? Esta acción no se puede deshacer: el evento desaparecerá de la base y de la agenda del presidente.', () => {
@@ -1982,8 +1891,7 @@ function buildICS(list){
       'SUMMARY:' + icsEscape(e.title),
       'LOCATION:' + icsEscape((e.location ? e.location + (e.address ? ', ' + e.address : '') : e.address)),
       'DESCRIPTION:' + icsEscape((e.organizer ? 'Organiza: ' + e.organizer + '. ' : '') +
-        (e.speaks ? 'Interviene: ' + (e.speechType || 'sí') + '. ' : '') + (e.description || '')),
-      'STATUS:' + (e.status === 'confirmat' ? 'CONFIRMED' : e.status === 'cancelat' ? 'CANCELLED' : 'TENTATIVE'),
+        (e.speaks ? 'Interviene: ' + (e.speechType || 'sí') + '. ' : '')),
       'END:VEVENT');
   });
   lines.push('END:VCALENDAR');
@@ -2193,21 +2101,18 @@ async function init(){
   $('#btn-export-ics').addEventListener('click', () => {
     const list = state.role === 'president'
       ? events.filter(e => presVisible(e) && isUpcoming(e))
-      : filteredEvents().filter(e => e.status !== 'cancelat');
+      : filteredEvents();
     downloadICS(list, state.role === 'president' ? 'agenda-presidente.ics' : 'agenda-barcelona-global.ics');
   });
 
   // Filtros del dashboard de Comunicación
   const F = state.filters;
   $('#f-q').addEventListener('input', (e) => { F.q = e.target.value; renderComms(); });
-  $('#f-status').addEventListener('change', (e) => { F.status = e.target.value; renderComms(); });
   $('#f-pres').addEventListener('change', (e) => { F.pres = e.target.value; renderComms(); });
-  $('#f-archived').addEventListener('change', (e) => { F.archived = e.target.checked; renderComms(); });
   $('#f-clear').addEventListener('click', () => {
-    Object.assign(F, { q: '', status: '', pres: '', archived: false });
+    Object.assign(F, { q: '', pres: '' });
     $('#f-q').value = '';
-    $('#f-status').value = ''; $('#f-pres').value = '';
-    $('#f-archived').checked = false;
+    $('#f-pres').value = '';
     renderComms();
   });
 
@@ -2223,7 +2128,6 @@ async function init(){
     const save = t.closest('[data-save]');
     const ics = t.closest('[data-ics]');
     const close = t.closest('[data-close]');
-    const arch = t.closest('[data-archive]');
     const del = t.closest('[data-del]');
     if (close){ popModal(); return; }
     if (del){ doAction('delete', del.dataset.del); return; }
@@ -2234,7 +2138,6 @@ async function init(){
     if (act){ const [op, id] = act.dataset.act.split('|'); doAction(op, id); return; }
     if (ics){ const e = byId(ics.dataset.ics); if (e) downloadICS([e], 'evento.ics'); return; }
     if (edit){ openEditor(edit.dataset.edit); return; }
-    if (arch){ doAction('archive', arch.dataset.archive); return; }
     if (open){ openDetail(open.dataset.open); return; }
   });
 
@@ -2244,15 +2147,9 @@ async function init(){
     if (!q) return;
     const e = byId(q.dataset.id); if (!e) return;
     const field = q.dataset.quick, val = q.value;
-    if (field === 'status'){
-      if (val === 'cancelat'){ q.value = e.status; doAction('cancel', e.id); return; }
-      e.status = val;
-    } else if (field === 'attends'){
+    if (field === 'attends'){
       if (val === 'no'){ q.value = e.attends; doAction('attend-no', e.id); return; }
       e.attends = val;
-      if (val === 'si' && (e.status === 'valorar' || e.status === 'pendent')) e.status = 'confirmat';
-    } else if (field === 'priority'){
-      e.priority = val;
     }
     saveData(); renderComms();
   });

@@ -277,9 +277,9 @@ function mergeIntoAgenda(agenda, occurrences, opts){
         date: o.date, start: o.start, end: o.end, arrival: '',
         location: o.location, address: o.location, mapLink: '',
         modality: 'presencial', description: o.description.slice(0, 500), link: '',
-        type: 'extern', priority: 'mitjana',
-        status: o.cancelled ? 'cancelat' : 'valorar',
-        attends: 'pendent',
+        type: 'extern',
+        attends: 'si',
+        missingFromSource: o.cancelled || false,
         speaks: false, speechType: '', speechDuration: '', speechLang: 'Catalán',
         keyMessage: '', contentOwner: '',
         owner: '', companion: '', orgContact: '', access: '', transport: '', notes: '',
@@ -307,9 +307,16 @@ function mergeIntoAgenda(agenda, occurrences, opts){
       existente.address = o.location;
       cambiado = true;
     }
-    if (o.cancelled && existente.status !== 'cancelat'){
+    if (o.cancelled && !existente.missingFromSource){
+      // Cancelado en origen: se retira de la agenda del presidente y queda
+      // señalado para que Comunicación decida si lo borra.
       aviso(existente, 'El evento se ha cancelado en Outlook.');
-      existente.status = 'cancelat'; cambiado = true; resumen.cancelados++;
+      existente.missingFromSource = true; cambiado = true; resumen.cancelados++;
+    }
+    if (!o.cancelled && existente.missingFromSource){
+      // Ha vuelto: se reincorpora a la agenda.
+      aviso(existente, 'El evento ha vuelto a aparecer en el calendario de Outlook.');
+      existente.missingFromSource = false; cambiado = true;
     }
     if (cambiado) resumen.actualizados++;
   });
