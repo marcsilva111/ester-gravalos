@@ -1218,10 +1218,14 @@ const state = {
 
 /* ---------- Fragmentos reutilizables ---------- */
 function chipType(ev){ return '<span class="chip chip-type chip-' + ev.type + '">' + esc(TYPES[ev.type].label) + '</span>'; }
-function chipsParticipation(ev){
+function chipsParticipation(ev, simple){
   let h = '';
-  if (ev.attends === 'si') h += '<span class="chip chip-asiste">Asiste</span>';
-  else if (ev.attends === 'pendent') h += '<span class="chip chip-pendiente-p">Asistencia pendiente</span>';
+  // Al presidente no se le informa de su propia asistencia: todo lo que
+  // aparece en su agenda son actos a los que va.
+  if (!simple){
+    if (ev.attends === 'si') h += '<span class="chip chip-asiste">Asiste</span>';
+    else if (ev.attends === 'pendent') h += '<span class="chip chip-pendiente-p">Asistencia pendiente</span>';
+  }
   if (ev.attends !== 'no' && ev.speaks) h += '<span class="chip chip-interviene">🎤 Interviene</span>';
   return h;
 }
@@ -1236,8 +1240,10 @@ function eventCard(ev, opts){
   // En modo "simple" (agenda del presidente) solo se etiqueta lo excepcional:
   // lo confirmado y con asistencia es la norma y no necesita chip.
   const tags = [];
-  if (ev.attends === 'pendent') tags.push('<span class="chip chip-pendiente-p">Asistencia pendiente</span>');
-  else if (ev.attends === 'si' && !opts.simple) tags.push('<span class="chip chip-asiste">Asiste</span>');
+  if (!opts.simple){
+    if (ev.attends === 'pendent') tags.push('<span class="chip chip-pendiente-p">Asistencia pendiente</span>');
+    else if (ev.attends === 'si') tags.push('<span class="chip chip-asiste">Asiste</span>');
+  }
   if (ev.attends !== 'no' && ev.speaks)
     tags.push('<span class="chip chip-interviene">🎤 ' + esc(ev.speechType || 'Interviene') +
       (ev.speechDuration && ev.speechDuration !== '—' ? ' · ' + esc(ev.speechDuration) : '') + '</span>');
@@ -1304,7 +1310,7 @@ function renderHero(){
         (next.organizer ? '<span>🏛 ' + esc(next.organizer) + '</span>' : '') +
         (next.dressCode ? '<span>👔 ' + esc(next.dressCode) + '</span>' : '') +
       '</div>' +
-      '<div class="hero-badges">' + chipsParticipation(next) +
+      '<div class="hero-badges">' + chipsParticipation(next, true) +
         (next.speaks && next.speechType ? '<span class="chip" style="background:rgba(255,255,255,.14);color:#fff">' + esc(next.speechType) + (next.speechDuration && next.speechDuration !== '—' ? ' · ' + esc(next.speechDuration) : '') + '</span>' : '') +
       '</div>' +
       '<div class="hero-actions">' +
@@ -1556,7 +1562,7 @@ function openDetail(id){
 
   const body =
     '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">' +
-      chipType(e) + chipsParticipation(e) +
+      chipType(e) + chipsParticipation(e, !isComms) +
     '</div>' +
     (changes.length ? '<div class="dsec"><h4>Avisos y cambios recientes</h4><div class="changes-list">' +
       changes.map(c => '<div class="alert">⚠️ <span>' + esc(c.message) + '</span><span class="when">' + esc(fmtRelative(c.ts)) + '</span></div>').join('') +
@@ -1574,7 +1580,7 @@ function openDetail(id){
     '</div>' +
     '</div>' +
     '<div class="dsec"><h4>Participación del presidente</h4><div class="dgrid">' +
-      dit('Asiste', { si: 'Sí', no: 'No', pendent: 'Pendiente' }[e.attends]) +
+      (isComms ? dit('Asiste', { si: 'Sí', no: 'No', pendent: 'Pendiente' }[e.attends]) : '') +
       dit('Interviene', e.attends !== 'no' && e.speaks ? 'Sí' : 'No') +
       (e.speaks && e.attends !== 'no' ? (
         dit('Tipo de intervención', e.speechType || '—') +

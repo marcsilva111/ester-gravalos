@@ -291,6 +291,9 @@ function mergeIntoAgenda(agenda, occurrences, opts){
 
     // Solo se refrescan los datos que vienen del calendario.
     let cambiado = false;
+    // Los importados con el flujo antiguo quedaron con la asistencia sin
+    // decidir; si siguen llegando del calendario, son actos a los que va.
+    if (existente.attends === 'pendent'){ existente.attends = 'si'; cambiado = true; }
     if (existente.title !== o.title){ existente.title = o.title; cambiado = true; }
     if (existente.date !== o.date){
       aviso(existente, 'La fecha ha cambiado en Outlook: ahora es el ' + o.date + '.');
