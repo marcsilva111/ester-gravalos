@@ -106,7 +106,8 @@ const ICS = {
   minutes: Math.max(5, Number(process.env.OUTLOOK_SYNC_MINUTES || 15)),
   tz: process.env.AGENDA_TZ || 'Europe/Madrid',
   months: Math.max(1, Number(process.env.OUTLOOK_MONTHS || 12)),
-  marca: process.env.OUTLOOK_MARCA || '',   // vacío = se importa todo
+  // Se admite el valor tal cual se pegue: con espacios o entrecomillado.
+  marca: String(process.env.OUTLOOK_MARCA || '').trim().replace(/^["']|["']$/g, ''),   // vacío = se importa todo
   last: null,        // { ts, ok, resumen | error }
   running: false,
 };
