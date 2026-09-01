@@ -1,5 +1,5 @@
 {
-  "version": 21,
+  "version": 22,
   "events": [
     {
       "id": "ol-d38b1df43c87",
@@ -63,8 +63,8 @@
       "link": "",
       "type": "extern",
       "priority": "mitjana",
-      "status": "valorar",
-      "attends": "pendent",
+      "status": "confirmat",
+      "attends": "si",
       "speaks": false,
       "speechType": "",
       "speechDuration": "",
