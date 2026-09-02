@@ -1,5 +1,5 @@
 {
-  "version": 33,
+  "version": 34,
   "events": [
     {
       "id": "ol-d38b1df43c87",
@@ -35,7 +35,15 @@
       "transport": "",
       "notes": "",
       "coverage": [],
-      "docs": [],
+      "docs": [
+        {
+          "kind": "file",
+          "name": "hbc qr.png",
+          "fileId": "3e40aec7a637785a.png",
+          "size": 3662,
+          "url": ""
+        }
+      ],
       "changes": [
         {
           "ts": "2026-09-02T16:12:41.079Z",
