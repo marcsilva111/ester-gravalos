@@ -461,6 +461,7 @@ const MIME = {
   '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8',
   '.png': 'image/png', '.jpg': 'image/jpeg', '.svg': 'image/svg+xml',
   '.ico': 'image/x-icon', '.ics': 'text/calendar; charset=utf-8',
+  '.webmanifest': 'application/manifest+json; charset=utf-8',
 };
 function sendJSON(res, code, obj){
   res.writeHead(code, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });

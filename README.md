@@ -24,7 +24,19 @@ En GitHub: *Settings → Developer settings → Personal access tokens → Fine-
    - `GITHUB_TOKEN` → el token del paso anterior.
 4. **Apply**. En un par de minutos tendrás una dirección tipo `https://agenda-barcelona-global.onrender.com`.
 
-Esa dirección es la que se pasa a la directora y al presidente. Cada uno entra con su clave, desde el ordenador o el móvil, y ve lo que le corresponde. En el móvil se puede añadir a la pantalla de inicio y queda como una app.
+Esa dirección es la que se pasa a la directora y al presidente. Cada uno entra con su clave, desde el ordenador o el móvil, y ve lo que le corresponde.
+
+### Instalarla como aplicación
+
+La agenda se instala en el móvil y en el ordenador, y queda con su icono y sin barra de navegador, como cualquier otra app. No hay nada que descargar de ninguna tienda.
+
+- **iPhone y iPad (Safari):** abre la dirección, toca **Compartir** y **Añadir a pantalla de inicio**.
+- **Android (Chrome):** aparece solo el aviso de **Instalar aplicación**; si no, está en el menú ⋮ → *Instalar aplicación*.
+- **Ordenador (Chrome o Edge):** el icono de instalar sale a la derecha de la barra de direcciones.
+
+El icono sale de `iconos/`, generado a partir de `herramientas/icono.svg`. Si cambia la marca, se edita ese archivo y se regeneran con `node herramientas/generar-iconos.js` (necesita Playwright en la máquina de quien lo ejecute; el servidor sigue sin depender de nada).
+
+La aplicación instalada **no guarda copia de la agenda**: `sw.js` existe únicamente para que el navegador ofrezca instalarla, y no cachea nada a propósito. Los compromisos cambian solos con el calendario de Outlook y una copia antigua enseñaría actos que ya no son. Sin cobertura, por tanto, la agenda no se abre.
 
 La rama de datos (`agenda-datos`) se crea sola en el primer guardado. Al ser una rama distinta de la del código, guardar la agenda **no** dispara despliegues.
 

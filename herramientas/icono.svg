@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Icono de la aplicación. El fondo llega hasta el borde y la marca ocupa
+       el 60 % central, dentro de la zona segura que respetan tanto el recorte
+       redondeado de iOS como las máscaras de Android. -->
+  <rect width="512" height="512" fill="#1e2dbe"/>
+  <g transform="translate(256 256) scale(3.05) translate(-50 -50)">
+    <circle cx="50" cy="50" r="42" fill="none" stroke="#ffffff" stroke-width="11"/>
+    <text x="50" y="66" text-anchor="middle" font-family="Helvetica, Arial, sans-serif"
+          font-size="46" font-weight="800" fill="#ffffff">15</text>
+  </g>
+</svg>

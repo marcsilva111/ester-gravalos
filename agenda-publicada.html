@@ -81,6 +81,10 @@ a{color:var(--blue)}
 }
 
 .container{max-width:1240px;margin:0 auto;padding:22px 20px 80px}
+@media (display-mode:standalone){
+  .container{padding-bottom:calc(80px + env(safe-area-inset-bottom))}
+  .topbar{padding-left:calc(20px + env(safe-area-inset-left));padding-right:calc(20px + env(safe-area-inset-right))}
+}
 
 /* ---------- Badges / chips ---------- */
 .chip{
@@ -1888,6 +1892,11 @@ async function init(){
   checkStorage();
   loadAuth();
   await initData();
+  // Con esto el navegador ofrece instalar la agenda como aplicación, en el
+  // móvil y en el escritorio. No guarda nada en caché: ver sw.js.
+  if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0 && !(window.claude && window.claude.use))
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+
   initCloud();   // se conecta a la base compartida en cuanto esté disponible
   if (!storageOK && !remote.enabled && !(window.claude && window.claude.use)) $('#storage-banner').classList.remove('hidden');
 
