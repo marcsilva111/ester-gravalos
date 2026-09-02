@@ -21,12 +21,6 @@
   --gray-bg:#eef0f4;
   --shadow:0 1px 2px rgba(16,26,60,.06),0 8px 24px -12px rgba(16,26,60,.14);
   --radius:14px;
-  --t-propi-bg:#d9efec; --t-propi:#0c5f56;
-  --t-inst-bg:#e6dff2;  --t-inst:#5b3fa3;
-  --t-extern-bg:#f4dde6; --t-extern:#9c3a63;
-  --t-reunio-bg:#fbe3cf; --t-reunio:#a05314;
-  --t-collab-bg:#e2f2cf; --t-collab:#4f7710;
-  --t-chapter-bg:#fbeebc; --t-chapter:#8a6d0b;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html{-webkit-text-size-adjust:100%}
@@ -117,7 +111,7 @@ a{color:var(--blue)}
 .chip-pres-cal{background:var(--blue-soft);color:var(--blue);border:1px solid #ccd2f6}
 /* Los actos internos de Barcelona Global se distinguen por su azul */
 tr.row.interno .evt-t{color:#123a78}
-.cal-ev.interno{background:#dbe6fb!important;color:#123a78!important;border-left-color:#3a63b0!important}
+.cal-ev.interno{background:#dbe6fb;color:#123a78;border-left-color:#3a63b0;box-shadow:none}
 .ecard.interno{border-left:3px solid #3a63b0}
 .sync-info{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:7px;margin-left:auto}
 .sync-info.err{color:var(--red);font-weight:600}
@@ -251,10 +245,10 @@ tr.row.interno .evt-t{color:#123a78}
 }
 .cal-ev{
   display:block;width:100%;max-width:100%;text-align:left;font-size:11.5px;font-weight:600;padding:3px 6px;border-radius:6px;margin-bottom:3px;
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border-left:3px solid transparent;color:var(--ink);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink);
+  background:#fff;box-shadow:inset 0 0 0 1px var(--line);border-left:3px solid var(--blue);
 }
-.cal-ev:hover{filter:brightness(.95)}
-.cal-ev.pres{border-left-color:var(--blue);box-shadow:inset 0 0 0 1px rgba(30,45,190,.25)}
+.cal-ev:hover{filter:brightness(.97)}
 .cal-ev .w{color:var(--amber)}
 .cal-agenda{display:grid;gap:8px}
 .cal-agenda-day{font-size:12.5px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:var(--blue-dark);margin:12px 2px 2px}
@@ -522,14 +516,6 @@ td .evt-t:hover{color:var(--blue)}
 
 const LS_KEY = 'bg-agenda-v1';
 
-const TYPES = {
-  propi:   { label: 'Evento propio' },
-  inst:    { label: 'Instituciones' },
-  extern:  { label: 'Eventos externos' },
-  reunio:  { label: 'Reuniones' },
-  collab:  { label: 'Colaboraciones' },
-  chapter: { label: 'Chapter Young' },
-};
 const MONTHS = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 const MONTHS_S = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
 const DOWS = ['lunes','martes','miércoles','jueves','viernes','sábado','domingo'];
@@ -1165,9 +1151,6 @@ function chipsParticipation(ev, simple){
   if (ev.attends !== 'no' && ev.speaks) h += '<span class="chip chip-interviene">🎤 Interviene</span>';
   return h;
 }
-function typeColorVars(ev){
-  return 'background:var(--t-' + ev.type + '-bg);color:var(--t-' + ev.type + ')';
-}
 
 function eventCard(ev, opts){
   opts = opts || {};
@@ -1335,7 +1318,7 @@ function mondayOf(d){
 }
 function calEvChip(ev, cls){
   const warn = (hasOverlap(ev) && isUpcoming(ev) ? ' <span class="w">⏱</span>' : '') + (recentChanges(ev, 7).length ? ' <span class="w">⚠️</span>' : '');
-  return '<button class="' + cls + (ev.internal ? ' interno' : ev.attends !== 'no' ? ' pres' : '') + '" style="' + typeColorVars(ev) + '" data-open="' + ev.id + '" title="' + esc(ev.title) + '">' +
+  return '<button class="' + cls + (ev.internal ? ' interno' : '') + '" data-open="' + ev.id + '" title="' + esc(ev.title) + '">' +
     (ev.start ? esc(ev.start) + ' ' : '') + esc(ev.title) + (!ev.internal && ev.speaks && ev.attends !== 'no' ? ' 🎤' : '') + warn +
   '</button>';
 }
@@ -1433,8 +1416,9 @@ function renderComms(){
   ['home', 'table', 'calendar', 'incidents', 'past'].forEach((t) => {
     $('#c-' + (t === 'incidents' ? 'incidents' : t)).classList.toggle('hidden', tab !== t);
   });
-  // En la portada el buscador no filtra nada: se retira para no engañar.
-  $('#f-q').parentElement.classList.toggle('hidden', tab === 'home');
+  // El buscador solo filtra la tabla y los pasados: en el resto de
+  // pestañas se retira, para no ofrecer algo que no hace nada.
+  $('#f-q').parentElement.classList.toggle('hidden', tab !== 'table' && tab !== 'past');
   if (tab === 'home') renderCommsHome();
   else if (tab === 'table') renderTable();
   else if (tab === 'calendar') renderCalendar('c-cal-root', 'comms');
@@ -1489,7 +1473,7 @@ function renderTable(){
         '<span class="evt-t" data-open="' + e.id + '">' + esc(e.title) + '</span>' +
         (hasOverlap(e) && isUpcoming(e) ? ' <span class="dot-warn" title="Solapado">⏱</span>' : '') +
         (recentChanges(e, 7).length ? ' <span class="dot-warn" title="Cambios recientes">⚠️</span>' : '') +
-        '<br><small style="color:var(--muted)">' + esc(TYPES[e.type].label) + (e.organizer && e.organizer !== 'Barcelona Global' ? ' · ' + esc(e.organizer) : '') + '</small>' +
+        (e.organizer && e.organizer !== 'Barcelona Global' ? '<br><small style="color:var(--muted)">' + esc(e.organizer) + '</small>' : '') +
         (e.internal && state.filters.ambito !== 'interno' ? ' <span class="chip chip-interno" title="Acto interno de Barcelona Global: el presidente no lo ve">Interno BG</span>' : '') +
         (e.origin === 'outlook' && !e.missingFromSource ? ' <span class="chip chip-outlook" title="Este evento viene del calendario de Outlook">Outlook</span>' : '') +
         (e.missingFromSource ? ' <span class="chip chip-status-cancelat" style="text-decoration:none" title="Ya no llega del calendario de Outlook">Ya no está en Outlook</span>' : '') + '</td>' +
@@ -1647,7 +1631,6 @@ function openEditor(id){
     '<fieldset class="fset"><legend>Información básica</legend><div class="fgrid">' +
       fld('Título *', '<input required name="title" value="' + v('title') + '">', true) +
       fld('Organizador', '<input name="organizer" value="' + v('organizer', 'Barcelona Global') + '">') +
-      fld('Tipo', '<select name="type">' + sel(Object.keys(TYPES).map(k => [k, TYPES[k].label]), e ? e.type : 'propi') + '</select>') +
       fld('Fecha *', '<input required type="date" name="date" value="' + v('date', todayISO()) + '">') +
       fld('Hora inicio', '<input type="time" name="start" value="' + v('start') + '">') +
       fld('Hora fin', '<input type="time" name="end" value="' + v('end') + '">') +
@@ -1761,7 +1744,7 @@ function saveEditor(id){
   const before = prev ? { date: prev.date, start: prev.start, end: prev.end, location: prev.location,
     speaks: prev.speaks, companion: prev.companion, internal: !!prev.internal, briefing: hasDoc(prev, 'briefing') } : null;
 
-  ['title', 'organizer', 'type', 'date', 'start', 'end', 'arrival', 'modality', 'location', 'address', 'mapLink',
+  ['title', 'organizer', 'date', 'start', 'end', 'arrival', 'modality', 'location', 'address', 'mapLink',
    'speechType', 'speechDuration', 'speechLang',
    'dressCode'].forEach(k => { e[k] = g(k); });
   e.internal = g('internal') === 'si';
