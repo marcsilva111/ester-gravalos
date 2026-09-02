@@ -111,13 +111,6 @@ a{color:var(--blue)}
 .chip-status-delegat{background:var(--violet-bg);color:var(--violet)}
 .chip-status-cancelat{background:var(--red-bg);color:var(--red);text-decoration:line-through}
 .chip-status-finalitzat{background:#e3e9f5;color:#3d548c}
-.chip-type{border:1px solid transparent}
-.chip-propi{background:var(--t-propi-bg);color:var(--t-propi)}
-.chip-inst{background:var(--t-inst-bg);color:var(--t-inst)}
-.chip-extern{background:var(--t-extern-bg);color:var(--t-extern)}
-.chip-reunio{background:var(--t-reunio-bg);color:var(--t-reunio)}
-.chip-collab{background:var(--t-collab-bg);color:var(--t-collab)}
-.chip-chapter{background:var(--t-chapter-bg);color:var(--t-chapter)}
 .chip-asiste{background:var(--blue);color:#fff}
 .chip-interviene{background:#fff;color:var(--blue-dark);border:1.5px solid var(--blue)}
 .chip-pendiente-p{background:var(--amber-bg);color:var(--amber)}
@@ -132,6 +125,7 @@ a{color:var(--blue)}
 .chip-prio-baixa{background:var(--gray-bg);color:#4c566d}
 .chip-outlook{background:#e4edfb;color:#1a4f9c}
 .chip-interno{background:#dbe6fb;color:#123a78;border:1px solid #b9cdf2}
+.chip-pres-cal{background:var(--blue-soft);color:var(--blue);border:1px solid #ccd2f6}
 /* Los actos internos de Barcelona Global se distinguen por su azul */
 tr.row.interno .evt-t{color:#123a78}
 .cal-ev.interno{background:#dbe6fb!important;color:#123a78!important;border-left-color:#3a63b0!important}
@@ -1173,7 +1167,6 @@ const state = {
 };
 
 /* ---------- Fragmentos reutilizables ---------- */
-function chipType(ev){ return '<span class="chip chip-type chip-' + ev.type + '">' + esc(TYPES[ev.type].label) + '</span>'; }
 function chipsParticipation(ev, simple){
   if (ev.internal) return '';
   let h = '';
@@ -1194,23 +1187,19 @@ function eventCard(ev, opts){
   opts = opts || {};
   const alerts = recentChanges(ev, 7);
   const dt = parseDT(ev.date, '00:00');
-  // En modo "simple" (agenda del presidente) solo se etiqueta lo excepcional:
-  // lo confirmado y con asistencia es la norma y no necesita chip.
   const tags = [];
-  if (ev.internal){
-    if (state.filters.ambito !== 'interno')
-      tags.push('<span class="chip chip-interno" title="Acto interno de Barcelona Global: el presidente no lo ve">Interno BG</span>');
-  } else {
-    if (!opts.simple){
-      if (ev.attends === 'pendent') tags.push('<span class="chip chip-pendiente-p">Asistencia pendiente</span>');
-      else if (ev.attends === 'si') tags.push('<span class="chip chip-asiste">Asiste</span>');
-    }
+  if (opts.simple){
+    // Al presidente solo le hace falta saber si tiene que hablar.
     if (ev.attends !== 'no' && ev.speaks)
       tags.push('<span class="chip chip-interviene">🎤 ' + esc(ev.speechType || 'Interviene') +
         (ev.speechDuration && ev.speechDuration !== '—' ? ' · ' + esc(ev.speechDuration) : '') + '</span>');
+  } else if (state.filters.ambito === 'todo'){
+    // En Comunicación la tarjeta solo dice de qué calendario es el acto;
+    // cuando el selector ya aísla uno, ni eso hace falta.
+    tags.push(ev.internal
+      ? '<span class="chip chip-interno" title="Acto interno de Barcelona Global: el presidente no lo ve">Interno BG</span>'
+      : '<span class="chip chip-pres-cal" title="Acto de la agenda del presidente">Presidente</span>');
   }
-  if (opts.showType) tags.push(chipType(ev));
-  if (opts.showType && ev.origin === 'outlook') tags.push('<span class="chip chip-outlook">Outlook</span>');
   return '<div class="ecard' + (ev.internal ? ' interno' : '') + (ev.missingFromSource ? ' dim' : '') + '" data-open="' + ev.id + '">' +
     '<div class="ecard-date">' +
       '<div class="d">' + dt.getDate() + '</div>' +
