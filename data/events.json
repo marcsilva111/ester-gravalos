@@ -1,5 +1,5 @@
 {
-  "version": 29,
+  "version": 30,
   "events": [
     {
       "id": "ol-d38b1df43c87",
@@ -15,14 +15,14 @@
       "location": "Jardins Palau de Pedralbes",
       "address": "Jardins Palau de Pedralbes",
       "mapLink": "",
-      "modality": "presencial",
+      "modality": "virtual",
       "description": "",
       "link": "",
       "type": "extern",
       "priority": "mitjana",
       "status": "confirmat",
       "attends": "si",
-      "speaks": false,
+      "speaks": true,
       "speechType": "",
       "speechDuration": "",
       "speechLang": "Catalán",
@@ -38,11 +38,17 @@
       "docs": [],
       "changes": [
         {
+          "ts": "2026-09-02T16:12:41.079Z",
+          "message": "Se ha añadido una intervención: por definir."
+        },
+        {
           "ts": "2026-09-01T09:03:28.206Z",
           "message": "La ubicación ha cambiado en Outlook: Jardins Palau de Pedralbes."
         }
       ],
-      "archived": false
+      "archived": false,
+      "dressCode": "Business casual",
+      "internal": false
     },
     {
       "id": "ol-1fd4479394bc",
