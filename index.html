@@ -134,7 +134,7 @@ a{color:var(--blue)}
 .chip-interno{background:#dbe6fb;color:#123a78;border:1px solid #b9cdf2}
 /* Los actos internos de Barcelona Global se distinguen por su azul */
 tr.row.interno .evt-t{color:#123a78}
-.cal-ev.interno,.cal-wev.interno{background:#dbe6fb!important;color:#123a78!important;border-left-color:#3a63b0!important}
+.cal-ev.interno{background:#dbe6fb!important;color:#123a78!important;border-left-color:#3a63b0!important}
 .ecard.interno{border-left:3px solid #3a63b0}
 .sync-info{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:7px;margin-left:auto}
 .sync-info.err{color:var(--red);font-weight:600}
@@ -273,17 +273,6 @@ tr.row.interno .evt-t{color:#123a78}
 .cal-ev:hover{filter:brightness(.95)}
 .cal-ev.pres{border-left-color:var(--blue);box-shadow:inset 0 0 0 1px rgba(30,45,190,.25)}
 .cal-ev .w{color:var(--amber)}
-.cal-week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:10px}
-.cal-wday{background:#fff;border:1px solid var(--line);border-radius:11px;min-height:150px;padding:9px;min-width:0}
-.cal-wday.today{border-color:var(--blue);box-shadow:0 0 0 1px var(--blue)}
-.cal-wday-h{font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:8px}
-.cal-wday.today .cal-wday-h{color:var(--blue)}
-.cal-wev{
-  display:block;width:100%;text-align:left;border-radius:8px;padding:6px 8px;margin-bottom:6px;font-size:12px;border-left:3px solid transparent;color:var(--ink);
-}
-.cal-wev.pres{border-left-color:var(--blue)}
-.cal-wev b{display:block;font-size:12.5px;overflow:hidden;text-overflow:ellipsis}
-.cal-wev .tm{font-weight:700;font-size:11px;opacity:.75}
 .cal-agenda{display:grid;gap:8px}
 .cal-agenda-day{font-size:12.5px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:var(--blue-dark);margin:12px 2px 2px}
 .legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:14px;font-size:12px;color:var(--muted)}
@@ -419,8 +408,6 @@ td .evt-t:hover{color:var(--blue)}
 
 /* ---------- Responsive ---------- */
 @media (max-width:900px){
-  .cal-week{grid-template-columns:1fr;gap:8px}
-  .cal-wday{min-height:0}
   .hero-countdown{position:static;text-align:left;margin-bottom:12px}
   .fgrid{grid-template-columns:1fr}
 }
@@ -435,7 +422,7 @@ td .evt-t:hover{color:var(--blue)}
   .hero h2{font-size:21px}
   .hero-actions .btn{flex:1;justify-content:center}
   .tabs{padding:0 8px}
-  .tabs button{padding:11px 9px;font-size:13px}
+  .tabs button{padding:11px 7px;font-size:12.5px}
   .tabs .count{margin-left:4px}
   .cal-grid{display:none}
   .cal-grid-mobilenote{display:block!important}
@@ -482,12 +469,12 @@ td .evt-t:hover{color:var(--blue)}
       <div id="p-hero"></div>
       <div class="blocks">
         <div class="block">
-          <div class="block-h"><h3>Próximos 7 días</h3><span class="n" id="n-week"></span></div>
-          <div class="block-body" id="list-week"></div>
+          <div class="block-h"><h3>Próximos 7 días</h3><span class="n" id="p-n-week"></span></div>
+          <div class="block-body" id="p-list-week"></div>
         </div>
         <div class="block">
-          <div class="block-h"><h3>Próximos eventos</h3><span class="n" id="n-upcoming"></span></div>
-          <div class="block-body" id="list-upcoming"></div>
+          <div class="block-h"><h3>Próximos eventos</h3><span class="n" id="p-n-upcoming"></span></div>
+          <div class="block-body" id="p-list-upcoming"></div>
         </div>
       </div>
     </section>
@@ -500,8 +487,9 @@ td .evt-t:hover{color:var(--blue)}
 <!-- ============ COMMS VIEW ============ -->
 <div id="view-comms" class="hidden">
   <nav class="tabs">
-    <button data-ctab="table" class="active">Tabla</button>
+    <button data-ctab="home" class="active">Inicio</button>
     <button data-ctab="calendar">Calendario</button>
+    <button data-ctab="table">Tabla</button>
     <button data-ctab="incidents">Incidencias <span class="count" id="inc-count">0</span></button>
     <button data-ctab="past">Pasados</button>
   </nav>
@@ -520,7 +508,20 @@ td .evt-t:hover{color:var(--blue)}
       <button class="btn btn-primary" id="btn-new"><span class="ico">＋</span> Nuevo evento</button>
     </div>
     <div id="outlook-info" class="sync-info hidden"></div>
-    <section id="c-table"><div class="table-wrap"><table id="tbl"></table></div></section>
+    <section id="c-home">
+      <div id="c-hero"></div>
+      <div class="blocks">
+        <div class="block">
+          <div class="block-h"><h3>Próximos 7 días</h3><span class="n" id="c-n-week"></span></div>
+          <div class="block-body" id="c-list-week"></div>
+        </div>
+        <div class="block">
+          <div class="block-h"><h3>Próximos eventos</h3><span class="n" id="c-n-upcoming"></span></div>
+          <div class="block-body" id="c-list-upcoming"></div>
+        </div>
+      </div>
+    </section>
+    <section id="c-table" class="hidden"><div class="table-wrap"><table id="tbl"></table></div></section>
     <section id="c-calendar" class="hidden"><div id="c-cal-root"></div></section>
     <section id="c-incidents" class="hidden"><div class="inc-list" id="inc-root"></div></section>
     <section id="c-past" class="hidden"><div id="past-root"></div></section>
@@ -1166,14 +1167,15 @@ function computeIncidents(){
 const state = {
   role: 'president',            // president | comms
   presTab: 'home',              // home | calendar
-  commsTab: 'table',            // table | cards | calendar | incidents
-  cal: { date: new Date(), mode: 'month', onlySpeaks: false },
+  commsTab: 'home',             // home | calendar | table | incidents | past
+  cal: { date: new Date(), onlySpeaks: false },
   filters: { q: '', ambito: 'todo' },   // todo | pres | interno
 };
 
 /* ---------- Fragmentos reutilizables ---------- */
 function chipType(ev){ return '<span class="chip chip-type chip-' + ev.type + '">' + esc(TYPES[ev.type].label) + '</span>'; }
 function chipsParticipation(ev, simple){
+  if (ev.internal) return '';
   let h = '';
   // Al presidente no se le informa de su propia asistencia: todo lo que
   // aparece en su agenda son actos a los que va.
@@ -1227,32 +1229,43 @@ function eventCard(ev, opts){
 /* =====================================================
    VISTA DEL PRESIDENTE
    ===================================================== */
+/* La portada: próximo compromiso con cuenta atrás y los dos bloques de
+   lo que viene. La usan las dos vistas —el presidente con sus actos, y
+   Comunicación con los de los dos calendarios—, cambiando solo la lista
+   de partida y el detalle de las tarjetas. */
+function renderPortada(pre, list, opts){
+  renderHero(pre + 'hero', list, opts);
+  const in7 = new Date(Date.now() + 7 * 864e5);
+  const proximos = list.filter(isUpcoming);
+  fillList(pre + 'list-week', pre + 'n-week', proximos.filter(e => evStart(e) <= in7),
+    opts.simple ? 'Sin compromisos esta semana.' : 'Nada en los próximos siete días.', opts);
+  fillList(pre + 'list-upcoming', pre + 'n-upcoming', proximos.filter(e => evStart(e) > in7).slice(0, 10),
+    opts.simple ? 'Sin próximos compromisos.' : 'Nada más adelante.', opts);
+}
 function renderPresident(){
-  renderHero();
-  const list = events.filter(presVisible).sort((a, b) => evStart(a) - evStart(b));
-  const now = new Date();
-  const in7 = new Date(now.getTime() + 7 * 864e5);
-
   // Todo lo que llega a su agenda son actos a los que va: se reparten
   // por cercanía, sin dejar ninguno fuera.
-  const week = list.filter(e => isUpcoming(e) && evStart(e) <= in7);
-  const upcoming = list.filter(e => isUpcoming(e) && evStart(e) > in7);
-
-  fillList('list-week', 'n-week', week, 'Sin compromisos esta semana.');
-  fillList('list-upcoming', 'n-upcoming', upcoming.slice(0, 10), 'Sin próximos compromisos.');
+  renderPortada('p-', events.filter(presVisible).sort((a, b) => evStart(a) - evStart(b)), { simple: true });
 }
-function fillList(bodyId, nId, list, emptyMsg){
+function renderCommsHome(){
+  // Los dos calendarios en una sola portada, respetando el selector.
+  renderPortada('c-', events.filter(e => pasaAmbito(e) && isActive(e)).sort((a, b) => evStart(a) - evStart(b)),
+    { simple: false, showType: true });
+}
+function fillList(bodyId, nId, list, emptyMsg, opts){
   $('#' + nId).textContent = list.length || '';
-  $('#' + bodyId).innerHTML = list.length ? list.map(e => eventCard(e, { simple: true })).join('') : '<div class="block-empty">' + emptyMsg + '</div>';
+  $('#' + bodyId).innerHTML = list.length ? list.map(e => eventCard(e, opts)).join('') : '<div class="block-empty">' + emptyMsg + '</div>';
 }
 
 let heroTimer = null;
-function renderHero(){
-  const root = $('#p-hero');
-  const next = events.filter(e => presVisible(e) && isUpcoming(e))
-    .sort((a, b) => evStart(a) - evStart(b))[0];
+function renderHero(rootId, list, opts){
+  const root = $('#' + rootId);
+  if (!root) return;
+  const next = list.filter(isUpcoming)[0];
   if (!next){
-    root.innerHTML = '<div class="hero"><div class="hero-label">Próximo compromiso</div><p class="hero-empty">No hay compromisos confirmados en la agenda.</p></div>';
+    clearInterval(heroTimer);
+    root.innerHTML = '<div class="hero"><div class="hero-label">Próximo compromiso</div><p class="hero-empty">' +
+      (opts.simple ? 'No hay compromisos confirmados en la agenda.' : 'No hay ningún acto por delante.') + '</p></div>';
     return;
   }
   const alerts = recentChanges(next, 7);
@@ -1260,7 +1273,7 @@ function renderHero(){
   const briefing = (next.docs || []).find(d => d.kind === 'briefing');
   root.innerHTML =
     '<div class="hero">' +
-      '<div class="hero-countdown"><div class="cd-num" id="cd-num"></div><div class="cd-lbl" id="cd-lbl"></div></div>' +
+      '<div class="hero-countdown"><div class="cd-num"></div><div class="cd-lbl"></div></div>' +
       '<div class="hero-label">Próximo compromiso</div>' +
       '<h2>' + esc(next.title) + '</h2>' +
       '<div class="hero-meta">' +
@@ -1270,7 +1283,9 @@ function renderHero(){
         (next.organizer ? '<span>🏛 ' + esc(next.organizer) + '</span>' : '') +
         (next.dressCode ? '<span>👔 ' + esc(next.dressCode) + '</span>' : '') +
       '</div>' +
-      '<div class="hero-badges">' + chipsParticipation(next, true) +
+      '<div class="hero-badges">' +
+        (next.internal ? '<span class="chip" style="background:rgba(255,255,255,.14);color:#fff">Interno BG</span>' : '') +
+        chipsParticipation(next, !!opts.simple) +
         (next.speaks && next.speechType ? '<span class="chip" style="background:rgba(255,255,255,.14);color:#fff">' + esc(next.speechType) + (next.speechDuration && next.speechDuration !== '—' ? ' · ' + esc(next.speechDuration) : '') + '</span>' : '') +
       '</div>' +
       '<div class="hero-actions">' +
@@ -1284,12 +1299,12 @@ function renderHero(){
     '</div>';
   const target = evStart(next);
   function tick(){
-    const el = $('#cd-num'); if (!el) return;
+    const el = $('.cd-num', root); if (!el) return;
     let ms = target - Date.now();
     if (ms < 0) ms = 0;
     const d = Math.floor(ms / 864e5), h = Math.floor(ms % 864e5 / 3.6e6), m = Math.floor(ms % 3.6e6 / 6e4);
     el.textContent = d > 0 ? d + ' d ' + h + ' h' : h + ' h ' + m + ' min';
-    $('#cd-lbl').textContent = 'cuenta atrás';
+    $('.cd-lbl', root).textContent = 'cuenta atrás';
   }
   clearInterval(heroTimer); heroTimer = setInterval(tick, 30000); tick();
 }
@@ -1310,12 +1325,7 @@ function renderCalendar(rootId, scope){
   const root = $('#' + rootId);
   const c = state.cal;
   const d = c.date;
-  let title;
-  if (c.mode === 'month') title = MONTHS[d.getMonth()] + ' ' + d.getFullYear();
-  else if (c.mode === 'week'){
-    const mon = mondayOf(d), sun = new Date(mon.getTime() + 6 * 864e5);
-    title = mon.getDate() + ' ' + MONTHS_S[mon.getMonth()] + ' – ' + sun.getDate() + ' ' + MONTHS_S[sun.getMonth()] + ' ' + sun.getFullYear();
-  } else title = 'Agenda · próximos 60 días';
+  const title = MONTHS[d.getMonth()] + ' ' + d.getFullYear();
 
   root.innerHTML =
     '<div class="cal-toolbar">' +
@@ -1325,12 +1335,6 @@ function renderCalendar(rootId, scope){
         '<button class="btn" data-cal="next">›</button>' +
       '</div>' +
       '<h3>' + esc(title) + '</h3>' +
-      '<div class="seg">' +
-        ['month|Mes', 'week|Semana', 'agenda|Agenda'].map(x => {
-          const [k, l] = x.split('|');
-          return '<button data-calmode="' + k + '" class="' + (c.mode === k ? 'active' : '') + '">' + l + '</button>';
-        }).join('') +
-      '</div>' +
       (scope === 'comms' ?
         '<div class="cal-filters">' +
           '<button class="fchip ' + (c.onlySpeaks ? 'active' : '') + '" data-calf="onlySpeaks">🎤 Interviene</button>' +
@@ -1339,23 +1343,14 @@ function renderCalendar(rootId, scope){
     '<div id="cal-body"></div>' +
     '';
 
-  const body = $('#cal-body', root);
-  const list = calVisibleEvents(scope);
-  if (c.mode === 'month') body.innerHTML = renderMonth(list);
-  else if (c.mode === 'week') body.innerHTML = renderWeek(list);
-  else body.innerHTML = renderAgendaList(list);
+  $('#cal-body', root).innerHTML = renderMonth(calVisibleEvents(scope));
 
   $$('[data-cal]', root).forEach(b => b.addEventListener('click', () => {
     const dir = b.dataset.cal;
     if (dir === 'today') c.date = new Date();
-    else {
-      const step = dir === 'prev' ? -1 : 1;
-      if (c.mode === 'week') c.date = new Date(c.date.getTime() + step * 7 * 864e5);
-      else c.date = new Date(c.date.getFullYear(), c.date.getMonth() + step, 1);
-    }
+    else c.date = new Date(c.date.getFullYear(), c.date.getMonth() + (dir === 'prev' ? -1 : 1), 1);
     renderCalendar(rootId, scope);
   }));
-  $$('[data-calmode]', root).forEach(b => b.addEventListener('click', () => { c.mode = b.dataset.calmode; renderCalendar(rootId, scope); }));
   $$('[data-calf]', root).forEach(b => b.addEventListener('click', () => { c[b.dataset.calf] = !c[b.dataset.calf]; renderCalendar(rootId, scope); }));
 }
 function mondayOf(d){
@@ -1366,8 +1361,7 @@ function mondayOf(d){
 function calEvChip(ev, cls){
   const warn = (hasOverlap(ev) && isUpcoming(ev) ? ' <span class="w">⏱</span>' : '') + (recentChanges(ev, 7).length ? ' <span class="w">⚠️</span>' : '');
   return '<button class="' + cls + (ev.internal ? ' interno' : ev.attends !== 'no' ? ' pres' : '') + '" style="' + typeColorVars(ev) + '" data-open="' + ev.id + '" title="' + esc(ev.title) + '">' +
-    (cls === 'cal-wev' ? '<span class="tm">' + esc(ev.start || '') + '</span><b>' + esc(ev.title) + warn + '</b>' + (ev.speaks && ev.attends !== 'no' ? '🎤 interviene' : '') :
-      (ev.start ? esc(ev.start) + ' ' : '') + esc(ev.title) + (ev.speaks && ev.attends !== 'no' ? ' 🎤' : '') + warn) +
+    (ev.start ? esc(ev.start) + ' ' : '') + esc(ev.title) + (!ev.internal && ev.speaks && ev.attends !== 'no' ? ' 🎤' : '') + warn +
   '</button>';
 }
 function renderMonth(list){
@@ -1389,34 +1383,6 @@ function renderMonth(list){
   html += '</div><div class="cal-grid-mobilenote">En pantallas pequeñas utiliza las vistas <b>Semana</b> o <b>Agenda</b>.</div>';
   return html;
 }
-function renderWeek(list){
-  const mon = mondayOf(state.cal.date);
-  const today = todayISO();
-  let html = '<div class="cal-week">';
-  for (let i = 0; i < 7; i++){
-    const day = new Date(mon.getTime() + i * 864e5);
-    const iso = day.getFullYear() + '-' + String(day.getMonth() + 1).padStart(2, '0') + '-' + String(day.getDate()).padStart(2, '0');
-    const dayEvents = list.filter(e => e.date === iso);
-    html += '<div class="cal-wday' + (iso === today ? ' today' : '') + '">' +
-      '<div class="cal-wday-h">' + DOWS_S[i] + ' ' + day.getDate() + '</div>' +
-      (dayEvents.length ? dayEvents.map(e => calEvChip(e, 'cal-wev')).join('') : '<div style="color:var(--faint);font-size:12px">—</div>') +
-    '</div>';
-  }
-  return html + '</div>';
-}
-function renderAgendaList(list){
-  const now = new Date(); now.setHours(0, 0, 0, 0);
-  const lim = new Date(now.getTime() + 60 * 864e5);
-  const upcoming = list.filter(e => evStart(e) >= now && evStart(e) <= lim);
-  if (!upcoming.length) return '<div class="block-empty">Sin eventos en los próximos 60 días.</div>';
-  let html = '<div class="cal-agenda">', lastDate = '';
-  upcoming.forEach(e => {
-    if (e.date !== lastDate){ lastDate = e.date; html += '<div class="cal-agenda-day">' + esc(fmtDateLong(e.date)) + '</div>'; }
-    html += eventCard(e, { showType: true });
-  });
-  return html + '</div>';
-}
-
 /* =====================================================
    DASHBOARD DE COMUNICACIÓN
    ===================================================== */
@@ -1489,11 +1455,13 @@ function renderComms(){
   $('#inc-count').textContent = incs.length;
   $('#inc-count').style.display = incs.length ? '' : 'none';
   const tab = state.commsTab;
-  $('#c-table').classList.toggle('hidden', tab !== 'table');
-  $('#c-calendar').classList.toggle('hidden', tab !== 'calendar');
-  $('#c-incidents').classList.toggle('hidden', tab !== 'incidents');
-  $('#c-past').classList.toggle('hidden', tab !== 'past');
-  if (tab === 'table') renderTable();
+  ['home', 'table', 'calendar', 'incidents', 'past'].forEach((t) => {
+    $('#c-' + (t === 'incidents' ? 'incidents' : t)).classList.toggle('hidden', tab !== t);
+  });
+  // En la portada el buscador no filtra nada: se retira para no engañar.
+  $('#f-q').parentElement.classList.toggle('hidden', tab === 'home');
+  if (tab === 'home') renderCommsHome();
+  else if (tab === 'table') renderTable();
   else if (tab === 'calendar') renderCalendar('c-cal-root', 'comms');
   else if (tab === 'past') renderPast();
   else renderIncidents(incs);

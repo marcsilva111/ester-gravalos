@@ -120,7 +120,7 @@ Además de la agenda del presidente, Comunicación puede llevar en la misma herr
 - Si están en el mismo calendario publicado, no hay que hacer nada más. Si están en otro calendario distinto, publica también ese y define `OUTLOOK_ICS_URL_INTERNO` con su enlace.
 - Cada marca manda en su calendario: un `*` dentro del calendario interno se ignora, y una `#` dentro del calendario del presidente también.
 - En el panel de Comunicación aparecen en **azul**, con la etiqueta «Interno BG», tanto en la tabla como en el calendario y en la pestaña de pasados. Se editan igual que cualquier otro acto, salvo la parte de participación del presidente, que no aplica.
-- El selector **Todo · Presidente · Interno BG** de la barra superior permite mirar solo uno de los dos calendarios. Se aplica a la vez a la tabla, al calendario y a los pasados, y solo aparece cuando hay actos internos que separar.
+- El selector **Todo · Presidente · Interno BG** de la barra superior permite mirar solo uno de los dos calendarios. Se aplica a la vez a la portada, la tabla, el calendario y los pasados, y solo aparece cuando hay actos internos que separar.
 - El desplegable **Visibilidad** de la ficha permite pasar un acto de la agenda del presidente al calendario interno y al revés, sin tocar Outlook.
 - No cuentan para las incidencias de la agenda del presidente (solapamientos, intervenciones sin briefing).
 
@@ -134,12 +134,15 @@ Además de la agenda del presidente, Comunicación puede llevar en la misma herr
 
 ## Dos experiencias sobre una misma base de eventos
 
-- **Agenda del Presidente** — vista de consulta: próximo compromiso con cuenta atrás, próximos días y calendario. Solo ve los actos a los que asiste; nunca los internos. Optimizada para móvil.
-- **Dashboard de Comunicación** — vista de gestión completa: tabla, calendario (mes / semana / agenda), incidencias, eventos pasados, buscador, y creación y edición de eventos.
+Las dos empiezan por la misma portada —próximo compromiso con cuenta atrás y lo que viene esta semana y más adelante— y siguen con el mismo calendario mensual. Cambia lo que cada una ve y lo que puede hacer.
+
+- **Agenda del Presidente** — solo consulta: *Mi agenda* y *Calendario*. Ve únicamente los actos a los que asiste; nunca los internos. Optimizada para móvil.
+- **Dashboard de Comunicación** — gestión completa: *Inicio*, *Calendario*, *Tabla*, *Incidencias* y *Pasados*. La portada reúne los actos de los dos calendarios; la tabla y el calendario permiten crear, editar y eliminar.
 
 ## Funcionalidades
 
 - **Dos calendarios en una sola herramienta**: los actos del presidente y el calendario interno de Barcelona Global, distinguidos por color, aislables con el selector «Todo · Presidente · Interno BG» y intercambiables con el desplegable «Visibilidad» de la ficha.
+- **Portada común**: próximo compromiso con cuenta atrás, próximos siete días y próximos eventos. El presidente ve la suya; Comunicación, la de los dos calendarios.
 - **Pestaña «Pasados»**: todos los actos ya celebrados —los del presidente y los internos—, agrupados por mes y del más reciente al más antiguo. La tabla queda así centrada en lo que viene; el buscador funciona en las dos.
 - Avisos de cambios recientes (ubicación, horario, intervención, briefing, acompañante, cancelación).
 - Detección de incidencias: solapamientos, intervenciones sin briefing, eventos sin ubicación y cambios importantes cerca de la fecha.
