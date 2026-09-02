@@ -34,7 +34,17 @@ La agenda se instala en el móvil y en el ordenador, y queda con su icono y sin 
 - **Android (Chrome):** aparece solo el aviso de **Instalar aplicación**; si no, está en el menú ⋮ → *Instalar aplicación*.
 - **Ordenador (Chrome o Edge):** el icono de instalar sale a la derecha de la barra de direcciones.
 
-El icono sale de `iconos/`, generado a partir de `herramientas/icono.svg`. Si cambia la marca, se edita ese archivo y se regeneran con `node herramientas/generar-iconos.js` (necesita Playwright en la máquina de quien lo ejecute; el servidor sigue sin depender de nada).
+### La marca
+
+Todo lo que se ve de la marca sale de un solo archivo, `herramientas/marca.png` —el anillo con la B, en el azul de la interfaz y con el fondo transparente—, extraído del logotipo oficial que está al lado en `herramientas/logotipo-oficial.tif`.
+
+Si algún día cambia, se sustituye ese PNG y se ejecuta:
+
+```
+node herramientas/generar-iconos.js
+```
+
+Eso rehace los tres iconos de `iconos/` —la marca en blanco sobre el azul corporativo— y vuelve a incrustar en `index.html` la marca de la cabecera y el favicon. Van incrustados a propósito: así el archivo suelto sigue enseñando el logotipo sin servidor. El script necesita Playwright en la máquina de quien lo ejecute; el servidor sigue sin depender de ningún paquete.
 
 La aplicación instalada **no guarda copia de la agenda**: `sw.js` existe únicamente para que el navegador ofrezca instalarla, y no cachea nada a propósito. Los compromisos cambian solos con el calendario de Outlook y una copia antigua enseñaría actos que ya no son. Sin cobertura, por tanto, la agenda no se abre.
 
