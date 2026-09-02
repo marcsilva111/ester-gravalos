@@ -1,5 +1,5 @@
 {
-  "version": 28,
+  "version": 29,
   "events": [
     {
       "id": "ol-d38b1df43c87",
@@ -55,8 +55,8 @@
       "start": "13:30",
       "end": "16:00",
       "arrival": "",
-      "location": "",
-      "address": "",
+      "location": "Circulo Ecuestre",
+      "address": "Circulo Ecuestre",
       "mapLink": "",
       "modality": "presencial",
       "description": "",
@@ -79,7 +79,12 @@
       "notes": "",
       "coverage": [],
       "docs": [],
-      "changes": [],
+      "changes": [
+        {
+          "ts": "2026-09-02T16:10:35.249Z",
+          "message": "La ubicación ha cambiado en Outlook: Circulo Ecuestre."
+        }
+      ],
       "archived": false
     },
     {
