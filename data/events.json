@@ -1,5 +1,5 @@
 {
-  "version": 26,
+  "version": 27,
   "events": [
     {
       "id": "ol-d38b1df43c87",
@@ -285,11 +285,11 @@
       "title": "BG Lunch G8 president Sanchez",
       "organizer": "",
       "date": "2026-09-28",
-      "start": "13:00",
+      "start": "13:30",
       "end": "16:00",
       "arrival": "",
-      "location": "",
-      "address": "",
+      "location": "PIMEC",
+      "address": "PIMEC",
       "mapLink": "",
       "modality": "presencial",
       "description": "",
@@ -312,7 +312,16 @@
       "notes": "",
       "coverage": [],
       "docs": [],
-      "changes": [],
+      "changes": [
+        {
+          "ts": "2026-09-02T10:39:36.913Z",
+          "message": "La ubicación ha cambiado en Outlook: PIMEC."
+        },
+        {
+          "ts": "2026-09-02T10:39:36.913Z",
+          "message": "El horario se ha modificado en Outlook: 13:30 – 16:00."
+        }
+      ],
       "archived": false
     },
     {
