@@ -574,7 +574,17 @@
     }
   ],
   "push": {
-    "subs": [],
+    "subs": [
+      {
+        "endpoint": "https://web.push.apple.com/QCp8QvmlIwAtSD-Umsmjs3ASQ3ERpJdfNxyHCGXyxji18HG6pX_glhWdk1PlapS9GjvkR38-0j8SnZj6DO90kiPSri5N5Qx9midR7Hwz4qbFHB11Q9B_cGMOEe1oNesnOOh-E9H_fsmL0_Yeogr775peQrL8YmeOsF-EX5WP3cY",
+        "keys": {
+          "p256dh": "BOQn_GnVTq47VTNUGXyfXFSOlJmmM8ndKpg6SGdkdlQWXSGHhQ8jrgNGutWIXbBE6TEzYIjA9XaQZLB_IOpqFcE",
+          "auth": "k0afDhmyDiUMOQVEgVTNKw"
+        },
+        "role": "comms",
+        "ts": "2026-09-03T11:13:39.274Z"
+      }
+    ],
     "vapid": {
       "publica": "BIoF7j3haXtYATJUi7Ad4K2wadC5Wavl0MX0LrKLbdcLkKbDiR__8VliluRU044Kb0eE-NcPSWQ4sv9j3CK1cWg",
       "privada": "-----BEGIN PRIVATE KEY-----\nMIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgaKRsdj0DN+ri7+MP\nUo7HG9fsDB2WWXu4YHhrc19ANDuhRANCAASKBe494Wl7WAEyVIuwHeCtsGnQuVmr\n5dDF9C6yi23XC5Cmw4kf//FZYpbkVNOOCm9HhPjXD0lkOLL/Y9witXFo\n-----END PRIVATE KEY-----\n"
