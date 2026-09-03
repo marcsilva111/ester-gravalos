@@ -122,7 +122,6 @@ a{color:var(--blue)}
 .chip-prio-alta{background:var(--red-bg);color:var(--red)}
 .chip-prio-mitjana{background:var(--amber-bg);color:var(--amber)}
 .chip-prio-baixa{background:var(--gray-bg);color:#4c566d}
-.chip-outlook{background:#e4edfb;color:#1a4f9c}
 .chip-interno{background:#dbe6fb;color:#123a78;border:1px solid #b9cdf2}
 .chip-pres-cal{background:var(--pres-bg);color:var(--pres);border:1px solid var(--pres-line)}
 /* Los actos internos de Barcelona Global se distinguen por su azul */
@@ -1450,7 +1449,6 @@ function renderTable(){
         (e.organizer && e.organizer !== 'Barcelona Global' ? '<br><small style="color:var(--muted)">' + esc(e.organizer) + '</small>' : '') +
         (e.internal && state.filters.ambito !== 'interno' ? ' <span class="chip chip-interno" title="Acto propio de Barcelona Global: el presidente no lo ve">Barcelona Global</span>' : '') +
         (e.mediaImpact ? ' <span class="chip chip-medios">📰 Impacto en medios</span>' : '') +
-        (e.origin === 'outlook' && !e.missingFromSource ? ' <span class="chip chip-outlook" title="Este evento viene del calendario de Outlook">Outlook</span>' : '') +
         (e.missingFromSource ? ' <span class="chip chip-status-cancelat" style="text-decoration:none" title="Ya no llega del calendario de Outlook">Ya no está en Outlook</span>' : '') + '</td>' +
       '<td class="c-acciones"><div class="row-actions">' +
         '<button class="iconbtn" title="Editar" data-edit="' + e.id + '">✏️</button>' +
