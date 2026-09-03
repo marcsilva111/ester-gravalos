@@ -1,5 +1,5 @@
 {
-  "version": 37,
+  "version": 38,
   "events": [
     {
       "id": "ol-d38b1df43c87",
@@ -63,11 +63,11 @@
       "sourceKey": "040000008200E00074C5B7101A82E0080000000099FE751DF139DD01000000000000000010000000BE238C3D75424E4DB36D5D0AA348A706",
       "sourceUid": "040000008200E00074C5B7101A82E0080000000099FE751DF139DD01000000000000000010000000BE238C3D75424E4DB36D5D0AA348A706",
       "origin": "outlook",
-      "title": "BG - Lunch G8",
+      "title": "BG 14:00h Lunch G8",
       "organizer": "",
       "date": "2026-09-07",
-      "start": "13:30",
-      "end": "16:00",
+      "start": "14:00",
+      "end": "16:30",
       "arrival": "",
       "location": "Circulo Ecuestre",
       "address": "Circulo Ecuestre",
