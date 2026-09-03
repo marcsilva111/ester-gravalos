@@ -1,5 +1,5 @@
 {
-  "version": 35,
+  "version": 36,
   "events": [
     {
       "id": "ol-d38b1df43c87",
@@ -99,7 +99,10 @@
           "message": "La ubicación ha cambiado en Outlook: Circulo Ecuestre."
         }
       ],
-      "archived": false
+      "archived": false,
+      "dressCode": "",
+      "mediaImpact": false,
+      "internal": false
     },
     {
       "id": "ol-679a9c0beb76",
@@ -533,22 +536,5 @@
       "changes": [],
       "archived": false
     }
-  ],
-  "push": {
-    "subs": [
-      {
-        "endpoint": "https://fcm.googleapis.com/fcm/send/fsSRzo2gamo:APA91bEofQpnYJiEWXv5MrHtTrCsKWMA0pic98kjNzq7hKDu4h9D4Vlz2R9GGN_hqNFPUIqFJVkIErOb5fVSNwUk2PzXU8MvvmqcMMdWXmU57li_a6FLEmQ41mJb9GH9ctOU87IA3KuG",
-        "keys": {
-          "p256dh": "BEt0w1lfkMo53u9lqEiPQhHNerycVw1YDMuwHXLfNYsXPcsQv8r4YJylc_CC-C9_xSWpqUSKOPkhX3WT9NG8ikU",
-          "auth": "Qiw4NUSabuPoAtjV6SGgmg"
-        },
-        "role": "comms",
-        "ts": "2026-09-03T08:38:49.567Z"
-      }
-    ],
-    "vapid": {
-      "publica": "BCj6KFv0cJnneI0VtfOKDc4XJ6GSleERU3k1IwN45NFd4w-INBkyoyGqwDn5MFapFtPlo_DKlScciAJTaIS5gD0",
-      "privada": "-----BEGIN PRIVATE KEY-----\nMIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgM2xvC1bNblCjg6TI\nroX4WIoxawjjmQG1kXoscw4mxqShRANCAAQo+ihb9HCZ53iNFbXzig3OFyehkpXh\nEVN5NSMDeOTRXeMPiDQZMqMhqsA5+TBWqRbT5aPwypUnHIgCU2iEuYA9\n-----END PRIVATE KEY-----\n"
-    }
-  }
+  ]
 }
