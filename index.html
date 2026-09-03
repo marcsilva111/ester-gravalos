@@ -28,6 +28,7 @@
   --amber:#9a6700;
   --amber-bg:#fdf3dc;
   --red:#b3261e;
+  --pres:#c1272d;  --pres-bg:#fdeceb;  --pres-line:#f3ccc9;
   --red-bg:#fdecea;
   --violet:#6941c6;
   --violet-bg:#f2edfc;
@@ -90,10 +91,6 @@ a{color:var(--blue)}
 .tabs button.active{color:var(--blue);border-bottom-color:var(--blue)}
 .tabs .tab-accion{margin-left:auto;color:var(--blue);font-weight:600;border-bottom:2.5px solid transparent}
 .tabs .tab-accion[disabled]{color:var(--faint)}
-.tabs .count{
-  display:inline-block;min-width:18px;padding:0 5px;margin-left:5px;border-radius:9px;background:var(--red-bg);
-  color:var(--red);font-size:11px;font-weight:700;text-align:center;
-}
 
 .container{max-width:1240px;margin:0 auto;padding:22px 20px 80px}
 @media (display-mode:standalone){
@@ -127,16 +124,16 @@ a{color:var(--blue)}
 .chip-prio-baixa{background:var(--gray-bg);color:#4c566d}
 .chip-outlook{background:#e4edfb;color:#1a4f9c}
 .chip-interno{background:#dbe6fb;color:#123a78;border:1px solid #b9cdf2}
-.chip-pres-cal{background:var(--blue-soft);color:var(--blue);border:1px solid #ccd2f6}
+.chip-pres-cal{background:var(--pres-bg);color:var(--pres);border:1px solid var(--pres-line)}
 /* Los actos internos de Barcelona Global se distinguen por su azul */
 tr.row.interno .evt-t{color:#123a78}
 /* El filo izquierdo dice de qué calendario es el acto, igual que en el
    calendario mensual: índigo el del presidente, azul el interno de BG. */
-#view-comms tr.row td:first-child{border-left:4px solid var(--blue)}
+#view-comms tr.row td:first-child{border-left:4px solid var(--pres)}
 #view-comms tr.row.interno td:first-child{border-left-color:#3a63b0}
 #view-comms tr.row.interno td{background:#f5f8ff}
 #view-comms tr.row.interno:hover td{background:#eef3fe}
-#view-comms .ecard{border-left:4px solid var(--blue)}
+#view-comms .ecard{border-left:4px solid var(--pres)}
 #view-comms .ecard.interno{border-left-color:#3a63b0;background:#f7faff}
 .cal-ev.interno{background:#dbe6fb;color:#123a78;border-left-color:#3a63b0;box-shadow:none}
 .ecard.interno{border-left:3px solid #3a63b0}
@@ -243,6 +240,8 @@ tr.row.interno .evt-t{color:#123a78}
   display:grid;grid-template-columns:52px 1fr;gap:12px;transition:border-color .12s, box-shadow .12s;
 }
 .ecard:hover{border-color:var(--blue);box-shadow:0 2px 10px -4px rgba(30,45,190,.25)}
+#view-comms .ecard:hover{border-left-color:var(--pres)}
+#view-comms .ecard.interno:hover{border-left-color:#3a63b0}
 .ecard.dim{opacity:.62}
 .ecard-date{
   text-align:center;border-right:1px solid var(--line);padding-right:10px;align-self:start;
@@ -285,7 +284,7 @@ tr.row.interno .evt-t{color:#123a78}
 .cal-ev{
   display:block;width:100%;max-width:100%;text-align:left;font-size:11.5px;font-weight:600;padding:3px 6px;border-radius:6px;margin-bottom:3px;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink);
-  background:#fff;box-shadow:inset 0 0 0 1px var(--line);border-left:3px solid var(--blue);
+  background:#fff;box-shadow:inset 0 0 0 1px var(--line);border-left:3px solid var(--pres);
 }
 .cal-ev:hover{filter:brightness(.97)}
 .cal-ev .w{color:var(--amber)}
@@ -327,20 +326,6 @@ td .evt-t:hover{color:var(--blue)}
 
 
 /* ---------- Incidents ---------- */
-.inc-list{display:grid;gap:10px}
-.inc{
-  background:#fff;border:1px solid var(--line);border-left:4px solid var(--amber);border-radius:11px;
-  padding:13px 16px;display:flex;gap:12px;align-items:flex-start;box-shadow:var(--shadow);
-}
-.inc.sev-high{border-left-color:var(--red)}
-.inc .inc-ico{font-size:19px;line-height:1.2}
-.inc b{display:block;margin-bottom:2px}
-.inc p{font-size:13px;color:var(--muted)}
-.inc .btn{margin-left:auto;flex:none;align-self:center}
-.inc-ok{
-  background:var(--green-bg);border:1px solid #cbe7d8;color:var(--green);border-radius:11px;padding:16px;text-align:center;font-weight:600;
-}
-
 /* ---------- Modals ---------- */
 .overlay{
   position:fixed;inset:0;background:rgba(16,26,60,.45);z-index:60;display:flex;align-items:flex-start;justify-content:center;
@@ -438,7 +423,6 @@ td .evt-t:hover{color:var(--blue)}
   .hero-actions .btn{flex:1;justify-content:center}
   .tabs{padding:0 8px}
   .tabs button{padding:11px 7px;font-size:12.5px}
-  .tabs .count{margin-left:4px}
   .cal-grid{display:none}
   .cal-grid-mobilenote{display:block!important}
   .role-switch button{padding:7px 11px;font-size:12.5px}
@@ -504,7 +488,6 @@ td .evt-t:hover{color:var(--blue)}
     <button data-ctab="home" class="active">Inicio</button>
     <button data-ctab="calendar">Calendario</button>
     <button data-ctab="table">Tabla</button>
-    <button data-ctab="incidents">Incidencias <span class="count" id="inc-count">0</span></button>
     <button data-ctab="past">Pasados</button>
   </nav>
   <main class="container">
@@ -538,7 +521,6 @@ td .evt-t:hover{color:var(--blue)}
     </section>
     <section id="c-table" class="hidden"><div class="table-wrap"><table id="tbl"></table></div></section>
     <section id="c-calendar" class="hidden"><div id="c-cal-root"></div></section>
-    <section id="c-incidents" class="hidden"><div class="inc-list" id="inc-root"></div></section>
     <section id="c-past" class="hidden"><div id="past-root"></div></section>
   </main>
 </div>
@@ -1122,42 +1104,16 @@ function overlap(a, b){
   if (a.date !== b.date || !a.start || !b.start) return false;
   return evStart(a) < evEnd(b) && evStart(b) < evEnd(a);
 }
-function findOverlaps(list){
-  const res = [];
-  for (let i = 0; i < list.length; i++)
-    for (let j = i + 1; j < list.length; j++)
-      if (overlap(list[i], list[j])) res.push([list[i], list[j]]);
-  return res;
-}
 function hasOverlap(ev){
   return events.some(o => o.id !== ev.id && presVisible(o) && presVisible(ev) && overlap(o, ev));
 }
 function byId(id){ return events.find(e => e.id === id); }
 
-/* ---------- Incidencias ---------- */
-function computeIncidents(){
-  const incs = [];
-  const active = events.filter(e => isActive(e) && isUpcoming(e));
-  const presEvents = active.filter(e => !e.internal && e.attends !== 'no');
-  findOverlaps(presEvents).forEach(([a, b]) => {
-    incs.push({ sev: 'high', ico: '⏱', title: 'Eventos solapados en la agenda del presidente',
-      text: '«' + a.title + '» (' + fmtTimeRange(a) + ') coincide con «' + b.title + '» (' + fmtTimeRange(b) + ') el ' + fmtDateShort(a.date) + '.', evId: a.id });
-  });
-  active.forEach(e => {
-    if (!e.internal && e.attends === 'si' && e.speaks && !(e.docs || []).some(d => d.fileId))
-      incs.push({ sev: 'mid', ico: '📄', title: 'Intervención sin briefing',
-        text: 'El presidente interviene en «' + e.title + '» (' + fmtDateShort(e.date) + ') y todavía no se ha adjuntado ningún documento.', evId: e.id });
-    if (e.attends !== 'no' && !e.location && !e.address)
-      incs.push({ sev: 'mid', ico: '📍', title: 'Evento sin ubicación',
-        text: '«' + e.title + '» (' + fmtDateShort(e.date) + ') no tiene ubicación definida.', evId: e.id });
-  });
-  return incs;
-}
 /* ---------- Estado de interfaz ---------- */
 const state = {
   role: 'president',            // president | comms
   presTab: 'home',              // home | calendar
-  commsTab: 'home',             // home | calendar | table | incidents | past
+  commsTab: 'home',             // home | calendar | table | past
   cal: { date: new Date(), onlySpeaks: false },
   filters: { q: '', ambito: 'todo', impacto: false },   // ambito: todo | pres | interno
 };
@@ -1433,22 +1389,16 @@ function renderAmbito(){
 function renderComms(){
   renderOutlookInfo();
   renderAmbito();
-  const incs = computeIncidents();
-  $('#inc-count').textContent = incs.length;
-  $('#inc-count').style.display = incs.length ? '' : 'none';
   const tab = state.commsTab;
-  ['home', 'table', 'calendar', 'incidents', 'past'].forEach((t) => {
-    $('#c-' + (t === 'incidents' ? 'incidents' : t)).classList.toggle('hidden', tab !== t);
+  ['home', 'table', 'calendar', 'past'].forEach((t) => {
+    $('#c-' + t).classList.toggle('hidden', tab !== t);
   });
-  // El buscador solo filtra la tabla y los pasados, y el filtro de impacto
-  // no llega a las incidencias: donde no hacen nada, se retiran.
+  // El buscador solo filtra la tabla y los pasados: donde no hace nada, se retira.
   $('#f-q').parentElement.classList.toggle('hidden', tab !== 'table' && tab !== 'past');
-  $('#f-impacto').classList.toggle('hidden', tab === 'incidents');
   if (tab === 'home') renderCommsHome();
   else if (tab === 'table') renderTable();
   else if (tab === 'calendar') renderCalendar('c-cal-root', 'comms');
-  else if (tab === 'past') renderPast();
-  else renderIncidents(incs);
+  else renderPast();
 }
 /* Eventos ya celebrados: todos, los del presidente y los internos, del más
    reciente al más antiguo y agrupados por mes. Respeta el buscador. */
@@ -1512,16 +1462,6 @@ function renderTable(){
   $('#tbl').innerHTML = html + '</tbody>';
 }
 function ev2time(e){ return e.start ? e.start + (e.end ? '–' + e.end : '') : '—'; }
-function renderIncidents(incs){
-  $('#inc-root').innerHTML = incs.length ? incs.map(i =>
-    '<div class="inc sev-' + i.sev + '">' +
-      '<div class="inc-ico">' + i.ico + '</div>' +
-      '<div><b>' + esc(i.title) + '</b><p>' + esc(i.text) + '</p></div>' +
-      '<button class="btn btn-sm" data-open="' + i.evId + '">Revisar</button>' +
-    '</div>').join('') :
-    '<div class="inc-ok">✓ Sin incidencias detectadas. La agenda está en orden.</div>';
-}
-
 /* =====================================================
    FICHA DE EVENTO (detalle)
    ===================================================== */

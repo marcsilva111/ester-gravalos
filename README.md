@@ -159,7 +159,6 @@ Además de la agenda del presidente, Comunicación puede llevar en la misma herr
 - En el panel de Comunicación aparecen en **azul**, con la etiqueta «Barcelona Global», tanto en la tabla como en el calendario y en la pestaña de pasados. Se editan igual que cualquier otro acto, salvo la parte de participación del presidente, que no aplica.
 - El selector **Todo · Presidente · Barcelona Global** de la barra superior permite mirar solo uno de los dos calendarios. Se aplica a la vez a la portada, la tabla, el calendario y los pasados, y solo aparece cuando hay actos internos que separar.
 - El desplegable **Visibilidad** de la ficha permite pasar un acto de la agenda del presidente al calendario interno y al revés, sin tocar Outlook.
-- No cuentan para las incidencias de la agenda del presidente (solapamientos, intervenciones sin briefing).
 
 **El retardo, que conviene conocer.** El servidor relee el calendario cada 15 minutos, y Comunicación puede forzarlo con el botón **Sincronizar Outlook**. Pero el propio enlace publicado por Microsoft se actualiza con su propio retraso —de unos minutos a algunas horas— y eso no depende de esta herramienta. Para reflejo inmediato haría falta la API de Microsoft Graph, que exige registrar una aplicación en Azure y permisos del administrador.
 
@@ -174,16 +173,15 @@ Además de la agenda del presidente, Comunicación puede llevar en la misma herr
 Las dos empiezan por la misma portada —próximo compromiso con cuenta atrás y lo que viene esta semana y más adelante— y siguen con el mismo calendario mensual. Cambia lo que cada una ve y lo que puede hacer.
 
 - **Agenda del Presidente** — solo consulta: *Mi agenda* y *Calendario*. Ve únicamente los actos a los que asiste; nunca los internos. Optimizada para móvil.
-- **Dashboard de Comunicación** — gestión completa: *Inicio*, *Calendario*, *Tabla*, *Incidencias* y *Pasados*. La portada reúne los actos de los dos calendarios; la tabla y el calendario permiten crear, editar y eliminar.
+- **Dashboard de Comunicación** — gestión completa: *Inicio*, *Calendario*, *Tabla* y *Pasados*. La portada reúne los actos de los dos calendarios; la tabla y el calendario permiten crear, editar y eliminar.
 
 ## Funcionalidades
 
-- **Dos calendarios en una sola herramienta**: los actos del presidente y el calendario interno de Barcelona Global, distinguidos por color, aislables con el selector «Todo · Presidente · Barcelona Global» y intercambiables con el desplegable «Visibilidad» de la ficha.
+- **Dos calendarios en una sola herramienta**: los actos del presidente, en **rojo**, y los de Barcelona Global, en **azul**, distinguidos igual en la portada, la tabla y el calendario, aislables con el selector «Todo · Presidente · Barcelona Global» y intercambiables con el desplegable «Visibilidad» de la ficha.
 - **Portada común**: próximo compromiso con cuenta atrás, próximos siete días y próximos eventos. El presidente ve la suya; Comunicación, la de los dos calendarios.
 - **Pestaña «Pasados»**: todos los actos ya celebrados —los del presidente y los internos—, agrupados por mes y del más reciente al más antiguo. La tabla queda así centrada en lo que viene; el buscador funciona en las dos.
 - **Impacto en medios**: marca por acto, con filtro para ver de un vistazo los que han tenido repercusión.
 - **Acompañantes** y **código de vestimenta** por acto.
-- Detección de incidencias: solapamientos, intervenciones sin briefing, eventos sin ubicación y cambios importantes cerca de la fecha.
 - Confirmación previa en las operaciones que no tienen vuelta atrás (eliminar).
 - **Código de vestimenta** por evento, visible en el próximo compromiso del presidente.
 - **Archivos adjuntos** que sube Comunicación —eligiéndolos o arrastrándolos— y que el presidente abre a la vista: los PDF, las imágenes y los textos se ven dentro de la propia agenda, sin descargar nada.
