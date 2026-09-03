@@ -46,7 +46,7 @@
      GET  /api/version  (Authorization: Bearer)   → { version }
      GET  /api/ping     (sin autenticación)        → { ok }
      PUT  /api/events   (solo rol comms)          → { version }
-     POST /api/import   (solo rol comms)          → { version, ... }
+     POST /api/import   (cualquier rol)            → { version, ... }
      POST /api/files    (solo rol comms)          → { id, name, size }
      GET  /api/files/:id                          → el archivo
      DELETE /api/files/:id (solo rol comms)       → { ok }
@@ -539,8 +539,9 @@ function handleAPI(req, res, pathname){
     });
   }
 
+  // Sincronizar es releer Outlook, no escribir en la agenda: los dos roles
+  // pueden pedirlo, para que Presidencia no dependa de que alguien lo haga.
   if (pathname === '/api/import' && req.method === 'POST'){
-    if (role !== 'comms') return sendJSON(res, 403, { error: 'Solo Comunicación puede sincronizar' });
     if (!usingOutlook()) return sendJSON(res, 400, { error: 'No hay ningún calendario de Outlook configurado' });
     return importarDeOutlook().then(() => sendJSON(res, 200, Object.assign({ version: store.version }, outlookEstado())));
   }

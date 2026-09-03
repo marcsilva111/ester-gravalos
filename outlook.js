@@ -252,11 +252,6 @@ function expandEvents(events, opts){
    acompañante, responsable— nunca se sobrescribe. Los eventos creados
    a mano en la agenda no se tocan jamás. */
 const idFor = (key) => 'ol-' + crypto.createHash('sha1').update(key).digest('hex').slice(0, 12);
-const aviso = (ev, mensaje) => {
-  ev.changes = ev.changes || [];
-  ev.changes.unshift({ ts: new Date().toISOString(), message: mensaje });
-  ev.changes = ev.changes.slice(0, 20);
-};
 
 function mergeIntoAgenda(agenda, occurrences, opts){
   const interno = !!(opts && opts.interno);
@@ -279,14 +274,14 @@ function mergeIntoAgenda(agenda, occurrences, opts){
         organizer: o.organizer || '',
         date: o.date, start: o.start, end: o.end, arrival: '',
         location: o.location, address: o.location, mapLink: '',
-        modality: 'presencial', description: o.description.slice(0, 500), link: '',
+        mediaImpact: false, description: o.description.slice(0, 500), link: '',
         type: 'extern',
         attends: 'si',
         missingFromSource: o.cancelled || false,
         speaks: false, speechType: '', speechDuration: '', speechLang: 'Catalán',
         keyMessage: '', contentOwner: '',
         owner: '', companion: '', orgContact: '', access: '', transport: '', notes: '',
-        coverage: [], docs: [], changes: [], archived: false,
+        coverage: [], docs: [],
       });
       resumen.nuevos++;
       return;
@@ -298,17 +293,11 @@ function mergeIntoAgenda(agenda, occurrences, opts){
     // decidir; si siguen llegando del calendario, son actos a los que va.
     if (existente.attends === 'pendent'){ existente.attends = 'si'; cambiado = true; }
     if (existente.title !== o.title){ existente.title = o.title; cambiado = true; }
-    if (existente.date !== o.date){
-      aviso(existente, 'La fecha ha cambiado en Outlook: ahora es el ' + o.date + '.');
-      existente.date = o.date; cambiado = true;
-    }
+    if (existente.date !== o.date){ existente.date = o.date; cambiado = true; }
     if (existente.start !== o.start || existente.end !== o.end){
-      aviso(existente, 'El horario se ha modificado en Outlook: ' + (o.start || 'sin hora') + (o.end ? ' – ' + o.end : '') + '.');
-      if (existente.arrival) aviso(existente, 'Revisa la hora de llegada: seguía fijada a las ' + existente.arrival + '.');
       existente.start = o.start; existente.end = o.end; cambiado = true;
     }
     if (o.location && existente.location !== o.location){
-      aviso(existente, 'La ubicación ha cambiado en Outlook: ' + o.location + '.');
       existente.location = o.location;
       existente.address = o.location;
       cambiado = true;
@@ -316,13 +305,10 @@ function mergeIntoAgenda(agenda, occurrences, opts){
     if (o.cancelled && !existente.missingFromSource){
       // Cancelado en origen: se retira de la agenda del presidente y queda
       // señalado para que Comunicación decida si lo borra.
-      aviso(existente, 'El evento se ha cancelado en Outlook.');
       existente.missingFromSource = true; cambiado = true; resumen.cancelados++;
     }
     if (!o.cancelled && existente.missingFromSource){
-      // Ha vuelto: se reincorpora a la agenda.
-      aviso(existente, 'El evento ha vuelto a aparecer en el calendario de Outlook.');
-      existente.missingFromSource = false; cambiado = true;
+      existente.missingFromSource = false; cambiado = true;   // ha vuelto
     }
     if (cambiado) resumen.actualizados++;
   });
@@ -332,9 +318,6 @@ function mergeIntoAgenda(agenda, occurrences, opts){
   porClave.forEach((ev, clave) => {
     if (vistos.has(clave) || ev.missingFromSource) return;
     ev.missingFromSource = true;
-    aviso(ev, (opts && opts.marca)
-      ? 'Este evento ya no lleva la marca «' + opts.marca + '» en Outlook, o se ha eliminado del calendario.'
-      : 'Este evento ya no aparece en el calendario de Outlook.');
     resumen.desaparecidos++;
   });
 

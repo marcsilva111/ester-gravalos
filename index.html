@@ -88,6 +88,8 @@ a{color:var(--blue)}
   margin-bottom:-1px;white-space:nowrap;
 }
 .tabs button.active{color:var(--blue);border-bottom-color:var(--blue)}
+.tabs .tab-accion{margin-left:auto;color:var(--blue);font-weight:600;border-bottom:2.5px solid transparent}
+.tabs .tab-accion[disabled]{color:var(--faint)}
 .tabs .count{
   display:inline-block;min-width:18px;padding:0 5px;margin-left:5px;border-radius:9px;background:var(--red-bg);
   color:var(--red);font-size:11px;font-weight:700;text-align:center;
@@ -128,8 +130,30 @@ a{color:var(--blue)}
 .chip-pres-cal{background:var(--blue-soft);color:var(--blue);border:1px solid #ccd2f6}
 /* Los actos internos de Barcelona Global se distinguen por su azul */
 tr.row.interno .evt-t{color:#123a78}
+/* El filo izquierdo dice de qué calendario es el acto, igual que en el
+   calendario mensual: índigo el del presidente, azul el interno de BG. */
+#view-comms tr.row td:first-child{border-left:4px solid var(--blue)}
+#view-comms tr.row.interno td:first-child{border-left-color:#3a63b0}
+#view-comms tr.row.interno td{background:#f5f8ff}
+#view-comms tr.row.interno:hover td{background:#eef3fe}
+#view-comms .ecard{border-left:4px solid var(--blue)}
+#view-comms .ecard.interno{border-left-color:#3a63b0;background:#f7faff}
 .cal-ev.interno{background:#dbe6fb;color:#123a78;border-left-color:#3a63b0;box-shadow:none}
 .ecard.interno{border-left:3px solid #3a63b0}
+.chip-medios{background:#fdeede;color:#a4491a;border:1px solid #f6d5b8}
+.soltar{
+  border:1.5px dashed var(--line);border-radius:11px;padding:14px;text-align:center;
+  display:grid;gap:6px;justify-items:center;transition:border-color .12s, background .12s;
+}
+.soltar span{font-size:13px;color:var(--muted)}
+.soltar small{font-size:12px;color:var(--faint)}
+.soltar.encima{border-color:var(--blue);background:var(--blue-soft)}
+.visor{width:100%;height:min(70vh,620px);border:1px solid var(--line);border-radius:10px;background:#fff}
+.visor-img{display:block;max-width:100%;max-height:min(70vh,620px);margin:0 auto;border-radius:10px}
+.visor-txt{
+  white-space:pre-wrap;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px;
+  border:1px solid var(--line);border-radius:10px;padding:12px;max-height:min(70vh,620px);overflow:auto;
+}
 .sync-info{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:7px;margin-left:auto}
 .sync-info.err{color:var(--red);font-weight:600}
 .dot-warn{color:var(--amber);font-size:14px}
@@ -199,8 +223,6 @@ tr.row.interno .evt-t{color:#123a78}
 .hero-actions .btn:hover{background:var(--blue-soft)}
 .hero-actions .btn.outline{background:transparent;color:#fff;border-color:rgba(255,255,255,.55)}
 .hero-actions .btn.outline:hover{background:rgba(255,255,255,.12)}
-.hero-alerts{margin-top:16px;display:grid;gap:8px;position:relative;z-index:1}
-.hero-alerts .alert{background:rgba(255,255,255,.14);color:#fff;border-color:rgba(255,255,255,.28)}
 .hero-empty{font-size:16px;opacity:.9}
 
 /* ---------- Section blocks ---------- */
@@ -231,7 +253,6 @@ tr.row.interno .evt-t{color:#123a78}
 .ecard-title{font-weight:700;font-size:14.5px;letter-spacing:-.1px;margin-bottom:2px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
 .ecard-place{font-size:12.5px;color:var(--muted);margin-bottom:7px;display:flex;gap:5px;align-items:center}
 .ecard-tags{display:flex;gap:5px;flex-wrap:wrap}
-.ecard-alert{margin-top:7px;font-size:12px;color:var(--amber);font-weight:600;display:flex;gap:5px;align-items:center}
 
 /* ---------- Calendar ---------- */
 .cal-toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
@@ -351,7 +372,6 @@ td .evt-t:hover{color:var(--blue)}
   display:flex;align-items:center;gap:9px;padding:8px 11px;border:1px solid var(--line);border-radius:9px;margin-bottom:6px;font-size:13.5px;background:#fafbfe;
 }
 .doc-row .btn{margin-left:auto}
-.changes-list{display:grid;gap:6px}
 
 /* ---------- Forms ---------- */
 .fgrid{display:grid;grid-template-columns:1fr 1fr;gap:11px 14px}
@@ -454,6 +474,7 @@ td .evt-t:hover{color:var(--blue)}
   <nav class="tabs">
     <button data-ptab="home" class="active">Mi agenda</button>
     <button data-ptab="calendar">Calendario</button>
+    <button class="tab-accion hidden" id="btn-sync-pres" title="Traer los últimos cambios del calendario">↻ Actualizar</button>
   </nav>
   <main class="container">
     <section id="p-home">
@@ -491,6 +512,7 @@ td .evt-t:hover{color:var(--blue)}
         <button data-ambito="pres">Presidente</button>
         <button data-ambito="interno">Interno BG</button>
       </div>
+      <button class="fchip" id="f-impacto" title="Ver solo los actos que han tenido repercusión en medios">📰 Impacto en medios</button>
       <div class="search">
         <span>🔍</span>
         <input id="f-q" type="search" placeholder="Buscar por evento, organizador o lugar…">
@@ -546,7 +568,7 @@ function seedEvents(){
   const id = () => 'ev-' + String(++n).padStart(3, '0');
   const E = (o) => Object.assign({
     id: id(), title: '', organizer: 'Barcelona Global', date: '', start: '', end: '',
-    arrival: '', location: '', address: '', mapLink: '', modality: 'presencial',
+    arrival: '', location: '', address: '', mapLink: '', mediaImpact: false,
     description: '', link: '', type: 'propi', priority: 'mitjana', status: 'confirmat',
     attends: 'si',            // si | no | pendent
     speaks: false, speechType: '', speechDuration: '', speechLang: 'Catalán',
@@ -555,8 +577,6 @@ function seedEvents(){
     demo: true,               // creado como ejemplo, no es un acto real
     coverage: [],             // fotos, video, ndp, post, story
     docs: [],                 // {kind, name, url, updatedAt},
-    changes: [],              // {ts, message}
-    archived: false,
   }, o);
   const doc = (kind, name, updatedAt) => ({ kind, name, url: '#', updatedAt: updatedAt || null });
 
@@ -576,9 +596,7 @@ function seedEvents(){
         contentOwner: 'Dirección de Comunicación', companion: 'Directora general',
         orgContact: 'Gabinet d’Alcaldia · 93 402 70 00', access: 'Acceso por Pl. Sant Jaume. Acreditación en recepción.',
         transport: 'Coche oficial. Parking Pl. Catalunya.',
-        docs: [doc('briefing', 'Briefing reunión Alcaldía', daysAgoISO(1)), doc('speech', 'Talking points Barcelona 2047')],
-        changes: [{ ts: daysAgoISO(1), message: 'El horario se ha modificado: pasa de 12:00 a 12:30.' },
-                  { ts: daysAgoISO(1), message: 'Briefing actualizado.' }] }),
+        docs: [doc('briefing', 'Briefing reunión Alcaldía', daysAgoISO(1)), doc('speech', 'Talking points Barcelona 2047')] }),
     E({ title: 'Esmorzar amb mitjans de comunicació', date: '2026-07-29', start: '09:00', end: '10:30',
         arrival: '08:45', type: 'propi', priority: 'mitjana',
         location: 'Hotel Majestic', address: 'Pg. de Gràcia 68, Barcelona',
@@ -597,8 +615,7 @@ function seedEvents(){
         speaks: true, speechType: 'Participación en el debate', speechDuration: '—',
         keyMessage: 'Coordinación de las entidades económicas de la ciudad.',
         companion: 'Directora general',
-        docs: [doc('briefing', 'Briefing Dinar G8 septiembre')],
-        changes: [{ ts: daysAgoISO(2), message: 'El horario se ha modificado: comienza a las 14:00.' }] }),
+        docs: [doc('briefing', 'Briefing Dinar G8 septiembre')] }),
     E({ title: 'Hola Barcelona! Cocktail', date: '2026-09-09', start: '19:00', end: '21:30', arrival: '18:30',
         type: 'propi', priority: 'alta',
         location: 'Terraza del Museu Marítim', address: 'Av. de les Drassanes s/n, Barcelona',
@@ -608,14 +625,12 @@ function seedEvents(){
         keyMessage: 'Barcelona, ciudad abierta al talento internacional.',
         contentOwner: 'Dirección de Comunicación', companion: 'Directora de Comunicación',
         coverage: ['fotos', 'video', 'ndp', 'post', 'story'],
-        docs: [doc('briefing', 'Briefing Hola Barcelona!', daysAgoISO(2)), doc('speech', 'Welcome speech (EN)'), doc('agenda', 'Escaleta del cocktail')],
-        changes: [{ ts: daysAgoISO(2), message: 'Briefing actualizado.' }] }),
+        docs: [doc('briefing', 'Briefing Hola Barcelona!', daysAgoISO(2)), doc('speech', 'Welcome speech (EN)'), doc('agenda', 'Escaleta del cocktail')] }),
     E({ title: 'AIJEC · Premi Jove Empresari', date: '2026-09-14', start: '18:30', end: '20:30',
         type: 'extern', organizer: 'AIJEC', status: 'pendent', attends: 'pendent',
         location: 'Llotja de Mar', address: 'Pg. d’Isabel II 1, Barcelona',
         mapLink: 'https://maps.google.com/?q=Llotja+de+Mar+Barcelona',
-        coverage: ['fotos'], orgContact: 'Secretaria AIJEC · info@aijec.cat',
-        changes: [{ ts: daysAgoISO(4), message: 'Asistencia pendiente de confirmación.' }] }),
+        coverage: ['fotos'], orgContact: 'Secretaria AIJEC · info@aijec.cat' }),
     E({ title: 'COMEX BG', date: '2026-09-16', start: '09:00', end: '11:00', arrival: '08:50',
         type: 'reunio', priority: 'alta',
         location: 'Sede Barcelona Global', address: 'C/ Aribau 185, Barcelona',
@@ -636,22 +651,19 @@ function seedEvents(){
         docs: [doc('agenda', 'Programa de la visita')] }),
     E({ title: 'Gala Betevé', date: '2026-09-17', start: '20:00', end: '22:30',
         type: 'extern', organizer: 'Betevé', status: 'pendent', attends: 'pendent',
-        location: 'Plató central de Betevé', address: 'C/ Perú 52, Barcelona',
-        changes: [{ ts: daysAgoISO(5), message: 'Asistencia pendiente de confirmación.' }] }),
+        location: 'Plató central de Betevé', address: 'C/ Perú 52, Barcelona' }),
     E({ title: 'COMEX B&P', date: '2026-09-21', start: '09:00', end: '10:30', arrival: '08:50',
         type: 'reunio', location: 'Sede Barcelona Global', address: 'C/ Aribau 185, Barcelona',
         speaks: true, speechType: 'Presidencia de la reunión',
         docs: [doc('agenda', 'Orden del día B&P')] }),
     E({ title: 'Recepció Consolat General de França', date: '2026-09-23', start: '19:00', end: '21:00',
         type: 'inst', organizer: 'Consulat de França', status: 'cancelat', attends: 'no',
-        location: 'Residència consular', address: 'Rda. Universitat 22, Barcelona',
-        changes: [{ ts: daysAgoISO(3), message: 'El evento ha sido cancelado por el organizador.' }] }),
+        location: 'Residència consular', address: 'Rda. Universitat 22, Barcelona' }),
     E({ title: 'Premis La Vanguardia', date: '2026-09-28', start: '19:30', end: '22:00', arrival: '19:00',
         type: 'extern', organizer: 'La Vanguardia', priority: 'alta',
         location: 'MNAC (nueva ubicación)', address: 'Palau Nacional, Parc de Montjuïc, Barcelona',
         mapLink: 'https://maps.google.com/?q=MNAC+Barcelona',
-        companion: 'Directora de Comunicación', coverage: ['fotos', 'post'],
-        changes: [{ ts: daysAgoISO(2), message: 'La ubicación ha cambiado: el acto se traslada al MNAC.' }] }),
+        companion: 'Directora de Comunicación', coverage: ['fotos', 'post'] }),
     E({ title: 'Patronat FBCN', date: '2026-09-30', start: '18:00', end: '19:30', arrival: '17:50',
         type: 'reunio', organizer: 'Fundació Barcelona Cultura',
         location: 'Palau de la Virreina', address: 'La Rambla 99, Barcelona',
@@ -880,6 +892,10 @@ function applyRole(){
   if (presOnly) state.role = 'president';
   const sw = $('.role-switch'); if (sw) sw.classList.toggle('hidden', presOnly);
   const lo = $('#btn-logout'); if (lo) lo.classList.toggle('hidden', !(remote.enabled && auth.token));
+  // El presidente también puede pedir los últimos cambios, por si Comunicación
+  // acaba de tocar algo y no ha sincronizado.
+  const sp = $('#btn-sync-pres');
+  if (sp) sp.classList.toggle('hidden', !(remote.enabled && remote.outlook && remote.outlook.configurado));
 }
 function showLogin(msg){
   let w = $('#login-screen');
@@ -1099,10 +1115,6 @@ function presVisible(ev){
   return !ev.internal && ev.attends !== 'no' && !ev.missingFromSource;
 }
 function hasDoc(ev, kind){ return (ev.docs || []).some(d => d.kind === kind); }
-function recentChanges(ev, days){
-  const lim = Date.now() - (days || 7) * 864e5;
-  return (ev.changes || []).filter(c => new Date(c.ts).getTime() >= lim);
-}
 function overlap(a, b){
   if (a.date !== b.date || !a.start || !b.start) return false;
   return evStart(a) < evEnd(b) && evStart(b) < evEnd(a);
@@ -1118,10 +1130,6 @@ function hasOverlap(ev){
   return events.some(o => o.id !== ev.id && presVisible(o) && presVisible(ev) && overlap(o, ev));
 }
 function byId(id){ return events.find(e => e.id === id); }
-function logChange(ev, message){
-  ev.changes = ev.changes || [];
-  ev.changes.unshift({ ts: new Date().toISOString(), message });
-}
 
 /* ---------- Incidencias ---------- */
 function computeIncidents(){
@@ -1139,10 +1147,6 @@ function computeIncidents(){
     if (e.attends !== 'no' && !e.location && !e.address)
       incs.push({ sev: 'mid', ico: '📍', title: 'Evento sin ubicación',
         text: '«' + e.title + '» (' + fmtDateShort(e.date) + ') no tiene ubicación definida.', evId: e.id });
-    const daysTo = (evStart(e) - Date.now()) / 864e5;
-    if (daysTo >= 0 && daysTo <= 7 && recentChanges(e, 3).length)
-      incs.push({ sev: 'high', ico: '⚠️', title: 'Cambio importante cerca de la fecha',
-        text: '«' + e.title + '» se celebra en menos de 7 días y ha registrado cambios recientes: ' + recentChanges(e, 3)[0].message, evId: e.id });
   });
   return incs;
 }
@@ -1152,7 +1156,7 @@ const state = {
   presTab: 'home',              // home | calendar
   commsTab: 'home',             // home | calendar | table | incidents | past
   cal: { date: new Date(), onlySpeaks: false },
-  filters: { q: '', ambito: 'todo' },   // todo | pres | interno
+  filters: { q: '', ambito: 'todo', impacto: false },   // ambito: todo | pres | interno
 };
 
 /* ---------- Fragmentos reutilizables ---------- */
@@ -1171,7 +1175,6 @@ function chipsParticipation(ev, simple){
 
 function eventCard(ev, opts){
   opts = opts || {};
-  const alerts = recentChanges(ev, 7);
   const dt = parseDT(ev.date, '00:00');
   const tags = [];
   if (opts.simple){
@@ -1179,12 +1182,14 @@ function eventCard(ev, opts){
     if (ev.attends !== 'no' && ev.speaks)
       tags.push('<span class="chip chip-interviene">🎤 ' + esc(ev.speechType || 'Interviene') +
         (ev.speechDuration && ev.speechDuration !== '—' ? ' · ' + esc(ev.speechDuration) : '') + '</span>');
-  } else if (state.filters.ambito === 'todo'){
+  } else {
     // En Comunicación la tarjeta solo dice de qué calendario es el acto;
     // cuando el selector ya aísla uno, ni eso hace falta.
-    tags.push(ev.internal
-      ? '<span class="chip chip-interno" title="Acto interno de Barcelona Global: el presidente no lo ve">Interno BG</span>'
-      : '<span class="chip chip-pres-cal" title="Acto de la agenda del presidente">Presidente</span>');
+    if (state.filters.ambito === 'todo')
+      tags.push(ev.internal
+        ? '<span class="chip chip-interno" title="Acto interno de Barcelona Global: el presidente no lo ve">Interno BG</span>'
+        : '<span class="chip chip-pres-cal" title="Acto de la agenda del presidente">Presidente</span>');
+    if (ev.mediaImpact) tags.push('<span class="chip chip-medios">📰 Impacto en medios</span>');
   }
   return '<div class="ecard' + (ev.internal ? ' interno' : '') + (ev.missingFromSource ? ' dim' : '') + '" data-open="' + ev.id + '">' +
     '<div class="ecard-date">' +
@@ -1196,7 +1201,6 @@ function eventCard(ev, opts){
       '<div class="ecard-title">' + esc(ev.title) + (hasOverlap(ev) && isUpcoming(ev) ? ' <span class="dot-warn" title="Se solapa con otro evento">⏱</span>' : '') + '</div>' +
       '<div class="ecard-place">📍 ' + esc(ev.location || 'Ubicación por confirmar') + '</div>' +
       (tags.length ? '<div class="ecard-tags">' + tags.join('') + '</div>' : '') +
-      (alerts.length ? '<div class="ecard-alert">⚠️ ' + esc(alerts[0].message) + '</div>' : '') +
     '</div>' +
   '</div>';
 }
@@ -1243,7 +1247,6 @@ function renderHero(rootId, list, opts){
       (opts.simple ? 'No hay compromisos confirmados en la agenda.' : 'No hay ningún acto por delante.') + '</p></div>';
     return;
   }
-  const alerts = recentChanges(next, 7);
   const adjunto = (next.docs || []).find(d => d.fileId);
   const briefing = (next.docs || []).find(d => d.kind === 'briefing');
   root.innerHTML =
@@ -1269,8 +1272,6 @@ function renderHero(rootId, list, opts){
                  : briefing ? '<button class="btn" data-doc="' + next.id + '|briefing">📄 Abrir briefing</button>' : '') +
         (next.mapLink || next.address ? '<a class="btn outline" target="_blank" rel="noopener" href="' + esc(next.mapLink || ('https://maps.google.com/?q=' + encodeURIComponent(next.address))) + '">🗺 Cómo llegar</a>' : '') +
       '</div>' +
-      (alerts.length ? '<div class="hero-alerts">' + alerts.slice(0, 2).map(a =>
-        '<div class="alert">⚠️ <span>' + esc(a.message) + '</span><span class="when">' + esc(fmtRelative(a.ts)) + '</span></div>').join('') + '</div>' : '') +
     '</div>';
   const target = evStart(next);
   function tick(){
@@ -1334,7 +1335,7 @@ function mondayOf(d){
   return x;
 }
 function calEvChip(ev, cls){
-  const warn = (hasOverlap(ev) && isUpcoming(ev) ? ' <span class="w">⏱</span>' : '') + (recentChanges(ev, 7).length ? ' <span class="w">⚠️</span>' : '');
+  const warn = hasOverlap(ev) && isUpcoming(ev) ? ' <span class="w">⏱</span>' : '';
   return '<button class="' + cls + (ev.internal ? ' interno' : '') + '" data-open="' + ev.id + '" title="' + esc(ev.title) + '">' +
     (ev.start ? esc(ev.start) + ' ' : '') + esc(ev.title) + (!ev.internal && ev.speaks && ev.attends !== 'no' ? ' 🎤' : '') + warn +
   '</button>';
@@ -1366,6 +1367,7 @@ function renderMonth(list){
    pasados, de modo que las tres pestañas enseñen siempre lo mismo. */
 function pasaAmbito(ev){
   const a = state.filters.ambito;
+  if (state.filters.impacto && !ev.mediaImpact) return false;
   if (a === 'pres') return !ev.internal;
   if (a === 'interno') return !!ev.internal;
   return true;
@@ -1422,6 +1424,8 @@ function renderAmbito(){
   if (!hay && state.filters.ambito !== 'todo') state.filters.ambito = 'todo';
   seg.classList.toggle('hidden', !hay);
   $$('button', seg).forEach(b => b.classList.toggle('active', b.dataset.ambito === state.filters.ambito));
+  const imp = $('#f-impacto');
+  if (imp) imp.classList.toggle('active', state.filters.impacto);
 }
 function renderComms(){
   renderOutlookInfo();
@@ -1433,9 +1437,10 @@ function renderComms(){
   ['home', 'table', 'calendar', 'incidents', 'past'].forEach((t) => {
     $('#c-' + (t === 'incidents' ? 'incidents' : t)).classList.toggle('hidden', tab !== t);
   });
-  // El buscador solo filtra la tabla y los pasados: en el resto de
-  // pestañas se retira, para no ofrecer algo que no hace nada.
+  // El buscador solo filtra la tabla y los pasados, y el filtro de impacto
+  // no llega a las incidencias: donde no hacen nada, se retiran.
   $('#f-q').parentElement.classList.toggle('hidden', tab !== 'table' && tab !== 'past');
+  $('#f-impacto').classList.toggle('hidden', tab === 'incidents');
   if (tab === 'home') renderCommsHome();
   else if (tab === 'table') renderTable();
   else if (tab === 'calendar') renderCalendar('c-cal-root', 'comms');
@@ -1489,9 +1494,9 @@ function renderTable(){
       '<td class="c-evento">' +
         '<span class="evt-t" data-open="' + e.id + '">' + esc(e.title) + '</span>' +
         (hasOverlap(e) && isUpcoming(e) ? ' <span class="dot-warn" title="Solapado">⏱</span>' : '') +
-        (recentChanges(e, 7).length ? ' <span class="dot-warn" title="Cambios recientes">⚠️</span>' : '') +
         (e.organizer && e.organizer !== 'Barcelona Global' ? '<br><small style="color:var(--muted)">' + esc(e.organizer) + '</small>' : '') +
         (e.internal && state.filters.ambito !== 'interno' ? ' <span class="chip chip-interno" title="Acto interno de Barcelona Global: el presidente no lo ve">Interno BG</span>' : '') +
+        (e.mediaImpact ? ' <span class="chip chip-medios">📰 Impacto en medios</span>' : '') +
         (e.origin === 'outlook' && !e.missingFromSource ? ' <span class="chip chip-outlook" title="Este evento viene del calendario de Outlook">Outlook</span>' : '') +
         (e.missingFromSource ? ' <span class="chip chip-status-cancelat" style="text-decoration:none" title="Ya no llega del calendario de Outlook">Ya no está en Outlook</span>' : '') + '</td>' +
       '<td class="c-acciones"><div class="row-actions">' +
@@ -1522,13 +1527,9 @@ function openDetail(id){
   const isComms = state.role === 'comms';
   const briefing = (e.docs || []).find(d => d.kind === 'briefing');
   const docLabels = { briefing: 'Briefing', invitation: 'Invitación', agenda: 'Agenda / escaleta', speech: 'Discurso · talking points', link: 'Enlace', file: 'Archivo adjunto' };
-  const changes = (e.changes || []).slice(0, 5);
   const mapHref = e.mapLink || (e.address ? 'https://maps.google.com/?q=' + encodeURIComponent(e.address) : '');
 
   const body =
-    (changes.length ? '<div class="dsec"><h4>Avisos y cambios recientes</h4><div class="changes-list">' +
-      changes.map(c => '<div class="alert">⚠️ <span>' + esc(c.message) + '</span><span class="when">' + esc(fmtRelative(c.ts)) + '</span></div>').join('') +
-    '</div></div>' : '') +
     '<div class="dsec"><h4>Información básica</h4><div class="dgrid">' +
       dit('Fecha', fmtDateLong(e.date)) +
       dit('Horario', fmtTimeRange(e)) +
@@ -1536,8 +1537,9 @@ function openDetail(id){
       dit('Organizador', e.organizer || '—') +
       dit('Lugar', e.location || 'Por confirmar') +
       (e.address ? dit('Dirección', e.address) : '') +
-      dit('Modalidad', { presencial: 'Presencial', virtual: 'Virtual', hibrida: 'Híbrida' }[e.modality] || e.modality) +
+      (e.companion ? dit('Acompañantes', e.companion) : '') +
       (e.dressCode ? dit('Código de vestimenta', e.dressCode) : '') +
+      (e.mediaImpact ? dit('Impacto en medios', 'Sí') : '') +
     '</div>' +
     '</div>' +
     (e.internal ? '' : '<div class="dsec"><h4>Participación del presidente</h4><div class="dgrid">' +
@@ -1587,7 +1589,23 @@ function openDetail(id){
 }
 function dit(k, v){ return '<div class="dit"><span class="k">' + esc(k) + '</span><span class="v">' + esc(v) + '</span></div>'; }
 
-/* ---------- Apertura de un archivo adjunto ---------- */
+/* ---------- Apertura de un archivo adjunto ----------
+   Lo que el navegador sabe enseñar —PDF, imágenes, texto— se abre a la vista
+   en una ventana, que es como se consulta un briefing desde el móvil. Lo que
+   no —Word, Excel, PowerPoint— se descarga, porque no hay forma de mostrarlo
+   sin una aplicación aparte. */
+function tipoDeArchivo(nombre, mime){
+  const ext = String(nombre).toLowerCase().split('.').pop();
+  if (/pdf/.test(mime) || ext === 'pdf') return 'pdf';
+  if (/^image\//.test(mime) || ['png','jpg','jpeg','gif','webp','svg','avif'].includes(ext)) return 'imagen';
+  if (/^text\//.test(mime) || ['txt','md','csv'].includes(ext)) return 'texto';
+  return 'descarga';
+}
+function descargarBlob(url, nombre){
+  const a = document.createElement('a');
+  a.href = url; a.download = nombre;
+  document.body.appendChild(a); a.click(); a.remove();
+}
 async function abrirAdjunto(fileId, nombre){
   toast('Abriendo ' + nombre + '…');
   try {
@@ -1599,10 +1617,26 @@ async function abrirAdjunto(fileId, nombre){
     }
     const blob = await r.blob();
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.target = '_blank'; a.rel = 'noopener'; a.download = nombre;
-    document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 60000);
+    const tipo = tipoDeArchivo(nombre, blob.type || r.headers.get('content-type') || '');
+    if (tipo === 'descarga'){
+      descargarBlob(url, nombre);
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+      return;
+    }
+    const cuerpo = tipo === 'pdf'
+      ? '<iframe class="visor" src="' + url + '" title="' + esc(nombre) + '"></iframe>'
+      : tipo === 'imagen'
+        ? '<img class="visor-img" src="' + url + '" alt="' + esc(nombre) + '">'
+        : '<div class="visor-txt">' + esc(await blob.text()) + '</div>';
+    showModal('<div class="modal-h"><h3>' + esc(nombre) + '</h3><button class="modal-close" data-close>×</button></div>' +
+      '<div class="modal-b">' + cuerpo + '</div>' +
+      '<div class="modal-f">' +
+        '<button class="btn" data-close>Cerrar</button>' +
+        '<button class="btn btn-primary" id="adj-descargar">⤓ Descargar</button>' +
+      '</div>', true);
+    $('#adj-descargar').addEventListener('click', () => descargarBlob(url, nombre));
+    // El blob vive mientras la ventana esté abierta.
+    setTimeout(() => URL.revokeObjectURL(url), 10 * 60000);
   } catch (e) { toast('No se pudo abrir el archivo: ' + e.message, 'err'); }
 }
 
@@ -1623,7 +1657,6 @@ function openDoc(id, kind){
     '<p><b>Organiza:</b> ' + esc(e.organizer) + '</p>' +
     (e.speaks ? '<p><b>Intervención:</b> ' + esc(e.speechType || '—') + (e.speechDuration ? ' · ' + esc(e.speechDuration) : '') + (e.speechLang ? ' · ' + esc(e.speechLang) : '') + '</p>' : '') +
     (e.keyMessage ? '<p><b>Mensaje principal:</b> ' + esc(e.keyMessage) + '</p>' : '') +
-    (e.companion ? '<p><b>Acompaña:</b> ' + esc(e.companion) + '</p>' : '') +
     (e.access ? '<p><b>Acceso:</b> ' + esc(e.access) + '</p>' : '') +
     (e.notes ? '<p><b>Observaciones:</b> ' + esc(e.notes) + '</p>' : '') +
     '<p style="color:var(--faint)">Resumen generado con los datos de la ficha. Para adjuntar el briefing real, súbelo como archivo al editar el evento.</p>'
@@ -1654,7 +1687,8 @@ function openEditor(id){
       fld('Hora recomendada de llegada', '<input type="time" name="arrival" value="' + v('arrival') + '">') +
       fld('Visibilidad', '<select name="internal" id="f-visibilidad">' +
         sel([['', 'Agenda del presidente'], ['si', 'Interno de Barcelona Global']], e && e.internal ? 'si' : '') + '</select>') +
-      fld('Modalidad', '<select name="modality">' + sel([['presencial', 'Presencial'], ['virtual', 'Virtual'], ['hibrida', 'Híbrida']], e ? e.modality : 'presencial') + '</select>') +
+      fld('Acompañantes', '<input name="companion" value="' + v('companion') + '" placeholder="Directora general, Directora de Comunicación…">') +
+      fld('Impacto en medios', '<select name="mediaImpact">' + sel([['no', 'No'], ['si', 'Sí']], e && e.mediaImpact ? 'si' : 'no') + '</select>') +
       fld('Código de vestimenta', '<input name="dressCode" list="lista-vestimenta" value="' + v('dressCode') + '" placeholder="Traje oscuro, business casual…">' +
         '<datalist id="lista-vestimenta">' +
           ['Etiqueta (esmoquin)','Traje oscuro','Traje','Business','Business casual','Informal','Sin código'].map(x => '<option value="' + x + '">').join('') +
@@ -1714,10 +1748,28 @@ function pintarAdjuntos(){
   zona.innerHTML =
     '<input type="file" id="adj-file" class="hidden" multiple ' +
       'accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.png,.jpg,.jpeg,.gif,.webp,.txt,.md,.csv">' +
-    '<button type="button" class="btn" id="adj-btn">📎 Adjuntar archivo…</button>' +
-    '<small style="display:block;color:var(--muted);margin-top:6px">PDF, Word, PowerPoint, Excel, imágenes o texto. Hasta 4 MB por archivo.</small>';
+    '<div class="soltar" id="adj-soltar">' +
+      '<button type="button" class="btn" id="adj-btn">📎 Adjuntar archivo…</button>' +
+      '<span>o arrastra los documentos hasta aquí</span>' +
+      '<small>PDF, Word, PowerPoint, Excel, imágenes o texto. Hasta 4 MB por archivo.</small>' +
+    '</div>';
   $('#adj-btn').addEventListener('click', () => $('#adj-file').click());
   $('#adj-file').addEventListener('change', (ev) => subirAdjuntos(Array.from(ev.target.files || [])));
+
+  // Arrastrar y soltar. El navegador abre el archivo si se suelta fuera de
+  // la zona, así que se cancela el arrastre en toda la ventana del formulario.
+  const caja = $('#adj-soltar');
+  const parar = (ev) => { ev.preventDefault(); ev.stopPropagation(); };
+  ['dragenter', 'dragover', 'dragleave', 'drop'].forEach((n) => {
+    caja.addEventListener(n, parar);
+    zona.addEventListener(n, parar);
+  });
+  ['dragenter', 'dragover'].forEach((n) => caja.addEventListener(n, () => caja.classList.add('encima')));
+  ['dragleave', 'drop'].forEach((n) => caja.addEventListener(n, () => caja.classList.remove('encima')));
+  caja.addEventListener('drop', (ev) => {
+    const files = Array.from((ev.dataTransfer && ev.dataTransfer.files) || []);
+    if (files.length) subirAdjuntos(files);
+  });
 }
 async function subirAdjuntos(archivos){
   const btn = $('#adj-btn');
@@ -1758,32 +1810,19 @@ function saveEditor(id){
   const e = prev || Object.assign(seedBlank(), { id: uid() });
 
   const antesDocs = prev ? (prev.docs || []).slice() : null;
-  const before = prev ? { date: prev.date, start: prev.start, end: prev.end, location: prev.location,
-    speaks: prev.speaks, companion: prev.companion, internal: !!prev.internal, briefing: hasDoc(prev, 'briefing') } : null;
 
-  ['title', 'organizer', 'date', 'start', 'end', 'arrival', 'modality', 'location', 'address', 'mapLink',
+  ['title', 'organizer', 'date', 'start', 'end', 'arrival', 'location', 'address', 'mapLink',
    'speechType', 'speechDuration', 'speechLang',
-   'dressCode'].forEach(k => { e[k] = g(k); });
+   'companion', 'dressCode'].forEach(k => { e[k] = g(k); });
+  e.mediaImpact = g('mediaImpact') === 'si';
   e.internal = g('internal') === 'si';
   e.speaks = e.internal ? false : g('speaks') === 'si';
   e.docs = adjuntosEnEdicion.slice();   // los archivos adjuntos gestionados arriba
   ['briefing', 'invitation', 'agenda', 'speech'].forEach(kind => {
     const name = g('doc_' + kind);
-    if (name) e.docs.push({ kind, name, url: '#', updatedAt: before && before.briefing && kind === 'briefing' ? new Date().toISOString() : null });
+    if (name) e.docs.push({ kind, name, url: '#', updatedAt: null });
   });
 
-  if (before){
-    if (!before.internal && e.internal) logChange(e, 'El acto pasa al calendario interno: deja de verse en la agenda del presidente.');
-    if (before.internal && !e.internal) logChange(e, 'El acto pasa a la agenda del presidente.');
-    if (before.date !== e.date) logChange(e, 'La fecha ha cambiado: ahora es el ' + fmtDateShort(e.date) + '.');
-    if (before.start !== e.start || before.end !== e.end) logChange(e, 'El horario se ha modificado: ' + fmtTimeRange(e) + '.');
-    if (before.location !== e.location) logChange(e, 'La ubicación ha cambiado: ' + (e.location || 'por confirmar') + '.');
-    if (!before.speaks && e.speaks) logChange(e, 'Se ha añadido una intervención: ' + (e.speechType || 'por definir') + '.');
-    if (before.speaks && !e.speaks) logChange(e, 'Se ha retirado la intervención prevista.');
-    if (before.companion !== e.companion && e.companion) logChange(e, 'Cambia la persona que acompaña: ' + e.companion + '.');
-    if (!before.briefing && hasDoc(e, 'briefing')) logChange(e, 'Se ha añadido el briefing.');
-    else if (before.briefing && hasDoc(e, 'briefing')) { /* posible actualización silenciosa */ }
-  }
   // Los adjuntos que se hayan retirado se borran también del servidor
   if (prev && remote.enabled){
     const siguen = new Set(adjuntosEnEdicion.map(d => d.fileId));
@@ -1798,11 +1837,11 @@ function saveEditor(id){
 }
 function seedBlank(){
   return { id: '', title: '', organizer: 'Barcelona Global', date: todayISO(), start: '', end: '', arrival: '',
-    location: '', address: '', mapLink: '', modality: 'presencial', description: '', link: '', dressCode: '',
+    location: '', address: '', mapLink: '', mediaImpact: false, description: '', link: '', dressCode: '',
     type: 'propi', attends: 'si',
     speaks: false, speechType: '', speechDuration: '', speechLang: 'Catalán', keyMessage: '', contentOwner: '',
     owner: '', companion: '', orgContact: '', access: '', transport: '', notes: '', coverage: [],
-    docs: [], changes: [], archived: false };
+    docs: [] };
 }
 
 /* =====================================================
@@ -1925,11 +1964,13 @@ async function init(){
   $$('#view-president [data-ptab]').forEach(b => b.addEventListener('click', () => { state.presTab = b.dataset.ptab; renderAll(); }));
   $$('#view-comms [data-ctab]').forEach(b => b.addEventListener('click', () => { state.commsTab = b.dataset.ctab; renderAll(); }));
   $$('#seg-ambito button').forEach(b => b.addEventListener('click', () => { state.filters.ambito = b.dataset.ambito; renderAll(); }));
+  $('#f-impacto').addEventListener('click', () => { state.filters.impacto = !state.filters.impacto; renderAll(); });
 
   $('#btn-new').addEventListener('click', () => openEditor(null));
-  $('#btn-import').addEventListener('click', async () => {
-    const btn = $('#btn-import');
-    btn.disabled = true; btn.textContent = '↻ Leyendo Outlook…';
+  $('#btn-import').addEventListener('click', () => sincronizar($('#btn-import'), '↻ Sincronizar Outlook', '↻ Leyendo Outlook…'));
+  $('#btn-sync-pres').addEventListener('click', () => sincronizar($('#btn-sync-pres'), '↻ Actualizar', '↻ Actualizando…'));
+  async function sincronizar(btn, etiqueta, esperando){
+    btn.disabled = true; btn.textContent = esperando;
     try {
       const r = await fetch('/api/import', { method: 'POST', headers: authHeaders() });
       if (r.status === 401){ sessionExpired(); return; }
@@ -1949,8 +1990,8 @@ async function init(){
       if (Array.isArray(ev.events)){ events = ev.events; remote.version = ev.version; saveLocal(); }
       renderAll();
     } catch (e) { toast('No se pudo sincronizar con Outlook.', 'err'); }
-    btn.disabled = false; btn.textContent = '↻ Sincronizar Outlook';
-  });
+    btn.disabled = false; btn.textContent = etiqueta;
+  }
   // Filtros del dashboard de Comunicación
   const F = state.filters;
   $('#f-q').addEventListener('input', (e) => { F.q = e.target.value; renderComms(); });

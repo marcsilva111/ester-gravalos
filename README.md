@@ -128,8 +128,8 @@ Si más adelante quita la marca a un evento ya importado, este **no se borra**: 
 - Outlook manda en el **título, la fecha, el horario y el lugar**: se actualizan solos.
 - La agenda manda en **todo lo demás**. La asistencia, la intervención, el briefing, el acompañante y el responsable que rellene Comunicación no se sobrescriben nunca.
 - Los eventos nuevos entran ya como actos a los que el presidente asiste: si están marcados en Outlook, es que va.
-- Los cambios de fecha, hora o lugar generan un **aviso** en la ficha y en la agenda del presidente.
-- Si un evento desaparece de Outlook **no se borra**: se marca con un aviso, porque puede llevar trabajo hecho.
+- Los cambios de fecha, hora o lugar se aplican en silencio: la agenda enseña siempre lo último que dice Outlook, sin historial de avisos.
+- Si un evento desaparece de Outlook **no se borra**: queda señalado con «Ya no está en Outlook», porque puede llevar trabajo hecho.
 - Los eventos creados a mano en la agenda no se tocan jamás.
 - Con `OUTLOOK_MARCA` definida, solo llegan los eventos marcados y el panel de Comunicación indica cuántos se han importado del total.
 - Se admiten series periódicas (diarias, semanales con días concretos, mensuales y anuales, con `COUNT`, `UNTIL`, `INTERVAL` y excepciones). Las modificaciones sueltas de una repetición concreta no se importan.
@@ -166,11 +166,12 @@ Las dos empiezan por la misma portada —próximo compromiso con cuenta atrás y
 - **Dos calendarios en una sola herramienta**: los actos del presidente y el calendario interno de Barcelona Global, distinguidos por color, aislables con el selector «Todo · Presidente · Interno BG» y intercambiables con el desplegable «Visibilidad» de la ficha.
 - **Portada común**: próximo compromiso con cuenta atrás, próximos siete días y próximos eventos. El presidente ve la suya; Comunicación, la de los dos calendarios.
 - **Pestaña «Pasados»**: todos los actos ya celebrados —los del presidente y los internos—, agrupados por mes y del más reciente al más antiguo. La tabla queda así centrada en lo que viene; el buscador funciona en las dos.
-- Avisos de cambios recientes (ubicación, horario, intervención, briefing, acompañante, cancelación).
+- **Impacto en medios**: marca por acto, con filtro para ver de un vistazo los que han tenido repercusión.
+- **Acompañantes** y **código de vestimenta** por acto.
 - Detección de incidencias: solapamientos, intervenciones sin briefing, eventos sin ubicación y cambios importantes cerca de la fecha.
 - Confirmación previa en las operaciones que no tienen vuelta atrás (eliminar).
 - **Código de vestimenta** por evento, visible en el próximo compromiso del presidente.
-- **Archivos adjuntos** que sube Comunicación y abre el presidente.
+- **Archivos adjuntos** que sube Comunicación —eligiéndolos o arrastrándolos— y que el presidente abre a la vista: los PDF, las imágenes y los textos se ven dentro de la propia agenda, sin descargar nada.
 - Persistencia automática según la modalidad: GitHub en el despliegue gratuito, `data/events.json` en un servidor propio o el navegador en el archivo suelto.
 
 ## Archivos adjuntos
