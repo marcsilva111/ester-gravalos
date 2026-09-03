@@ -1,5 +1,5 @@
 {
-  "version": 36,
+  "version": 37,
   "events": [
     {
       "id": "ol-d38b1df43c87",
@@ -535,6 +535,49 @@
       "docs": [],
       "changes": [],
       "archived": false
+    },
+    {
+      "id": "ol-ccb45c730505",
+      "sourceKey": "040000008200E00074C5B7101A82E008000000008EED21948E3BDD01000000000000000010000000B8635829E60EDB4B87ED771CD9DBC6C9",
+      "sourceUid": "040000008200E00074C5B7101A82E008000000008EED21948E3BDD01000000000000000010000000B8635829E60EDB4B87ED771CD9DBC6C9",
+      "origin": "outlook",
+      "internal": true,
+      "title": "18:00h 20è aniversari Escola Europea Intermodal Transport 14/10/2026",
+      "organizer": "",
+      "date": "2026-10-14",
+      "start": "18:00",
+      "end": "22:00",
+      "arrival": "",
+      "location": "Port de Barcelona",
+      "address": "Port de Barcelona",
+      "mapLink": "",
+      "mediaImpact": false,
+      "description": "De: Presidència <presidencia@portdebarcelona.cat>\nFecha: lunes, 3 de agosto de 2026 a las 10:34\nPara: Merce Conesa <merce.conesa@barcelonaglobal.org>\nCC: Marta Miquel <marta.miquel@escolaeuropea.eu>\\; Núria Nin <nuria.nin@portdebarcelona.cat>\nAsunto: Carta d'invitació - 20è aniversari Escola Europea Intermodal Transport 14/10/2026\n\n\nBenvolguda,\n\nEn nom del president del Port de Barcelona, us fem arribar la carta de l’assumpte.\n\nAtentament,\n\nNúria\n\nBarreda\n​​​​​\nASSISTENT DE DIRECCIÓ\nPRESIDÈNCIA\n",
+      "link": "",
+      "type": "extern",
+      "attends": "si",
+      "missingFromSource": false,
+      "speaks": false,
+      "speechType": "",
+      "speechDuration": "",
+      "speechLang": "Catalán",
+      "keyMessage": "",
+      "contentOwner": "",
+      "owner": "",
+      "companion": "",
+      "orgContact": "",
+      "access": "",
+      "transport": "",
+      "notes": "",
+      "coverage": [],
+      "docs": []
     }
-  ]
+  ],
+  "push": {
+    "subs": [],
+    "vapid": {
+      "publica": "BIoF7j3haXtYATJUi7Ad4K2wadC5Wavl0MX0LrKLbdcLkKbDiR__8VliluRU044Kb0eE-NcPSWQ4sv9j3CK1cWg",
+      "privada": "-----BEGIN PRIVATE KEY-----\nMIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgaKRsdj0DN+ri7+MP\nUo7HG9fsDB2WWXu4YHhrc19ANDuhRANCAASKBe494Wl7WAEyVIuwHeCtsGnQuVmr\n5dDF9C6yi23XC5Cmw4kf//FZYpbkVNOOCm9HhPjXD0lkOLL/Y9witXFo\n-----END PRIVATE KEY-----\n"
+    }
+  }
 }
