@@ -103,6 +103,21 @@ Las sesiones van firmadas, no se guardan en ningún archivo y siguen siendo vál
 
 Si no defines las claves, el servidor **genera dos al azar y las muestra en el registro de arranque** (cambian en cada reinicio): así el servicio nunca queda accesible con una contraseña conocida, pero tampoco es utilizable de verdad hasta que las definas.
 
+### Avisos en el móvil
+
+Cada vez que entra un acto nuevo, la agenda puede mandar un aviso al teléfono y al ordenador, aunque esté cerrada. No hay nada que dar de alta ni que pagar: las claves del servidor se generan solas la primera vez y se guardan con la agenda.
+
+Se activa desde el botón **🔔 Avisos** de la cabecera, en cada dispositivo por separado, y se apaga desde el mismo sitio. Al activarlo llega un aviso de prueba.
+
+- **Qué se avisa.** Los actos del presidente que entran de Outlook, a Comunicación y a Presidencia. Los de Barcelona Global, solo a Comunicación. Y lo que Comunicación añade a mano en la agenda del presidente, solo a él: quien lo acaba de escribir no necesita que se lo cuenten.
+- **En el iPhone hay que instalar antes la agenda** en la pantalla de inicio (ver más arriba): Safari no admite avisos desde una pestaña normal. La agenda lo dice si detecta ese caso.
+- **El servidor tiene que estar despierto.** Si se duerme no lee el calendario, así que no detecta los actos nuevos y no avisa. Con el plan gratuito de Render esto es importante: da de alta `https://…/api/ping` en un servicio de vigilancia gratuito (ver más abajo).
+- Los mensajes van **cifrados de extremo a extremo**: ni Google ni Apple pueden leer lo que se manda, solo entregarlo.
+- Si alguien desinstala la agenda o borra los datos del navegador, el servicio lo comunica y ese dispositivo se da de baja solo.
+- La variable `PUSH_CONTACT` define la dirección de contacto que exige la norma (por defecto `mailto:agenda@barcelonaglobal.org`). Con `VAPID_PUBLIC_KEY` y `VAPID_PRIVATE_KEY` se pueden fijar las claves a mano, pero no hace falta.
+
+> Si usas Supabase, añade una columna para guardarlas: `alter table agenda add column if not exists push jsonb not null default '{}'::jsonb;`. Con GitHub no hay que hacer nada.
+
 ### Conectar el calendario de Outlook (opcional)
 
 La agenda puede leer sola un calendario de Outlook y volcar en ella los eventos, sin pedir nada a informática: se suscribe al enlace que genera Outlook al **publicar** un calendario. Es de solo lectura, no escribe nada en Outlook.
@@ -141,8 +156,8 @@ Además de la agenda del presidente, Comunicación puede llevar en la misma herr
 - Se marcan en Outlook con **almohadilla** (`#`) en lugar de asterisco. La variable es `OUTLOOK_MARCA_INTERNA` (por defecto `#`).
 - Si están en el mismo calendario publicado, no hay que hacer nada más. Si están en otro calendario distinto, publica también ese y define `OUTLOOK_ICS_URL_INTERNO` con su enlace.
 - Cada marca manda en su calendario: un `*` dentro del calendario interno se ignora, y una `#` dentro del calendario del presidente también.
-- En el panel de Comunicación aparecen en **azul**, con la etiqueta «Interno BG», tanto en la tabla como en el calendario y en la pestaña de pasados. Se editan igual que cualquier otro acto, salvo la parte de participación del presidente, que no aplica.
-- El selector **Todo · Presidente · Interno BG** de la barra superior permite mirar solo uno de los dos calendarios. Se aplica a la vez a la portada, la tabla, el calendario y los pasados, y solo aparece cuando hay actos internos que separar.
+- En el panel de Comunicación aparecen en **azul**, con la etiqueta «Barcelona Global», tanto en la tabla como en el calendario y en la pestaña de pasados. Se editan igual que cualquier otro acto, salvo la parte de participación del presidente, que no aplica.
+- El selector **Todo · Presidente · Barcelona Global** de la barra superior permite mirar solo uno de los dos calendarios. Se aplica a la vez a la portada, la tabla, el calendario y los pasados, y solo aparece cuando hay actos internos que separar.
 - El desplegable **Visibilidad** de la ficha permite pasar un acto de la agenda del presidente al calendario interno y al revés, sin tocar Outlook.
 - No cuentan para las incidencias de la agenda del presidente (solapamientos, intervenciones sin briefing).
 
@@ -163,7 +178,7 @@ Las dos empiezan por la misma portada —próximo compromiso con cuenta atrás y
 
 ## Funcionalidades
 
-- **Dos calendarios en una sola herramienta**: los actos del presidente y el calendario interno de Barcelona Global, distinguidos por color, aislables con el selector «Todo · Presidente · Interno BG» y intercambiables con el desplegable «Visibilidad» de la ficha.
+- **Dos calendarios en una sola herramienta**: los actos del presidente y el calendario interno de Barcelona Global, distinguidos por color, aislables con el selector «Todo · Presidente · Barcelona Global» y intercambiables con el desplegable «Visibilidad» de la ficha.
 - **Portada común**: próximo compromiso con cuenta atrás, próximos siete días y próximos eventos. El presidente ve la suya; Comunicación, la de los dos calendarios.
 - **Pestaña «Pasados»**: todos los actos ya celebrados —los del presidente y los internos—, agrupados por mes y del más reciente al más antiguo. La tabla queda así centrada en lo que viene; el buscador funciona en las dos.
 - **Impacto en medios**: marca por acto, con filtro para ver de un vistazo los que han tenido repercusión.

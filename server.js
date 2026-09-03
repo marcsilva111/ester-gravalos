@@ -45,6 +45,8 @@
      GET  /api/events   (Authorization: Bearer)   → { version, events, role }
      GET  /api/version  (Authorization: Bearer)   → { version }
      GET  /api/ping     (sin autenticación)        → { ok }
+     GET  /api/push/clave                          → { clave }
+     POST /api/push/alta | /baja | /prueba         → avisos al móvil
      PUT  /api/events   (solo rol comms)          → { version }
      POST /api/import   (cualquier rol)            → { version, ... }
      POST /api/files    (solo rol comms)          → { id, name, size }
@@ -58,6 +60,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const outlook = require('./outlook');
+const push = require('./push');
 
 const PORT = process.env.PORT || 3000;
 const ROOT = __dirname;
@@ -106,6 +109,7 @@ const SB = {
 const usingSupabase = () => !!(SB.url && SB.key);
 
 // Lectura automática del calendario de Outlook (enlace .ics publicado)
+const PUSH_CONTACTO = process.env.PUSH_CONTACT || 'mailto:agenda@barcelonaglobal.org';
 const ICS = {
   url: process.env.OUTLOOK_ICS_URL || '',
   minutes: Math.max(5, Number(process.env.OUTLOOK_SYNC_MINUTES || 15)),
@@ -139,6 +143,7 @@ async function importarDeOutlook(){
     const hasta = new Date(hoy.getFullYear(), hoy.getMonth() + ICS.months, hoy.getDate());
     const partes = (d) => ({ y: d.getFullYear(), m: d.getMonth() + 1, d: d.getDate(), hh: 0, mm: 0 });
     if (!Array.isArray(store.events)) store.events = [];
+    const antes = new Set(store.events.map((e) => e.id));
     const ventana = { tz: ICS.tz, from: partes(desde), to: partes(hasta) };
 
     // Calendario del presidente
@@ -163,6 +168,15 @@ async function importarDeOutlook(){
     const total = suma(resumen, resumenInt);
     const huboCambios = total.nuevos || total.actualizados || total.desaparecidos || total.cancelados;
     if (huboCambios){ store.version += 1; scheduleSave(); }
+    // Avisar de lo que acaba de entrar. Los actos del presidente llegan a los
+    // dos; los de Barcelona Global, solo a Comunicación, que es quien los ve.
+    const nuevos = store.events.filter((e) => !antes.has(e.id));
+    if (nuevos.length){
+      const suyos = nuevos.filter((e) => !e.internal);
+      if (suyos.length) avisar(mensajeDeNuevos(suyos), ['comms', 'president']).catch(() => {});
+      const propios = nuevos.filter((e) => e.internal);
+      if (propios.length) avisar(mensajeDeNuevos(propios), ['comms']).catch(() => {});
+    }
     ICS.last = { ts: new Date().toISOString(), ok: true, resumen: total,
       leidos: ocurrencias.length, enCalendario: todos.length, marca: ICS.marca,
       interno: usingInterno() ? { leidos: leidosInt, enCalendario: enCalInt, marca: marcaInterna() } : null };
@@ -455,6 +469,62 @@ function outlookEstado(){
   return { configurado: true, minutos: ICS.minutes, marca: ICS.marca, interno: usingInterno() ? marcaInterna() : null, ultima: ICS.last };
 }
 
+/* ---------- Avisos al móvil ----------
+   Cada navegador que los activa deja aquí su dirección de entrega. Las claves
+   del servidor se generan solas la primera vez y se guardan con la agenda, de
+   modo que sobreviven a los reinicios y no hay nada que configurar. */
+function pushEstado(){
+  if (!store.push) store.push = {};
+  if (!Array.isArray(store.push.subs)) store.push.subs = [];
+  if (!store.push.vapid){
+    store.push.vapid = (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY)
+      ? { publica: process.env.VAPID_PUBLIC_KEY, privada: process.env.VAPID_PRIVATE_KEY }
+      : push.generarClaves();
+    scheduleSave();
+  }
+  return store.push;
+}
+function altaAviso(sub, role){
+  const p = pushEstado();
+  p.subs = p.subs.filter((s) => s.endpoint !== sub.endpoint);
+  p.subs.push({ endpoint: sub.endpoint, keys: sub.keys, role, ts: new Date().toISOString() });
+  scheduleSave();
+}
+function bajaAviso(endpoint){
+  const p = pushEstado();
+  const antes = p.subs.length;
+  p.subs = p.subs.filter((s) => s.endpoint !== endpoint);
+  if (p.subs.length !== antes) scheduleSave();
+}
+/* Manda el aviso y da de baja los navegadores que ya no existen. */
+async function avisar(mensaje, roles){
+  const p = pushEstado();
+  const destinatarios = p.subs.filter((s) => roles.includes(s.role));
+  if (!destinatarios.length) return { enviados: 0, bajas: 0 };
+  const resultados = await Promise.all(destinatarios.map((s) => push.enviar(s, mensaje, p.vapid, { contacto: PUSH_CONTACTO })));
+  const caducadas = destinatarios.filter((s, i) => resultados[i].status === 404 || resultados[i].status === 410);
+  caducadas.forEach((s) => bajaAviso(s.endpoint));
+  const enviados = resultados.filter((r) => r.ok).length;
+  const fallos = resultados.filter((r) => !r.ok && r.status !== 404 && r.status !== 410);
+  console.log('Avisos: ' + enviados + ' de ' + destinatarios.length +
+    (caducadas.length ? ' · ' + caducadas.length + ' navegadores dados de baja' : '') +
+    (fallos.length ? ' · ' + fallos.length + ' fallidos (' + fallos.map((f) => f.status || f.error).join(', ') + ')' : ''));
+  return { enviados, bajas: caducadas.length };
+}
+/* El texto del aviso, a partir de los actos que acaban de entrar. */
+function mensajeDeNuevos(nuevos){
+  const uno = nuevos.length === 1;
+  const fecha = (e) => {
+    const [a, m, d] = String(e.date).split('-');
+    return d + '/' + m;
+  };
+  return {
+    titulo: uno ? 'Nuevo acto en la agenda' : nuevos.length + ' actos nuevos en la agenda',
+    cuerpo: nuevos.slice(0, 3).map((e) => e.title + ' · ' + fecha(e)).join('\n') +
+      (nuevos.length > 3 ? '\ny ' + (nuevos.length - 3) + ' más' : ''),
+  };
+}
+
 /* ---------- HTTP ---------- */
 const MIME = {
   '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8',
@@ -546,13 +616,43 @@ function handleAPI(req, res, pathname){
     return importarDeOutlook().then(() => sendJSON(res, 200, Object.assign({ version: store.version }, outlookEstado())));
   }
 
+  if (pathname === '/api/push/clave' && req.method === 'GET')
+    return sendJSON(res, 200, { clave: pushEstado().vapid.publica });
+
+  if (pathname === '/api/push/alta' && req.method === 'POST'){
+    return readBody(req, res, (data) => {
+      if (!data || !data.endpoint || !data.keys || !data.keys.p256dh || !data.keys.auth)
+        return sendJSON(res, 400, { error: 'Suscripción incompleta' });
+      if (!/^https:\/\//.test(data.endpoint)) return sendJSON(res, 400, { error: 'Dirección de entrega no válida' });
+      altaAviso({ endpoint: data.endpoint, keys: { p256dh: data.keys.p256dh, auth: data.keys.auth } }, role);
+      sendJSON(res, 200, { ok: true });
+    });
+  }
+
+  if (pathname === '/api/push/baja' && req.method === 'POST'){
+    return readBody(req, res, (data) => {
+      if (data && data.endpoint) bajaAviso(data.endpoint);
+      sendJSON(res, 200, { ok: true });
+    });
+  }
+
+  if (pathname === '/api/push/prueba' && req.method === 'POST'){
+    return avisar({ titulo: 'Los avisos funcionan', cuerpo: 'Así se verán los actos nuevos de la agenda.' }, [role])
+      .then((r) => sendJSON(res, 200, r));
+  }
+
   if (pathname === '/api/events' && req.method === 'PUT'){
     if (role !== 'comms') return sendJSON(res, 403, { error: 'El acceso de Presidencia es solo de consulta' });
     return readBody(req, res, (data) => {
       if (!data || !Array.isArray(data.events)) return sendJSON(res, 400, { error: 'Se esperaba { events: [...] }' });
+      // Lo que Comunicación añade a mano se le avisa a Presidencia, no a quien
+      // lo acaba de escribir.
+      const antes = new Set((store.events || []).map((e) => e.id));
+      const nuevos = data.events.filter((e) => !antes.has(e.id) && !e.internal);
       store.events = data.events;
       store.version += 1;
       scheduleSave();
+      if (nuevos.length) avisar(mensajeDeNuevos(nuevos), ['president']).catch(() => {});
       sendJSON(res, 200, { version: store.version });
     });
   }

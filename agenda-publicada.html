@@ -128,6 +128,7 @@ tr.row.interno .evt-t{color:#123a78}
 .cal-ev.interno{background:#dbe6fb;color:#123a78;border-left-color:#3a63b0;box-shadow:none}
 .ecard.interno{border-left:3px solid #3a63b0}
 .chip-medios{background:#fdeede;color:#a4491a;border:1px solid #f6d5b8}
+#btn-avisos.activos{background:var(--green-bg);color:var(--green);border-color:#bfe3d0}
 .soltar{
   border:1.5px dashed var(--line);border-radius:11px;padding:14px;text-align:center;
   display:grid;gap:6px;justify-items:center;transition:border-color .12s, background .12s;
@@ -442,6 +443,7 @@ td .evt-t:hover{color:var(--blue)}
   </div>
   <div class="topbar-actions">
     <span id="conn-badge" class="chip chip-sync-none" title="">●</span>
+    <button class="btn btn-sm hidden" id="btn-avisos" title="Recibir un aviso cuando entre un acto nuevo">🔔 Avisos</button>
     <button class="btn btn-sm hidden" id="btn-logout" title="Cerrar la sesión">Salir</button>
   </div>
   <div class="role-switch" role="tablist" aria-label="Cambiar de vista">
@@ -494,7 +496,7 @@ td .evt-t:hover{color:var(--blue)}
       <div class="seg seg-ambito hidden" id="seg-ambito" role="group" aria-label="Qué calendario se muestra">
         <button data-ambito="todo" class="active">Todo</button>
         <button data-ambito="pres">Presidente</button>
-        <button data-ambito="interno">Interno BG</button>
+        <button data-ambito="interno">Barcelona Global</button>
       </div>
       <button class="fchip" id="f-impacto" title="Ver solo los actos que han tenido repercusión en medios">📰 Impacto en medios</button>
       <div class="search">
@@ -880,6 +882,7 @@ function applyRole(){
   // acaba de tocar algo y no ha sincronizado.
   const sp = $('#btn-sync-pres');
   if (sp) sp.classList.toggle('hidden', !(remote.enabled && remote.outlook && remote.outlook.configurado));
+  pintarBotonAvisos();
 }
 function showLogin(msg){
   let w = $('#login-screen');
@@ -1171,7 +1174,7 @@ function eventCard(ev, opts){
     // cuando el selector ya aísla uno, ni eso hace falta.
     if (state.filters.ambito === 'todo')
       tags.push(ev.internal
-        ? '<span class="chip chip-interno" title="Acto interno de Barcelona Global: el presidente no lo ve">Interno BG</span>'
+        ? '<span class="chip chip-interno" title="Acto propio de Barcelona Global: el presidente no lo ve">Barcelona Global</span>'
         : '<span class="chip chip-pres-cal" title="Acto de la agenda del presidente">Presidente</span>');
     if (ev.mediaImpact) tags.push('<span class="chip chip-medios">📰 Impacto en medios</span>');
   }
@@ -1246,7 +1249,7 @@ function renderHero(rootId, list, opts){
         (next.dressCode ? '<span>👔 ' + esc(next.dressCode) + '</span>' : '') +
       '</div>' +
       '<div class="hero-badges">' +
-        (next.internal ? '<span class="chip" style="background:rgba(255,255,255,.14);color:#fff">Interno BG</span>' : '') +
+        (next.internal ? '<span class="chip" style="background:rgba(255,255,255,.14);color:#fff">Barcelona Global</span>' : '') +
         chipsParticipation(next, !!opts.simple) +
         (next.speaks && next.speechType ? '<span class="chip" style="background:rgba(255,255,255,.14);color:#fff">' + esc(next.speechType) + (next.speechDuration && next.speechDuration !== '—' ? ' · ' + esc(next.speechDuration) : '') + '</span>' : '') +
       '</div>' +
@@ -1467,7 +1470,7 @@ function renderTable(){
         (enPasados ? (enPasados === 1
           ? ' Hay uno ya celebrado que sí: <button class="lnk" data-ctab-ir="past">verlo en «Pasados»</button>.'
           : ' Hay ' + enPasados + ' ya celebrados que sí: <button class="lnk" data-ctab-ir="past">verlos en «Pasados»</button>.') : '')
-      : (state.filters.ambito === 'interno' ? 'No hay actos internos próximos.'
+      : (state.filters.ambito === 'interno' ? 'No hay actos de Barcelona Global próximos.'
          : state.filters.ambito === 'pres' ? 'No hay actos del presidente próximos.'
          : 'No hay eventos próximos.') + (enPasados ? ' Los ya celebrados están en «Pasados».' : '');
     html += '<tr><td colspan="3" style="text-align:center;color:var(--faint);padding:26px">' + aviso + '</td></tr>';
@@ -1479,7 +1482,7 @@ function renderTable(){
         '<span class="evt-t" data-open="' + e.id + '">' + esc(e.title) + '</span>' +
         (hasOverlap(e) && isUpcoming(e) ? ' <span class="dot-warn" title="Solapado">⏱</span>' : '') +
         (e.organizer && e.organizer !== 'Barcelona Global' ? '<br><small style="color:var(--muted)">' + esc(e.organizer) + '</small>' : '') +
-        (e.internal && state.filters.ambito !== 'interno' ? ' <span class="chip chip-interno" title="Acto interno de Barcelona Global: el presidente no lo ve">Interno BG</span>' : '') +
+        (e.internal && state.filters.ambito !== 'interno' ? ' <span class="chip chip-interno" title="Acto propio de Barcelona Global: el presidente no lo ve">Barcelona Global</span>' : '') +
         (e.mediaImpact ? ' <span class="chip chip-medios">📰 Impacto en medios</span>' : '') +
         (e.origin === 'outlook' && !e.missingFromSource ? ' <span class="chip chip-outlook" title="Este evento viene del calendario de Outlook">Outlook</span>' : '') +
         (e.missingFromSource ? ' <span class="chip chip-status-cancelat" style="text-decoration:none" title="Ya no llega del calendario de Outlook">Ya no está en Outlook</span>' : '') + '</td>' +
@@ -1670,7 +1673,7 @@ function openEditor(id){
       fld('Hora fin', '<input type="time" name="end" value="' + v('end') + '">') +
       fld('Hora recomendada de llegada', '<input type="time" name="arrival" value="' + v('arrival') + '">') +
       fld('Visibilidad', '<select name="internal" id="f-visibilidad">' +
-        sel([['', 'Agenda del presidente'], ['si', 'Interno de Barcelona Global']], e && e.internal ? 'si' : '') + '</select>') +
+        sel([['', 'Agenda del presidente'], ['si', 'Barcelona Global']], e && e.internal ? 'si' : '') + '</select>') +
       fld('Acompañantes', '<input name="companion" value="' + v('companion') + '" placeholder="Directora general, Directora de Comunicación…">') +
       fld('Impacto en medios', '<select name="mediaImpact">' + sel([['no', 'No'], ['si', 'Sí']], e && e.mediaImpact ? 'si' : 'no') + '</select>') +
       fld('Código de vestimenta', '<input name="dressCode" list="lista-vestimenta" value="' + v('dressCode') + '" placeholder="Traje oscuro, business casual…">' +
@@ -1851,6 +1854,102 @@ function doAction(act, id){
 }
 
 /* =====================================================
+   AVISOS AL MÓVIL
+   =====================================================
+   Un aviso en el teléfono cada vez que entra un acto nuevo, aunque la agenda
+   esté cerrada. Se activa desde el botón y se puede desactivar igual. En el
+   iPhone hace falta tener la agenda añadida a la pantalla de inicio: Safari
+   no admite avisos desde una pestaña normal. */
+const avisos = { registro: null, suscripcion: null };
+function avisosPosibles(){
+  return remote.enabled && 'Notification' in window && 'PushManager' in window && !!avisos.registro;
+}
+/* En el iPhone los avisos solo funcionan con la agenda añadida a la pantalla
+   de inicio: Safari no los admite desde una pestaña. Conviene decirlo en vez
+   de esconder el botón sin explicación. */
+function enIPhoneSinInstalar(){
+  const iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const instalada = window.navigator.standalone === true ||
+    (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+  return iOS && !instalada;
+}
+async function prepararAvisos(registro){
+  avisos.registro = registro;
+  try { avisos.suscripcion = await registro.pushManager.getSubscription(); } catch (e) { avisos.suscripcion = null; }
+  pintarBotonAvisos();
+}
+function pintarBotonAvisos(){
+  const b = $('#btn-avisos');
+  if (!b) return;
+  const puede = avisosPosibles() && auth.token;
+  const pendienteDeInstalar = !puede && auth.token && remote.enabled && enIPhoneSinInstalar();
+  b.classList.toggle('hidden', !puede && !pendienteDeInstalar);
+  if (pendienteDeInstalar){
+    b.classList.remove('activos');
+    b.textContent = '🔔 Avisos';
+    b.title = 'Para recibir avisos en el iPhone hay que añadir la agenda a la pantalla de inicio';
+    return;
+  }
+  if (!puede) return;
+  const activos = !!avisos.suscripcion && Notification.permission === 'granted';
+  b.classList.toggle('activos', activos);
+  b.textContent = activos ? '🔔 Avisos activados' : '🔔 Avisos';
+  b.title = activos
+    ? 'Recibes un aviso cuando entra un acto nuevo. Pulsa para dejar de recibirlos en este dispositivo.'
+    : 'Recibir un aviso en este dispositivo cuando entre un acto nuevo';
+}
+async function alternarAvisos(){
+  const b = $('#btn-avisos');
+  if (!avisosPosibles()){
+    if (enIPhoneSinInstalar())
+      toast('Para recibir avisos en el iPhone: Compartir → Añadir a pantalla de inicio, y actívalos desde ahí.', 'err');
+    return;
+  }
+  b.disabled = true;
+  try {
+    if (avisos.suscripcion){
+      const endpoint = avisos.suscripcion.endpoint;
+      await avisos.suscripcion.unsubscribe().catch(() => {});
+      avisos.suscripcion = null;
+      await fetch('/api/push/baja', { method: 'POST', headers: authHeaders({ 'Content-Type': 'application/json' }),
+        body: JSON.stringify({ endpoint }) }).catch(() => {});
+      toast('Ya no recibirás avisos en este dispositivo.', 'ok');
+    } else {
+      const permiso = await Notification.requestPermission();
+      if (permiso !== 'granted'){
+        toast(permiso === 'denied'
+          ? 'Los avisos están bloqueados para esta página. Hay que permitirlos en los ajustes del navegador.'
+          : 'Sin permiso no se pueden enviar avisos.', 'err');
+        return;
+      }
+      const r = await fetch('/api/push/clave', { headers: authHeaders() });
+      if (r.status === 401){ sessionExpired(); return; }
+      const { clave } = await r.json();
+      const sub = await avisos.registro.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: claveABytes(clave),
+      });
+      const alta = await fetch('/api/push/alta', { method: 'POST',
+        headers: authHeaders({ 'Content-Type': 'application/json' }), body: JSON.stringify(sub.toJSON()) });
+      if (!alta.ok) throw new Error('el servidor no aceptó el alta');
+      avisos.suscripcion = sub;
+      toast('Avisos activados en este dispositivo.', 'ok');
+      fetch('/api/push/prueba', { method: 'POST', headers: authHeaders() }).catch(() => {});
+    }
+  } catch (e) {
+    toast('No se han podido activar los avisos: ' + e.message, 'err');
+  }
+  b.disabled = false;
+  pintarBotonAvisos();
+}
+function claveABytes(base64url){
+  const relleno = '='.repeat((4 - base64url.length % 4) % 4);
+  const texto = atob((base64url + relleno).replace(/-/g, '+').replace(/_/g, '/'));
+  return Uint8Array.from(texto, (c) => c.charCodeAt(0));
+}
+
+/* =====================================================
    MODALES, CONFIRMACIÓN Y TOASTS
    ===================================================== */
 let modalStack = [];
@@ -1929,9 +2028,11 @@ async function init(){
   loadAuth();
   await initData();
   // Con esto el navegador ofrece instalar la agenda como aplicación, en el
-  // móvil y en el escritorio. No guarda nada en caché: ver sw.js.
+  // móvil y en el escritorio, y además atiende los avisos. No guarda nada en
+  // caché: ver sw.js.
   if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0 && !(window.claude && window.claude.use))
-    navigator.serviceWorker.register('/sw.js').catch(() => {});
+    navigator.serviceWorker.register('/sw.js').then(prepararAvisos).catch(() => {});
+  $('#btn-avisos').addEventListener('click', alternarAvisos);
 
   initCloud();   // se conecta a la base compartida en cuanto esté disponible
   if (!storageOK && !remote.enabled && !(window.claude && window.claude.use)) $('#storage-banner').classList.remove('hidden');
