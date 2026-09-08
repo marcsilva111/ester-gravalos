@@ -1,5 +1,5 @@
 {
-  "version": 3,
+  "version": 4,
   "events": [
     {
       "id": "ol-1fd4479394bc",
@@ -52,7 +52,7 @@
       "location": "Jardins Palau de Pedralbes",
       "address": "Jardins Palau de Pedralbes",
       "mapLink": "",
-      "mediaImpact": false,
+      "mediaImpact": true,
       "description": "Test xxx",
       "link": "",
       "type": "extern",
@@ -71,7 +71,8 @@
       "transport": "",
       "notes": "",
       "coverage": [],
-      "docs": []
+      "docs": [],
+      "dressCode": ""
     },
     {
       "id": "ol-679a9c0beb76",
@@ -1081,12 +1082,5 @@
       "coverage": [],
       "docs": []
     }
-  ],
-  "push": {
-    "subs": [],
-    "vapid": {
-      "publica": "BFbE9tpo6h0LUJLOtm3JlwOm2kYuN25rrrIJn-8HCtLhxBSN0z-xt63gY3ZxZKOwvPmngu_tjej4qbvBDkR6MUY",
-      "privada": "-----BEGIN PRIVATE KEY-----\nMIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgbJp6cead4j1F40cC\njQeLPYN8Mn7oIVHp47CGwf1/oaahRANCAARWxPbaaOodC1CSzrZtyZcDptpGLjdu\na66yCZ/vBwrS4cQUjdM/sbet4GN2cWSjsLz5p4Lv7Y3o+Km7wQ5EejFG\n-----END PRIVATE KEY-----\n"
-    }
-  }
+  ]
 }
