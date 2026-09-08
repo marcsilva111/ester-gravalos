@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "events": [
     {
       "id": "ol-1fd4479394bc",
@@ -1044,13 +1044,49 @@
       "notes": "",
       "coverage": [],
       "docs": []
+    },
+    {
+      "id": "ol-dde8cb3c0188",
+      "sourceKey": "040000008200E00074C5B7101A82E00800000000ADD774EAB33EDD0100000000000000001000000086E07CD8AD6E8B4BB3B1F73439FC0144",
+      "sourceUid": "040000008200E00074C5B7101A82E00800000000ADD774EAB33EDD0100000000000000001000000086E07CD8AD6E8B4BB3B1F73439FC0144",
+      "origin": "outlook",
+      "internal": true,
+      "title": "10:00h Invitación exclusiva CEOs – Inauguración Agentic AI Innovation Hub con el President Illa – 25 de septiembre, Barcelona",
+      "organizer": "",
+      "date": "2026-09-25",
+      "start": "10:00",
+      "end": "11:00",
+      "arrival": "",
+      "location": "Accenture - Rotonda",
+      "address": "Accenture - Rotonda",
+      "mapLink": "",
+      "mediaImpact": false,
+      "description": "De: Merce Conesa <merce.conesa@barcelonaglobal.org>\nFecha: lunes, 7 de septiembre de 2026 a las 12:28\nPara: Cristina Boadas <cristina.boadas@barcelonaglobal.org>\nAsunto: RV: Invitación exclusiva CEOs – Inauguración Agentic AI Innovation Hub con el President Illa – 25 de septiembre, Barcelona\n\nPer confirmar\n\n\n\nMercè\n[2b70ccd2-963b-443e-b8ec-8c5d95070005.png]\nMercè Conesa\nCEO\nTravessera de Gràcia 17\nBarcelona  08021\n+34 626 48 11 56\n+34 93 676 12 50<tel:+34936761250>\n@BarcelonaGlobal\n\nDe: Presiden",
+      "link": "",
+      "type": "extern",
+      "attends": "si",
+      "missingFromSource": false,
+      "speaks": false,
+      "speechType": "",
+      "speechDuration": "",
+      "speechLang": "Catalán",
+      "keyMessage": "",
+      "contentOwner": "",
+      "owner": "",
+      "companion": "",
+      "orgContact": "",
+      "access": "",
+      "transport": "",
+      "notes": "",
+      "coverage": [],
+      "docs": []
     }
   ],
   "push": {
     "subs": [],
     "vapid": {
-      "publica": "BMnozQdpUlXITdmt1Y7BXmqUIxDJes9Hn6DWxJsBIgG95Lbw6MKqPHDDg_okRH9d6rNqcy0us0r0uaQxq6CriIY",
-      "privada": "-----BEGIN PRIVATE KEY-----\nMIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgiEqmFc8X/t55QPmj\n+9zkrYzJlnQ1xjMvfiAU8J2zlbehRANCAATJ6M0HaVJVyE3ZrdWOwV5qlCMQyXrP\nR5+g1sSbASIBveS28OjCqjxww4P6JER/XeqzanMtLrNK9LmkMaugq4iG\n-----END PRIVATE KEY-----\n"
+      "publica": "BFbE9tpo6h0LUJLOtm3JlwOm2kYuN25rrrIJn-8HCtLhxBSN0z-xt63gY3ZxZKOwvPmngu_tjej4qbvBDkR6MUY",
+      "privada": "-----BEGIN PRIVATE KEY-----\nMIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgbJp6cead4j1F40cC\njQeLPYN8Mn7oIVHp47CGwf1/oaahRANCAARWxPbaaOodC1CSzrZtyZcDptpGLjdu\na66yCZ/vBwrS4cQUjdM/sbet4GN2cWSjsLz5p4Lv7Y3o+Km7wQ5EejFG\n-----END PRIVATE KEY-----\n"
     }
   }
 }
