@@ -1,5 +1,5 @@
 {
-  "version": 7,
+  "version": 8,
   "events": [
     {
       "id": "ol-1fd4479394bc",
@@ -656,10 +656,10 @@
       "sourceUid": "040000008200E00074C5B7101A82E00800000000AD64BC582A3ADD010000000000000000100000001E1C425892A19E4C824A4046C445385A",
       "origin": "outlook",
       "internal": true,
-      "title": "19:00h Conferència “El futur és aquí” *",
+      "title": "18:45h Conferència “El futur és aquí” *",
       "organizer": "Generalitat",
       "date": "2026-09-14",
-      "start": "19:00",
+      "start": "18:45",
       "end": "20:00",
       "arrival": "18:45",
       "location": "Museu Maritim",
@@ -1097,10 +1097,10 @@
       "sourceUid": "040000008200E00074C5B7101A82E00800000000AD64BC582A3ADD010000000000000000100000001E1C425892A19E4C824A4046C445385A",
       "origin": "outlook",
       "internal": false,
-      "title": "19:00h Conferència “El futur és aquí” #",
+      "title": "18:45h Conferència “El futur és aquí” #",
       "organizer": "",
       "date": "2026-09-14",
-      "start": "19:00",
+      "start": "18:45",
       "end": "20:00",
       "arrival": "",
       "location": "Museu Maritim",
