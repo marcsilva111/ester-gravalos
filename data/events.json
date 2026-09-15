@@ -1,5 +1,5 @@
 {
-  "version": 9,
+  "version": 10,
   "events": [
     {
       "id": "ol-1fd4479394bc",
@@ -188,7 +188,7 @@
       "sourceUid": "040000008200E00074C5B7101A82E0080000000007F7231E67F2DC01000000000000000010000000872D8C142F9F324D81351AF55EA1E1D9",
       "origin": "outlook",
       "internal": false,
-      "title": "BG 18:00h Visita Comex BG al Museu Grifols",
+      "title": "Cancelado: BG 18:00h Visita Comex BG al Museu Grifols",
       "organizer": "",
       "date": "2026-09-17",
       "start": "18:00",
@@ -1199,12 +1199,5 @@
       "coverage": [],
       "docs": []
     }
-  ],
-  "push": {
-    "subs": [],
-    "vapid": {
-      "publica": "BHMZZ0pp1PtoZliZJqsGPqd27L_22OZCewWhBADG-ne35aBCsJAK3Db4FpuURLztKZaJf8KhpJs3QzdILZNYREI",
-      "privada": "-----BEGIN PRIVATE KEY-----\nMIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgVzRos0HF1EauD+v5\nuUDok1OmTUpg5a5Qz4kUYzkBxpmhRANCAARzGWdKadT7aGZYmSarBj6nduy/9tjm\nQnsFoQQAxvp3t+WgQrCQCtw2+BablES87SmWiX/CoaSbN0M3SC2TWERC\n-----END PRIVATE KEY-----\n"
-    }
-  }
+  ]
 }
