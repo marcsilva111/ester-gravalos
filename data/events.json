@@ -1,5 +1,5 @@
 {
-  "version": 14,
+  "version": 15,
   "events": [
     {
       "id": "ol-1fd4479394bc",
@@ -180,7 +180,16 @@
       "transport": "",
       "notes": "",
       "coverage": [],
-      "docs": []
+      "docs": [
+        {
+          "kind": "file",
+          "name": "Unknown.png",
+          "fileId": "f297321266d47d39.png",
+          "size": 3662,
+          "url": ""
+        }
+      ],
+      "dressCode": ""
     },
     {
       "id": "ol-8a44150f40d6",
