@@ -1,5 +1,5 @@
 {
-  "version": 13,
+  "version": 14,
   "events": [
     {
       "id": "ol-1fd4479394bc",
@@ -562,7 +562,7 @@
       "link": "",
       "type": "extern",
       "attends": "si",
-      "missingFromSource": false,
+      "missingFromSource": true,
       "speaks": false,
       "speechType": "",
       "speechDuration": "",
@@ -1271,12 +1271,5 @@
       "coverage": [],
       "docs": []
     }
-  ],
-  "push": {
-    "subs": [],
-    "vapid": {
-      "publica": "BPDbiAAa7_BqsgSiANK8MmUsDdLBZ6NIkP0VAb-HNb3FLAaOSP3N6NSsZxVwKsXLb2j4ak4P1wQXj2sZEQm8hMs",
-      "privada": "-----BEGIN PRIVATE KEY-----\nMIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQg4EArGlVatDLjJdPe\nzY1gO6Zh/PiuLNqpTT/N2eYjFQWhRANCAATw24gAGu/warIEogDSvDJlLA3SwWej\nSJD9FQG/hzW9xSwGjkj9zejUrGcVcCrFy29o+GpOD9cEF49rGREJvITL\n-----END PRIVATE KEY-----\n"
-    }
-  }
+  ]
 }
