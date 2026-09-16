@@ -1,5 +1,5 @@
 {
-  "version": 15,
+  "version": 16,
   "events": [
     {
       "id": "ol-1fd4479394bc",
@@ -153,15 +153,15 @@
       "origin": "outlook",
       "internal": false,
       "title": "BG 🎖️ Barceloní i barcelonina de l'any, el 16 de setembre",
-      "organizer": "",
+      "organizer": "El Periodico",
       "date": "2026-09-16",
       "start": "20:00",
-      "end": "22:00",
-      "arrival": "",
+      "end": "23:00",
+      "arrival": "19:45",
       "location": "Palau Robert",
       "address": "Palau Robert",
       "mapLink": "",
-      "mediaImpact": false,
+      "mediaImpact": true,
       "description": "MC i JS confirmats. QRs a continuació:\n\nQR JOE\n\n[Captura de pantalla 2026-09-01 a las 18.11.36.png]\n\n\n\nQR MC\n\n[Captura de pantalla 2026-09-01 a las 18.11.20.png]\n\n\n\n\n\n[https://mcusercontent.com/827b2039db81cb3bafbed8568/images/0f70c2f9-e089-98d9-a8e4-a2390ceef982.gif]<https://intermedia.us4.list-manage.com/track/click?u=827b2039db81cb3bafbed8568&id=442243d3fb&e=ad63a2b5b6>\n\n\n\nAtentament, l'equip d'El Periódico.\n\n\n\n\nEstàs rebent aquesta comunicació perquè t’has subscrit a la mateixa a El Periódic",
       "link": "",
       "type": "extern",
@@ -174,7 +174,7 @@
       "keyMessage": "",
       "contentOwner": "",
       "owner": "",
-      "companion": "",
+      "companion": "Mercè Conesa",
       "orgContact": "",
       "access": "",
       "transport": "",
@@ -189,7 +189,7 @@
           "url": ""
         }
       ],
-      "dressCode": ""
+      "dressCode": "Business casual"
     },
     {
       "id": "ol-8a44150f40d6",
