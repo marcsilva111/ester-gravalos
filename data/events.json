@@ -1,5 +1,5 @@
 {
-  "version": 11,
+  "version": 12,
   "events": [
     {
       "id": "ol-1fd4479394bc",
@@ -548,7 +548,7 @@
       "sourceUid": "040000008200E00074C5B7101A82E00800000000CEA44B3410F8DC01000000000000000010000000B216ACF95D9E274EB1CE41AED7A1D7B9",
       "origin": "outlook",
       "internal": false,
-      "title": "Acte Barcelona Global - Ryder Cup 2031",
+      "title": "Cancelado: Acte Barcelona Global - Ryder Cup 2031",
       "organizer": "",
       "date": "2026-10-01",
       "start": "18:00",
@@ -1198,6 +1198,49 @@
       "notes": "",
       "coverage": [],
       "docs": []
+    },
+    {
+      "id": "ol-d9321120fbfe",
+      "sourceKey": "040000008200E00074C5B7101A82E00800000000E877D05CB745DD01000000000000000010000000B94E67E2B46052449FB0E577CC980457",
+      "sourceUid": "040000008200E00074C5B7101A82E00800000000E877D05CB745DD01000000000000000010000000B94E67E2B46052449FB0E577CC980457",
+      "origin": "outlook",
+      "internal": false,
+      "title": "BG 20:00h Gran Premi Ciutat de Barcelona - CSIO Barcelona 2.10.",
+      "organizer": "",
+      "date": "2026-10-02",
+      "start": "20:00",
+      "end": "22:30",
+      "arrival": "",
+      "location": "Llotja presidencial de la pista olímpica del Reial Club de Barcelona",
+      "address": "Llotja presidencial de la pista olímpica del Reial Club de Barcelona",
+      "mapLink": "",
+      "mediaImpact": false,
+      "description": "JS confirmat. Pendent saber si hi aniràs acompanyat\n\nDress code:\n\nSenyors: vestit fosc\n\nSenyores: vestit còctel\n\n\nDe: Presidencia RCPB <presidencia@rcpolo.com>\nFecha: miércoles, 9 de septiembre de 2026 a las 20:59\nPara: Josep Ll. Sanfeliu <jsanfeliu@barcelonaglobal.org>\\; Cristina Boadas <cristina.boadas@barcelonaglobal.org>\nAsunto: Invitació Gran Premi Ciutat de Barcelona - CSIO Barcelona 2.10.\n\nBenvolgut Sr. Sanfeliu:\nAmb motiu de la propera celebració del CSIO Barcelona, ens plau fer-vos arri",
+      "link": "",
+      "type": "extern",
+      "attends": "si",
+      "missingFromSource": false,
+      "speaks": false,
+      "speechType": "",
+      "speechDuration": "",
+      "speechLang": "Catalán",
+      "keyMessage": "",
+      "contentOwner": "",
+      "owner": "",
+      "companion": "",
+      "orgContact": "",
+      "access": "",
+      "transport": "",
+      "notes": "",
+      "coverage": [],
+      "docs": []
     }
-  ]
+  ],
+  "push": {
+    "subs": [],
+    "vapid": {
+      "publica": "BPDbiAAa7_BqsgSiANK8MmUsDdLBZ6NIkP0VAb-HNb3FLAaOSP3N6NSsZxVwKsXLb2j4ak4P1wQXj2sZEQm8hMs",
+      "privada": "-----BEGIN PRIVATE KEY-----\nMIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQg4EArGlVatDLjJdPe\nzY1gO6Zh/PiuLNqpTT/N2eYjFQWhRANCAATw24gAGu/warIEogDSvDJlLA3SwWej\nSJD9FQG/hzW9xSwGjkj9zejUrGcVcCrFy29o+GpOD9cEF49rGREJvITL\n-----END PRIVATE KEY-----\n"
+    }
+  }
 }
