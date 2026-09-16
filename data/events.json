@@ -1,5 +1,5 @@
 {
-  "version": 17,
+  "version": 18,
   "events": [
     {
       "id": "ol-1fd4479394bc",
@@ -156,7 +156,7 @@
       "organizer": "El Periodico",
       "date": "2026-09-16",
       "start": "20:00",
-      "end": "23:00",
+      "end": "22:00",
       "arrival": "19:45",
       "location": "Palau Robert",
       "address": "Palau Robert",
