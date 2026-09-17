@@ -1,5 +1,5 @@
 {
-  "version": 19,
+  "version": 20,
   "events": [
     {
       "id": "ol-1fd4479394bc",
@@ -629,7 +629,7 @@
       "sourceUid": "040000008200E00074C5B7101A82E008000000006E548725CFD3DC010000000000000000100000000E3817A1853FD44BB95698FE59557BBC",
       "origin": "outlook",
       "internal": false,
-      "title": "BG 10:00h Plenari Chapter Clima",
+      "title": "BG 16:00h Plenari Chapter Clima",
       "organizer": "",
       "date": "2026-10-28",
       "start": "16:00",
