@@ -1,5 +1,5 @@
 {
-  "version": 20,
+  "version": 21,
   "events": [
     {
       "id": "ol-1fd4479394bc",
@@ -239,7 +239,7 @@
       "start": "20:00",
       "end": "23:00",
       "arrival": "",
-      "location": "",
+      "location": "Circulo Ecuestre",
       "address": "",
       "mapLink": "",
       "mediaImpact": false,
@@ -248,10 +248,10 @@
       "type": "extern",
       "attends": "si",
       "missingFromSource": false,
-      "speaks": false,
-      "speechType": "",
+      "speaks": true,
+      "speechType": "Tu rol en la mesa  Queremos que llegues tranquilo/a: no tienes que preparar absolutamente nada. Liderarás como ponente una de las mesas de la cena, y en cada mesa contarás con una persona de la Junta de YEC como moderador/a, que se encargará de dinamizar la conversación. La charla girará de forma natural en torno a tu trayectoria profesional y personal, guiada por las preguntas espontáneas de los jóvenes socios que tengas alrededor, es precisamente ese formato cercano, sin guion, lo que hace que estas cenas funcionen tan bien.",
       "speechDuration": "",
-      "speechLang": "Catalán",
+      "speechLang": "",
       "keyMessage": "",
       "contentOwner": "",
       "owner": "",
@@ -261,7 +261,8 @@
       "transport": "",
       "notes": "",
       "coverage": [],
-      "docs": []
+      "docs": [],
+      "dressCode": "Business"
     },
     {
       "id": "ol-0f2791424823",
