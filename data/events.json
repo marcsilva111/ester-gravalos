@@ -1,5 +1,5 @@
 {
-  "version": 18,
+  "version": 19,
   "events": [
     {
       "id": "ol-1fd4479394bc",
@@ -635,8 +635,8 @@
       "start": "16:00",
       "end": "18:00",
       "arrival": "",
-      "location": "Cuatrecasas (Avenida Diagonal 191, Barcelona Cataluña, España)",
-      "address": "Cuatrecasas (Avenida Diagonal 191, Barcelona Cataluña, España)",
+      "location": "EY - Av. de Sarrià, 106, Sarrià-Sant Gervasi, 08017 Barcelona",
+      "address": "EY - Av. de Sarrià, 106, Sarrià-Sant Gervasi, 08017 Barcelona",
       "mapLink": "",
       "mediaImpact": false,
       "description": "",
