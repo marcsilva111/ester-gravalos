@@ -1,5 +1,5 @@
 {
-  "version": 22,
+  "version": 23,
   "events": [
     {
       "id": "ol-1fd4479394bc",
@@ -1280,6 +1280,85 @@
       "notes": "",
       "coverage": [],
       "docs": []
+    },
+    {
+      "id": "ol-35783713d0b5",
+      "sourceKey": "040000008200E00074C5B7101A82E008000000009B0ECAE9DCF1DC010000000000000000100000000C972ED79EEE6449B12A2F641DAEF739",
+      "sourceUid": "040000008200E00074C5B7101A82E008000000009B0ECAE9DCF1DC010000000000000000100000000C972ED79EEE6449B12A2F641DAEF739",
+      "origin": "outlook",
+      "internal": false,
+      "title": "BG 9:00h Barcelona on the Global Map #",
+      "organizer": "",
+      "date": "2026-12-22",
+      "start": "09:00",
+      "end": "15:00",
+      "arrival": "",
+      "location": "",
+      "address": "",
+      "mapLink": "",
+      "mediaImpact": false,
+      "description": "Pendent concretar detalls",
+      "link": "",
+      "type": "extern",
+      "attends": "si",
+      "missingFromSource": false,
+      "speaks": false,
+      "speechType": "",
+      "speechDuration": "",
+      "speechLang": "Catalán",
+      "keyMessage": "",
+      "contentOwner": "",
+      "owner": "",
+      "companion": "",
+      "orgContact": "",
+      "access": "",
+      "transport": "",
+      "notes": "",
+      "coverage": [],
+      "docs": []
+    },
+    {
+      "id": "ol-35783713d0b5",
+      "sourceKey": "040000008200E00074C5B7101A82E008000000009B0ECAE9DCF1DC010000000000000000100000000C972ED79EEE6449B12A2F641DAEF739",
+      "sourceUid": "040000008200E00074C5B7101A82E008000000009B0ECAE9DCF1DC010000000000000000100000000C972ED79EEE6449B12A2F641DAEF739",
+      "origin": "outlook",
+      "internal": true,
+      "title": "BG 9:00h Barcelona on the Global Map *",
+      "organizer": "",
+      "date": "2026-12-22",
+      "start": "09:00",
+      "end": "15:00",
+      "arrival": "",
+      "location": "",
+      "address": "",
+      "mapLink": "",
+      "mediaImpact": false,
+      "description": "Pendent concretar detalls",
+      "link": "",
+      "type": "extern",
+      "attends": "si",
+      "missingFromSource": false,
+      "speaks": false,
+      "speechType": "",
+      "speechDuration": "",
+      "speechLang": "Catalán",
+      "keyMessage": "",
+      "contentOwner": "",
+      "owner": "",
+      "companion": "",
+      "orgContact": "",
+      "access": "",
+      "transport": "",
+      "notes": "",
+      "coverage": [],
+      "docs": []
     }
-  ]
+  ],
+  "push": {
+    "subs": [],
+    "vapid": {
+      "publica": "BAed8JYHV6-pEcyGpwKg_DQHqbwdi04Boc7Y_zBqgA3bjkTcnmifGSNMXzDaJXbbQtgxoCte0Aq-hgC8KKJlM9g",
+      "privada": "-----BEGIN PRIVATE KEY-----\nMIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgO2zFGGuE34d8XWIN\nFHRLFz3+qgXk4Y/9Od+o5Ga4blWhRANCAAQHnfCWB1evqRHMhqcCoPw0B6m8HYtO\nAaHO2P8waoAN245E3J5onxkjTF8w2iV220LYMaArXtAKvoYAvCiiZTPY\n-----END PRIVATE KEY-----\n"
+    }
+  }
 }
