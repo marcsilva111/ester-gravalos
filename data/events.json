@@ -1,5 +1,5 @@
 {
-  "version": 24,
+  "version": 25,
   "events": [
     {
       "id": "ol-1fd4479394bc",
@@ -1071,11 +1071,11 @@
       "sourceUid": "040000008200E00074C5B7101A82E00800000000ADD774EAB33EDD0100000000000000001000000086E07CD8AD6E8B4BB3B1F73439FC0144",
       "origin": "outlook",
       "internal": true,
-      "title": "10:00h Invitación exclusiva CEOs – Inauguración Agentic AI Innovation Hub con el President Illa – 25 de septiembre, Barcelona",
+      "title": "09:45h Invitación exclusiva CEOs – Inauguración Agentic AI Innovation Hub con el President Illa – 25 de septiembre, Barcelona",
       "organizer": "",
       "date": "2026-09-25",
-      "start": "10:00",
-      "end": "11:00",
+      "start": "09:45",
+      "end": "12:00",
       "arrival": "",
       "location": "Accenture - Rotonda",
       "address": "Accenture - Rotonda",
@@ -1425,12 +1425,5 @@
       "coverage": [],
       "docs": []
     }
-  ],
-  "push": {
-    "subs": [],
-    "vapid": {
-      "publica": "BEmiwGZysfQll4Ds-z_TIWHykcvhUIpLda9-lw7dDpspfs_aFcsqug-ax_BhgRNx_FsIRF8ojrjOejVGgNxzpMk",
-      "privada": "-----BEGIN PRIVATE KEY-----\nMIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgfY49Aivz5jrMLo5x\nb65ShpvJ5zNEMUVorKRC4uhOyVGhRANCAARJosBmcrH0JZeA7Ps/0yFh8pHL4VCK\nS3WvfpcO3Q6bKX7P2hXLKroPmsfwYYETcfxbCERfKI64zno1RoDcc6TJ\n-----END PRIVATE KEY-----\n"
-    }
-  }
+  ]
 }
