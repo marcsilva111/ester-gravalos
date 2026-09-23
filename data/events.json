@@ -1,5 +1,5 @@
 {
-  "version": 25,
+  "version": 26,
   "events": [
     {
       "id": "ol-1fd4479394bc",
@@ -1424,6 +1424,49 @@
       "notes": "",
       "coverage": [],
       "docs": []
+    },
+    {
+      "id": "ol-3c11e0a57a4a",
+      "sourceKey": "040000008200E00074C5B7101A82E008000000005DC8F8D8354BDD01000000000000000010000000C8C4C062BE31BC46A5FE8C199C3369CE",
+      "sourceUid": "040000008200E00074C5B7101A82E008000000005DC8F8D8354BDD01000000000000000010000000C8C4C062BE31BC46A5FE8C199C3369CE",
+      "origin": "outlook",
+      "internal": true,
+      "title": "12:30h Invitación Día de la Unidad Alemana 9-10-26",
+      "organizer": "",
+      "date": "2026-10-09",
+      "start": "12:30",
+      "end": "14:30",
+      "arrival": "",
+      "location": "Casa Cupra",
+      "address": "Casa Cupra",
+      "mapLink": "",
+      "mediaImpact": false,
+      "description": "pendent confirmar\n\nDe: .BARC L-VZ1 Llobet Heinrich, Kristina <l-vz1@barc.auswaertiges-amt.de>\nFecha: martes, 22 de septiembre de 2026 a las 15:39\nPara: Merce Conesa <merce.conesa@barcelonaglobal.org>\nAsunto: Invitación Día de la Unidad Alemana 9-10-26\n\n\n[cid:image001.jpg@01DD4AA8.1EC522A0]\n\nCon motivo del Día de la Unidad Alemana, y\nen presencia del\n\nEmbajador de la República Federal de Alemania\nHeiko Christoph Thoms,\n\nel Cónsul General\nElmar Jakobs\n\ntiene el honor de invitar al\nSr. Mercè Conesa",
+      "link": "",
+      "type": "extern",
+      "attends": "si",
+      "missingFromSource": false,
+      "speaks": false,
+      "speechType": "",
+      "speechDuration": "",
+      "speechLang": "Catalán",
+      "keyMessage": "",
+      "contentOwner": "",
+      "owner": "",
+      "companion": "",
+      "orgContact": "",
+      "access": "",
+      "transport": "",
+      "notes": "",
+      "coverage": [],
+      "docs": []
     }
-  ]
+  ],
+  "push": {
+    "subs": [],
+    "vapid": {
+      "publica": "BCK3NUirlTkgid5MveRlU8FMkRC911OLaIKZdZYFBG6dBKR9KbHTxf6JSU3bqQfG8z7JerjAlWdgjjct99vax_s",
+      "privada": "-----BEGIN PRIVATE KEY-----\nMIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgXhPaWtufwfBzi5wY\nTEx8wBwB6Pm5QHiankxKXwDD93yhRANCAAQitzVIq5U5IIneTL3kZVPBTJEQvddT\ni2iCmXWWBQRunQSkfSmx08X+iUlN26kHxvM+yXq4wJVnYI43Lffb2sf7\n-----END PRIVATE KEY-----\n"
+    }
+  }
 }
