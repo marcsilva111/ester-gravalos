@@ -1,5 +1,5 @@
 {
-  "version": 27,
+  "version": 28,
   "events": [
     {
       "id": "ol-1fd4479394bc",
@@ -306,14 +306,14 @@
       "sourceUid": "040000008200E00074C5B7101A82E00800000000104AF2A4F139DD0100000000000000001000000086DB99B6F593C34B9FA12E04515C25F7",
       "origin": "outlook",
       "internal": false,
-      "title": "BG Lunch G8 president Sanchez",
+      "title": "BG 12:30h Dinar del “G8” amb l’Excm. President del Govern d’Espanya",
       "organizer": "",
       "date": "2026-09-28",
-      "start": "13:30",
-      "end": "16:00",
+      "start": "12:30",
+      "end": "15:15",
       "arrival": "",
-      "location": "PIMEC",
-      "address": "PIMEC",
+      "location": "Palau de Pedralbes. Av. Diagonal, 686. Barcelona",
+      "address": "Palau de Pedralbes. Av. Diagonal, 686. Barcelona",
       "mapLink": "",
       "mediaImpact": false,
       "description": "",
@@ -1497,12 +1497,5 @@
       "coverage": [],
       "docs": []
     }
-  ],
-  "push": {
-    "subs": [],
-    "vapid": {
-      "publica": "BCK3NUirlTkgid5MveRlU8FMkRC911OLaIKZdZYFBG6dBKR9KbHTxf6JSU3bqQfG8z7JerjAlWdgjjct99vax_s",
-      "privada": "-----BEGIN PRIVATE KEY-----\nMIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgXhPaWtufwfBzi5wY\nTEx8wBwB6Pm5QHiankxKXwDD93yhRANCAAQitzVIq5U5IIneTL3kZVPBTJEQvddT\ni2iCmXWWBQRunQSkfSmx08X+iUlN26kHxvM+yXq4wJVnYI43Lffb2sf7\n-----END PRIVATE KEY-----\n"
-    }
-  }
+  ]
 }
