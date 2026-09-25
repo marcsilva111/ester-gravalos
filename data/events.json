@@ -1,5 +1,5 @@
 {
-  "version": 34,
+  "version": 35,
   "events": [
     {
       "id": "ol-1fd4479394bc",
@@ -1227,7 +1227,7 @@
       "origin": "outlook",
       "internal": false,
       "title": "BG 20:00h Gran Premi Ciutat de Barcelona - CSIO Barcelona 2.10.",
-      "organizer": "",
+      "organizer": "Real Club Polo Barcelona",
       "date": "2026-10-02",
       "start": "20:00",
       "end": "22:30",
@@ -1235,7 +1235,7 @@
       "location": "Llotja presidencial de la pista olímpica del Reial Club de Barcelona",
       "address": "Llotja presidencial de la pista olímpica del Reial Club de Barcelona",
       "mapLink": "",
-      "mediaImpact": false,
+      "mediaImpact": true,
       "description": "JS confirmat. Pendent saber si hi aniràs acompanyat\n\nDress code:\n\nSenyors: vestit fosc\n\nSenyores: vestit còctel\n\n\nDe: Presidencia RCPB <presidencia@rcpolo.com>\nFecha: miércoles, 9 de septiembre de 2026 a las 20:59\nPara: Josep Ll. Sanfeliu <jsanfeliu@barcelonaglobal.org>\\; Cristina Boadas <cristina.boadas@barcelonaglobal.org>\nAsunto: Invitació Gran Premi Ciutat de Barcelona - CSIO Barcelona 2.10.\n\nBenvolgut Sr. Sanfeliu:\nAmb motiu de la propera celebració del CSIO Barcelona, ens plau fer-vos arri",
       "link": "",
       "type": "extern",
@@ -1254,7 +1254,8 @@
       "transport": "",
       "notes": "",
       "coverage": [],
-      "docs": []
+      "docs": [],
+      "dressCode": "Traje oscuro"
     },
     {
       "id": "ol-866838309aff",
