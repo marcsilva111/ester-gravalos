@@ -1,5 +1,5 @@
 {
-  "version": 29,
+  "version": 30,
   "events": [
     {
       "id": "ol-1fd4479394bc",
@@ -532,15 +532,15 @@
       "origin": "outlook",
       "internal": false,
       "title": "PREMIOS VANGUARDIA 2026",
-      "organizer": "",
+      "organizer": "La Vanguardia - Grupo Godó",
       "date": "2026-09-28",
       "start": "19:00",
       "end": "22:30",
-      "arrival": "",
+      "arrival": "20:30",
       "location": "Palau de Congressos de Catalunya",
       "address": "Palau de Congressos de Catalunya",
       "mapLink": "",
-      "mediaImpact": false,
+      "mediaImpact": true,
       "description": "confirmats JS / MC\n\n[STD_1.png]",
       "link": "",
       "type": "extern",
@@ -553,13 +553,14 @@
       "keyMessage": "",
       "contentOwner": "",
       "owner": "",
-      "companion": "",
+      "companion": "Mercè Conesa",
       "orgContact": "",
       "access": "",
       "transport": "",
       "notes": "",
       "coverage": [],
-      "docs": []
+      "docs": [],
+      "dressCode": "Traje oscuro"
     },
     {
       "id": "ol-d2ed83ee103b",
