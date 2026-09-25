@@ -1,5 +1,5 @@
 {
-  "version": 31,
+  "version": 32,
   "events": [
     {
       "id": "ol-1fd4479394bc",
@@ -1518,7 +1518,7 @@
       "date": "2026-09-28",
       "start": "19:00",
       "end": "19:30",
-      "arrival": "",
+      "arrival": "18:45",
       "location": "Museu Nacional d'Art de Catalunya, Palau Nacional, Parc de Montjuïc, s/n, 08038 Barcelona, Spain",
       "address": "Museu Nacional d'Art de Catalunya, Palau Nacional, Parc de Montjuïc, s/n, 08038 Barcelona, Spain",
       "mapLink": "",
@@ -1528,10 +1528,10 @@
       "type": "extern",
       "attends": "si",
       "missingFromSource": false,
-      "speaks": false,
-      "speechType": "",
+      "speaks": true,
+      "speechType": "Speach",
       "speechDuration": "",
-      "speechLang": "Catalán",
+      "speechLang": "Inglés",
       "keyMessage": "",
       "contentOwner": "",
       "owner": "",
@@ -1541,7 +1541,8 @@
       "transport": "",
       "notes": "",
       "coverage": [],
-      "docs": []
+      "docs": [],
+      "dressCode": "Business"
     }
   ],
   "push": {
