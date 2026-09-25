@@ -1,5 +1,5 @@
 {
-  "version": 33,
+  "version": 34,
   "events": [
     {
       "id": "ol-1fd4479394bc",
@@ -352,15 +352,15 @@
       "origin": "outlook",
       "internal": false,
       "title": "BG 18:45h Premis Pimec 2026",
-      "organizer": "",
+      "organizer": "PIMEC",
       "date": "2026-09-30",
       "start": "18:30",
       "end": "22:30",
-      "arrival": "",
+      "arrival": "19:30",
       "location": "Palau Sant Jordi (Barcelona Cataluña, España)",
       "address": "Palau Sant Jordi (Barcelona Cataluña, España)",
       "mapLink": "",
-      "mediaImpact": false,
+      "mediaImpact": true,
       "description": "JS confirmat\n\n\n[https://mailing.eventscase.com/user-images/ywys/t285z5sm/b4g/uo1/ccf/email-1900x300.jpg]\n\nEl president i el Comitè Executiu de Pimec tenen l’honor de convidar Sr. Josep Lluís Sanfeliu a la 39ena Gala Solidària dels Premis Pimec.\n\n\n\nEls Premis Pimec 2026 distingiran les millors iniciatives empresarials desenvolupades a Catalunya durant l’any 2025 en diferents àmbits.\n\n\n\nL’acte tindrà lloc el dia 30 de setembre de 2026 al Palau Sant Jordi (Passeig Olímpic, 5-7, 08038 Barcelona). La",
       "link": "",
       "type": "extern",
@@ -379,7 +379,8 @@
       "transport": "",
       "notes": "",
       "coverage": [],
-      "docs": []
+      "docs": [],
+      "dressCode": "Business"
     },
     {
       "id": "ol-202d93d18bb3",
