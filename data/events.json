@@ -1,5 +1,5 @@
 {
-  "version": 32,
+  "version": 33,
   "events": [
     {
       "id": "ol-1fd4479394bc",
@@ -1514,7 +1514,7 @@
       "origin": "outlook",
       "internal": false,
       "title": "JS SPEAKER - 7pm - Opening Session at the Museu Nacional d'Art de Catalunya",
-      "organizer": "",
+      "organizer": "LSI",
       "date": "2026-09-28",
       "start": "19:00",
       "end": "19:30",
@@ -1522,7 +1522,7 @@
       "location": "Museu Nacional d'Art de Catalunya, Palau Nacional, Parc de Montjuïc, s/n, 08038 Barcelona, Spain",
       "address": "Museu Nacional d'Art de Catalunya, Palau Nacional, Parc de Montjuïc, s/n, 08038 Barcelona, Spain",
       "mapLink": "",
-      "mediaImpact": false,
+      "mediaImpact": true,
       "description": "LSI Europe '26 Emerging Medtech Summit\n\nAsabys speaker: Josep Ll. Sanfeliu — Managing Partner, Asabys Partners.\nOther speakers: Antoine Papiernik — Sofinnova Partners\\; Anne Osdoit — Sofinnova Partners / Moon Surgical.\n\nAgenda source: https://www.lsieuropesummit.com/agenda",
       "link": "",
       "type": "extern",
