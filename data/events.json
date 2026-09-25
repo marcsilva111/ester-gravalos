@@ -1,5 +1,5 @@
 {
-  "version": 28,
+  "version": 29,
   "events": [
     {
       "id": "ol-1fd4479394bc",
@@ -311,20 +311,20 @@
       "date": "2026-09-28",
       "start": "12:30",
       "end": "15:15",
-      "arrival": "",
+      "arrival": "12:30",
       "location": "Palau de Pedralbes. Av. Diagonal, 686. Barcelona",
       "address": "Palau de Pedralbes. Av. Diagonal, 686. Barcelona",
       "mapLink": "",
-      "mediaImpact": false,
+      "mediaImpact": true,
       "description": "",
       "link": "",
       "type": "extern",
       "attends": "si",
       "missingFromSource": false,
-      "speaks": false,
-      "speechType": "",
+      "speaks": true,
+      "speechType": "Diálogo",
       "speechDuration": "",
-      "speechLang": "Catalán",
+      "speechLang": "Castellano",
       "keyMessage": "",
       "contentOwner": "",
       "owner": "",
@@ -334,7 +334,16 @@
       "transport": "",
       "notes": "",
       "coverage": [],
-      "docs": []
+      "docs": [
+        {
+          "kind": "file",
+          "name": "Guió Dinar del G8 amb el President del Govern d'Espanya set 26.doc",
+          "fileId": "8a5cfa44e27bb6c0.doc",
+          "size": 96256,
+          "url": ""
+        }
+      ],
+      "dressCode": "Business"
     },
     {
       "id": "ol-fba033b45339",
