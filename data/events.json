@@ -1,5 +1,5 @@
 {
-  "version": 30,
+  "version": 31,
   "events": [
     {
       "id": "ol-1fd4479394bc",
@@ -1506,6 +1506,49 @@
       "notes": "",
       "coverage": [],
       "docs": []
+    },
+    {
+      "id": "ol-026bfcd69d98",
+      "sourceKey": "040000008200E00074C5B7101A82E008000000009FD21BB2F34CDD010000000000000000100000005723BF31691C424C815CE178979F99D5",
+      "sourceUid": "040000008200E00074C5B7101A82E008000000009FD21BB2F34CDD010000000000000000100000005723BF31691C424C815CE178979F99D5",
+      "origin": "outlook",
+      "internal": false,
+      "title": "JS SPEAKER - 7pm - Opening Session at the Museu Nacional d'Art de Catalunya",
+      "organizer": "",
+      "date": "2026-09-28",
+      "start": "19:00",
+      "end": "19:30",
+      "arrival": "",
+      "location": "Museu Nacional d'Art de Catalunya, Palau Nacional, Parc de Montjuïc, s/n, 08038 Barcelona, Spain",
+      "address": "Museu Nacional d'Art de Catalunya, Palau Nacional, Parc de Montjuïc, s/n, 08038 Barcelona, Spain",
+      "mapLink": "",
+      "mediaImpact": false,
+      "description": "LSI Europe '26 Emerging Medtech Summit\n\nAsabys speaker: Josep Ll. Sanfeliu — Managing Partner, Asabys Partners.\nOther speakers: Antoine Papiernik — Sofinnova Partners\\; Anne Osdoit — Sofinnova Partners / Moon Surgical.\n\nAgenda source: https://www.lsieuropesummit.com/agenda",
+      "link": "",
+      "type": "extern",
+      "attends": "si",
+      "missingFromSource": false,
+      "speaks": false,
+      "speechType": "",
+      "speechDuration": "",
+      "speechLang": "Catalán",
+      "keyMessage": "",
+      "contentOwner": "",
+      "owner": "",
+      "companion": "",
+      "orgContact": "",
+      "access": "",
+      "transport": "",
+      "notes": "",
+      "coverage": [],
+      "docs": []
     }
-  ]
+  ],
+  "push": {
+    "subs": [],
+    "vapid": {
+      "publica": "BMe8jHpKdfBOklZtZQubI95yRuygydoxkkyhTDQrgGrTbYoEK4zfDlMHVxG-mvXMQQ_UTC5TFDVcVvxfMAlg690",
+      "privada": "-----BEGIN PRIVATE KEY-----\nMIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgeDlZ1JwjjokTtJzm\nhcJHEsz0pPEPLs7brmRY9WmIqy6hRANCAATHvIx6SnXwTpJWbWULmyPeckbsoMna\nMZJMoUw0K4Bq022KBCuM3w5TB1cRvpr1zEEP1EwuUxQ1XFb8XzAJYOvd\n-----END PRIVATE KEY-----\n"
+    }
+  }
 }
