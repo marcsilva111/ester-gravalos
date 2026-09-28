@@ -1,5 +1,5 @@
 {
-  "version": 41,
+  "version": 42,
   "events": [
     {
       "id": "ol-1fd4479394bc",
@@ -816,7 +816,7 @@
       "link": "",
       "type": "extern",
       "attends": "si",
-      "missingFromSource": false,
+      "missingFromSource": true,
       "speaks": false,
       "speechType": "",
       "speechDuration": "",
@@ -950,7 +950,7 @@
       "organizer": "",
       "date": "2026-10-22",
       "start": "18:30",
-      "end": "22:00",
+      "end": "22:30",
       "arrival": "",
       "location": "Cuatrecasas Madrid",
       "address": "Cuatrecasas Madrid",
@@ -1655,12 +1655,5 @@
       "coverage": [],
       "docs": []
     }
-  ],
-  "push": {
-    "subs": [],
-    "vapid": {
-      "publica": "BEApx70AqPuw1L4QPHA4D6Lxd4OnejgrbD12d8NC_n8bvcx4NgOlFi_-h1tW8gt90xhggM4rS9cGhC884cOBgBk",
-      "privada": "-----BEGIN PRIVATE KEY-----\nMIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgrtAAKlulmMNZezxq\n4Dupe0rDhcSfn4DF0yDyGpFCt6ehRANCAARAKce9AKj7sNS+EDxwOA+i8XeDp3o4\nK2w9dnfDQv5/G73MeDYDpRYv/odbVvILfdMYYIDOK0vXBoQvPOHDgYAZ\n-----END PRIVATE KEY-----\n"
-    }
-  }
+  ]
 }
