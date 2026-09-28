@@ -1,5 +1,5 @@
 {
-  "version": 36,
+  "version": 37,
   "events": [
     {
       "id": "ol-1fd4479394bc",
@@ -379,7 +379,15 @@
       "transport": "",
       "notes": "",
       "coverage": [],
-      "docs": [],
+      "docs": [
+        {
+          "kind": "file",
+          "name": "Acreditaciones - Gala Premis PIMEC 2026.pdf",
+          "fileId": "43d5ffe7dadde3a4.pdf",
+          "size": 471526,
+          "url": ""
+        }
+      ],
       "dressCode": "Business"
     },
     {
