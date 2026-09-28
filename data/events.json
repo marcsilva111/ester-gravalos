@@ -1,5 +1,5 @@
 {
-  "version": 37,
+  "version": 38,
   "events": [
     {
       "id": "ol-1fd4479394bc",
@@ -1262,7 +1262,36 @@
       "transport": "",
       "notes": "",
       "coverage": [],
-      "docs": [],
+      "docs": [
+        {
+          "kind": "file",
+          "name": "1 JL Sanfeliu entradas_33737392_21.pdf",
+          "fileId": "e04fa6b5cd1ad314.pdf",
+          "size": 290404,
+          "url": ""
+        },
+        {
+          "kind": "file",
+          "name": "2 JL Sanfeliu_33737392_22.pdf",
+          "fileId": "b4303b8f808aa1cd.pdf",
+          "size": 290274,
+          "url": ""
+        },
+        {
+          "kind": "file",
+          "name": "Horarios CSIO Viernes noche.pdf",
+          "fileId": "dc9b714b735f9c4c.pdf",
+          "size": 139057,
+          "url": ""
+        },
+        {
+          "kind": "file",
+          "name": "Programa Oficial CSIO 2026-27.08.26.pdf",
+          "fileId": "59bf167ad4d5992d.pdf",
+          "size": 407609,
+          "url": ""
+        }
+      ],
       "dressCode": "Traje oscuro"
     },
     {
